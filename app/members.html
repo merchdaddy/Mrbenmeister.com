@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Members</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .members-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem; }
+    .member-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem; }
+    .member-full-card { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;text-align:center;transition:border-color 0.2s; }
+    .member-full-card:hover { border-color:var(--border2); }
+    .member-full-av { width:72px;height:72px;border-radius:50%;border:2px solid var(--gold-d);object-fit:cover;margin:0 auto 0.8rem; }
+    .member-full-name { font-family:var(--font-h);font-size:0.85rem;letter-spacing:0.08em;color:var(--cream);margin-bottom:0.2rem; }
+    .member-full-city { font-size:0.82rem;color:var(--muted);font-style:italic;margin-bottom:0.6rem; }
+    .member-full-since { font-family:var(--font-h);font-size:0.48rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--dim); }
+    .view-toggle { display:flex;gap:0.3rem; }
+    .view-btn { background:var(--surface2);border:1px solid var(--border);color:var(--muted);width:34px;height:34px;border-radius:var(--radius);font-size:0.8rem;transition:all 0.2s; }
+    .view-btn.active,.view-btn:hover { border-color:var(--gold-d);color:var(--gold); }
+    .member-list-row { display:flex;align-items:center;gap:1rem;padding:0.9rem 1.2rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.6rem;transition:border-color 0.2s; }
+    .member-list-row:hover { border-color:var(--border2); }
+    .member-list-info { flex:1; }
+    .member-list-events { font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--dim); }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Members</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="memberSearch" placeholder="Search members…" oninput="renderMembers()" /></div>
+      </div>
+    </div>
+    <div class="page-body">
+
+      <div class="members-header">
+        <div>
+          <h2 style="font-size:1.1rem;margin-bottom:0.2rem">The Circle</h2>
+          <div style="font-size:0.82rem;color:var(--muted)" id="memberCount"></div>
+        </div>
+        <div style="display:flex;gap:0.8rem;align-items:center;flex-wrap:wrap">
+          <div class="filter-chip active" id="filter-all"    onclick="setFilter('all',this)">All Members</div>
+          <div class="filter-chip"        id="filter-admin"  onclick="setFilter('admin',this)">Admins</div>
+          <div class="filter-chip"        id="filter-member" onclick="setFilter('member',this)">Members</div>
+          <div class="view-toggle">
+            <button class="view-btn active" id="grid-btn" onclick="setView('grid')" title="Grid"><i class="fa-solid fa-grid-2"></i></button>
+            <button class="view-btn"        id="list-btn" onclick="setView('list')" title="List"><i class="fa-solid fa-list"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <div id="membersContainer"></div>
+    </div>
+  </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('members');
+
+let viewMode = 'grid';
+let roleFilter = 'all';
+
+function getEventCount(memberId) {
+  return GLC.events.filter(e =>
+    e.rsvps.going.includes(memberId) || e.rsvps.interested.includes(memberId)
+  ).length;
+}
+
+function setFilter(f, el) {
+  roleFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderMembers();
+}
+
+function setView(v) {
+  viewMode = v;
+  document.getElementById('grid-btn').classList.toggle('active', v==='grid');
+  document.getElementById('list-btn').classList.toggle('active', v==='list');
+  renderMembers();
+}
+
+function renderMembers() {
+  const search = document.getElementById('memberSearch').value.toLowerCase();
+  const members = GLC.members.filter(m => {
+    if (roleFilter !== 'all' && m.role !== roleFilter) return false;
+    if (search && !m.name.toLowerCase().includes(search) && !m.city.toLowerCase().includes(search)) return false;
+    return true;
+  });
+
+  document.getElementById('memberCount').textContent = `${members.length} member${members.length!==1?'s':''} in the club`;
+
+  if (viewMode === 'grid') {
+    document.getElementById('membersContainer').innerHTML = `
+    <div class="member-grid">
+      ${members.map(m => `
+      <div class="member-full-card">
+        <img src="${m.avatar}" alt="${m.name}" class="member-full-av" />
+        ${m.role==='admin'?'<div style="margin-bottom:0.5rem"><span class="badge badge-gold" style="font-size:0.45rem">Admin</span></div>':''}
+        <div class="member-full-name">${m.name}</div>
+        <div class="member-full-city"><i class="fa-solid fa-location-dot" style="color:var(--gold-d);font-size:0.7rem"></i> ${m.city}</div>
+        <div class="member-full-since">Member since ${m.memberSince}</div>
+        <div style="margin-top:0.7rem;padding-top:0.7rem;border-top:1px solid var(--border);font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--dim)">
+          ${getEventCount(m.id)} event${getEventCount(m.id)!==1?'s':''} attended
+        </div>
+      </div>`).join('')}
+    </div>`;
+  } else {
+    document.getElementById('membersContainer').innerHTML = members.map(m => `
+    <div class="member-list-row">
+      <img src="${m.avatar}" alt="${m.name}" style="width:44px;height:44px;border-radius:50%;border:1.5px solid var(--gold-d);object-fit:cover;flex-shrink:0" />
+      <div class="member-list-info">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span style="font-family:var(--font-h);font-size:0.78rem;letter-spacing:0.06em;color:var(--cream)">${m.name}</span>
+          ${m.role==='admin'?'<span class="badge badge-gold" style="font-size:0.42rem">Admin</span>':''}
+        </div>
+        <div style="font-size:0.8rem;color:var(--muted);font-style:italic">${m.city}</div>
+      </div>
+      <div style="text-align:right">
+        <div class="member-list-events">${getEventCount(m.id)} events</div>
+        <div style="font-size:0.72rem;color:var(--dim);margin-top:0.1rem">Since ${m.memberSince}</div>
+      </div>
+    </div>`).join('');
+  }
+}
+
+renderMembers();
+</script>
+</body>
+</html>

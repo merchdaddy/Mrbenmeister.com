@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:  #060504;
+      --gold:   #c9a84c;
+      --gold-d: #7a6330;
+      --cream:  #f0ead8;
+      --muted:  #8a7d65;
+      --border: #2a2520;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Cormorant Garamond', serif;
+    }
+
+    /* ─── FULL-SCREEN HERO ─── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      overflow: hidden;
+      padding: 2rem;
+    }
+
+    /* Lounge background via Unsplash */
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1800&q=80');
+      background-size: cover;
+      background-position: center 40%;
+      filter: brightness(0.32) saturate(0.8);
+    }
+
+    /* warm gold vignette overlay */
+    .hero-overlay {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 90% 80% at 50% 50%, rgba(201,168,76,0.07) 0%, transparent 65%),
+        linear-gradient(to bottom, rgba(6,5,4,0.55) 0%, rgba(6,5,4,0.2) 40%, rgba(6,5,4,0.75) 100%);
+    }
+
+    /* ─── LOGO ─── */
+    .logo-wrap {
+      position: relative;
+      z-index: 2;
+      margin-bottom: 2.8rem;
+    }
+
+    .logo-img {
+      width: 160px;
+      height: 160px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 18px rgba(201,168,76,0.18));
+    }
+
+    /* ─── COPY ─── */
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.4rem;
+    }
+
+    .tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-weight: 300;
+      font-size: clamp(1.3rem, 3vw, 1.85rem);
+      color: var(--cream);
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+    }
+
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .ornament-line {
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-d));
+    }
+    .ornament-line.r {
+      background: linear-gradient(to left, transparent, var(--gold-d));
+    }
+    .ornament-gem {
+      width: 5px;
+      height: 5px;
+      background: var(--gold-d);
+      transform: rotate(45deg);
+    }
+
+    .invite-text {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(0.6rem, 1.2vw, 0.72rem);
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ─── CTA BUTTON ─── */
+    .cta-btn {
+      display: inline-block;
+      margin-top: 0.6rem;
+      padding: 0.95rem 2.8rem;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      text-decoration: none;
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .cta-btn:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    /* ─── MODAL OVERLAY ─── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 200;
+      background: rgba(6,5,4,0.88);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s;
+    }
+
+    .modal-overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: #100e0b;
+      border: 1px solid var(--border);
+      border-top: 1px solid var(--gold-d);
+      max-width: 560px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      padding: 3rem 3rem 2.5rem;
+      position: relative;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.5rem;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .modal-close:hover { color: var(--cream); }
+
+    .modal-eyebrow {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--gold);
+      text-align: center;
+      margin-bottom: 0.6rem;
+    }
+
+    .modal-title {
+      font-family: 'Cinzel', serif;
+      font-size: 1.25rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--cream);
+      text-align: center;
+      margin-bottom: 0.8rem;
+    }
+
+    .modal-rule {
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-d), transparent);
+      margin: 0 auto 2rem;
+    }
+
+    .modal-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.92rem;
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.7;
+      margin-bottom: 2rem;
+    }
+
+    /* ─── FORM ─── */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1.3rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.2rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    label {
+      font-family: 'Cinzel', serif;
+      font-size: 0.58rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--gold-d);
+    }
+
+    input, select, textarea {
+      background: rgba(255,255,255,0.03);
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      padding: 0.7rem 0.2rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.25s;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #3a3530;
+      font-style: italic;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-bottom-color: var(--gold);
+    }
+
+    select {
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237a6330'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 0.2rem center;
+      padding-right: 1.5rem;
+      color: var(--cream);
+    }
+
+    select option { background: #1a1610; color: var(--cream); }
+
+    textarea { resize: none; min-height: 80px; }
+
+    .form-submit {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .btn-submit {
+      padding: 0.9rem 2.8rem;
+      border: 1px solid var(--gold);
+      background: transparent;
+      color: var(--gold);
+      font-family: 'Cinzel', serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.38em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.35s, color 0.35s;
+    }
+
+    .btn-submit:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    .form-disclaimer {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.78rem;
+      color: #3a3530;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    /* Success state */
+    .form-success {
+      display: none;
+      text-align: center;
+      padding: 2rem 0 1rem;
+    }
+
+    .form-success .success-ornament {
+      width: 50px;
+      height: 50px;
+      border: 1px solid var(--gold-d);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 1.2rem;
+      color: var(--gold);
+    }
+
+    .form-success h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1rem;
+      letter-spacing: 0.25em;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+
+    .form-success p {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1rem;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* ─── FOOTER ─── */
+    .hero-footer {
+      position: absolute;
+      bottom: 1.8rem;
+      left: 0; right: 0;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding: 0 2.5rem;
+    }
+
+    .hero-footer a {
+      font-family: 'Cinzel', serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #3a3530;
+      text-decoration: none;
+      transition: color 0.25s;
+    }
+
+    .hero-footer a:hover { color: var(--muted); }
+
+    .hero-footer-copy {
+      font-family: 'Cinzel', serif;
+      font-size: 0.5rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #2a2520;
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 600px) {
+      .modal { padding: 2.5rem 1.5rem 2rem; }
+      .form-row { grid-template-columns: 1fr; }
+      .hero-footer { padding: 0 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <!-- Logo -->
+    <div class="logo-wrap">
+      <img src="GLC%20Logo.png" alt="Gold Label Club" class="logo-img" />
+    </div>
+
+    <!-- Copy -->
+    <div class="hero-copy">
+      <p class="tagline">A return to depth, style, and substance.</p>
+
+      <div class="ornament">
+        <div class="ornament-line"></div>
+        <div class="ornament-gem"></div>
+        <div class="ornament-line r"></div>
+      </div>
+
+      <p class="invite-text">Membership is accessible by invitation only</p>
+
+      <button class="cta-btn" onclick="openModal()">Request Access</button>
+      <a href="portal/login.html" style="margin-top:0.5rem;font-family:'Cinzel',serif;font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color 0.2s" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--muted)'">Member Login →</a>
+    </div>
+
+    <!-- Footer line -->
+    <div class="hero-footer">
+      <a href="index.html">← Mr. Ben Meister</a>
+      <span class="hero-footer-copy">© 2026 Gold Label Club</span>
+    </div>
+  </section>
+
+  <!-- ═══ MODAL ═══ -->
+  <div class="modal-overlay" id="modalOverlay" onclick="handleOverlayClick(event)">
+    <div class="modal" id="modal">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">✕</button>
+
+      <p class="modal-eyebrow">Gold Label Club</p>
+      <h2 class="modal-title">Request Access</h2>
+      <div class="modal-rule"></div>
+      <p class="modal-note">
+        All submissions are reviewed privately.<br>
+        Should you be approved, you will hear from us directly.
+      </p>
+
+      <form id="applicationForm" onsubmit="handleSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" placeholder="First" required />
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" placeholder="Last" required />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="appEmail">Email Address</label>
+          <input type="email" id="appEmail" name="email" placeholder="your@email.com" required />
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input type="tel" id="phone" name="phone" placeholder="+1 (000) 000-0000" required />
+        </div>
+
+        <div class="form-group">
+          <label for="city">City of Residence</label>
+          <input type="text" id="city" name="city" placeholder="City, State" required />
+        </div>
+
+        <div class="form-group">
+          <label for="occupation">Occupation</label>
+          <input type="text" id="occupation" name="occupation" placeholder="Title / Industry" required />
+        </div>
+
+        <div class="form-group">
+          <label for="linkedin">LinkedIn Profile</label>
+          <input type="url" id="linkedin" name="linkedin" placeholder="linkedin.com/in/yourprofile" />
+        </div>
+
+        <div class="form-submit">
+          <div id="formError" style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.85rem;color:#c0392b;margin-bottom:0.5rem;display:none"></div>
+          <button type="submit" class="btn-submit" id="submitBtn">Submit Application</button>
+          <p class="form-disclaimer">
+            Your information is kept strictly confidential.
+          </p>
+        </div>
+      </form>
+
+      <div class="form-success" id="formSuccess">
+        <div class="success-ornament">✦</div>
+        <h3>Application Received</h3>
+        <p>
+          Your request has been noted and will be<br>
+          reviewed with care and discretion.<br><br>
+          Should you be approved, you will hear<br>
+          from us directly.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function openModal() {
+      document.getElementById('modalOverlay').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function handleOverlayClick(e) {
+      if (e.target === document.getElementById('modalOverlay')) closeModal();
+    }
+
+    async function handleSubmit(e) {
+      e.preventDefault();
+      const btn   = document.getElementById('submitBtn');
+      const errEl = document.getElementById('formError');
+      btn.disabled = true;
+      btn.textContent = 'Submitting…';
+      errEl.style.display = 'none';
+
+      const { error } = await sb.from('applications').insert({
+        first_name:  document.getElementById('firstName').value.trim(),
+        last_name:   document.getElementById('lastName').value.trim(),
+        email:       document.getElementById('appEmail').value.trim().toLowerCase(),
+        phone:       document.getElementById('phone').value.trim(),
+        city:        document.getElementById('city').value.trim(),
+        occupation:  document.getElementById('occupation').value.trim(),
+        linkedin:    document.getElementById('linkedin').value.trim(),
+        status:      'pending'
+      });
+
+      if (error) {
+        errEl.textContent = 'Something went wrong. Please try again.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Submit Application';
+      } else {
+        document.getElementById('applicationForm').style.display = 'none';
+        document.getElementById('formSuccess').style.display = 'block';
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') closeModal();
+    });
+  </script>
+
+</body>
+</html>

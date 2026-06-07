@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Member Access</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:  #060504;
+      --deep:   #100e0b;
+      --gold:   #c9a84c;
+      --gold-d: #7a6330;
+      --cream:  #f0ead8;
+      --muted:  #8a7d65;
+      --border: #2a2520;
+      --error:  #c0392b;
+    }
+    html, body { height: 100%; font-family: 'Cormorant Garamond', serif; }
+
+    body {
+      background: var(--black);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .bg {
+      position: fixed;
+      inset: 0;
+      background-image: url('https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1800&q=80');
+      background-size: cover;
+      background-position: center;
+      filter: brightness(0.15) saturate(0.5);
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: rgba(10,9,7,0.97);
+      border: 1px solid var(--border);
+      border-top: 1px solid var(--gold-d);
+      width: 100%;
+      max-width: 420px;
+      padding: 3rem 2.8rem 2.5rem;
+    }
+
+    .logo-wrap { text-align: center; margin-bottom: 2.2rem; }
+    .logo-wrap img { width: 85px; height: 85px; object-fit: contain; filter: drop-shadow(0 0 10px rgba(201,168,76,0.15)); }
+
+    .card-title { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--gold); text-align:center; margin-bottom:0.3rem; }
+    .card-sub   { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.88rem; color:var(--muted); text-align:center; margin-bottom:2rem; }
+    .rule       { width:40px; height:1px; background:linear-gradient(to right,transparent,var(--gold-d),transparent); margin:0 auto 2rem; }
+
+    .form-group { display:flex; flex-direction:column; gap:0.4rem; margin-bottom:1.3rem; }
+    label { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold-d); }
+
+    input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      color: var(--cream);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem;
+      padding: 0.65rem 0.1rem;
+      outline: none;
+      width: 100%;
+      transition: border-color 0.25s;
+    }
+    input::placeholder { color:#3a3530; font-style:italic; }
+    input:focus { border-bottom-color: var(--gold); }
+
+    .error-msg { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.85rem; color:var(--error); text-align:center; margin-bottom:0.8rem; min-height:1.2em; }
+
+    .btn {
+      width:100%; padding:0.9rem; background:transparent; border:1px solid var(--gold);
+      color:var(--gold); font-family:'Cinzel',serif; font-size:0.65rem; letter-spacing:0.35em;
+      text-transform:uppercase; cursor:pointer; transition:background 0.3s,color 0.3s; margin-top:0.5rem;
+    }
+    .btn:hover { background:var(--gold); color:var(--black); }
+    .btn:disabled { opacity:0.5; cursor:not-allowed; }
+
+    .forgot { text-align:center; margin-top:1.3rem; }
+    .forgot a { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--muted); text-decoration:none; transition:color 0.2s; }
+    .forgot a:hover { color:var(--gold); }
+
+    .footer-links { display:flex; justify-content:space-between; margin-top:2rem; padding-top:1.5rem; border-top:1px solid var(--border); }
+    .footer-links a { font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.18em; text-transform:uppercase; color:#3a3530; text-decoration:none; transition:color 0.2s; }
+    .footer-links a:hover { color:var(--muted); }
+
+    .panel { }
+    .panel.hidden { display:none; }
+
+    .success-note { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.9rem; color:var(--gold); text-align:center; margin-bottom:1rem; display:none; }
+  </style>
+</head>
+<body>
+  <div class="bg"></div>
+
+  <div class="card">
+    <div class="logo-wrap">
+      <img src="../GLC%20Logo.png" alt="Gold Label Club" />
+    </div>
+
+    <!-- LOGIN -->
+    <div class="panel" id="loginPanel">
+      <p class="card-title">Member Access</p>
+      <p class="card-sub">Private — Approved Members Only</p>
+      <div class="rule"></div>
+      <div class="error-msg" id="loginError"></div>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" placeholder="your@email.com" required />
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn" id="loginBtn">Enter the Club</button>
+      </form>
+      <div class="forgot"><a href="#" onclick="show('resetPanel');hide('loginPanel');return false;">Forgot password?</a></div>
+      <div class="footer-links">
+        <a href="../gold-label-club.html">← Request Access</a>
+        <a href="../index.html">Mr. Ben Meister</a>
+      </div>
+    </div>
+
+    <!-- RESET -->
+    <div class="panel hidden" id="resetPanel">
+      <p class="card-title">Reset Password</p>
+      <p class="card-sub">We'll send a reset link to your email</p>
+      <div class="rule"></div>
+      <div class="error-msg" id="resetError"></div>
+      <div class="success-note" id="resetSuccess">Reset link sent — check your inbox.</div>
+      <form id="resetForm">
+        <div class="form-group">
+          <label for="resetEmail">Email Address</label>
+          <input type="email" id="resetEmail" placeholder="your@email.com" required />
+        </div>
+        <button type="submit" class="btn">Send Reset Link</button>
+      </form>
+      <div class="forgot" style="margin-top:1.2rem"><a href="#" onclick="show('loginPanel');hide('resetPanel');return false;">← Back to login</a></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../supabase-config.js"></script>
+  <script>
+    const { createClient } = supabase;
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    function show(id) { document.getElementById(id).classList.remove('hidden'); }
+    function hide(id) { document.getElementById(id).classList.add('hidden'); }
+
+    // Redirect if already logged in
+    sb.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      await redirect(session.user);
+    });
+
+    async function redirect(user) {
+      if (user.email === GLC_ADMIN_EMAIL) {
+        window.location.href = 'admin.html'; return;
+      }
+      const { data: profile } = await sb.from('profiles').select('approved').eq('id', user.id).single();
+      if (profile?.approved) {
+        window.location.href = 'dashboard.html';
+      } else {
+        await sb.auth.signOut();
+        document.getElementById('loginError').textContent =
+          'Your account is pending approval.';
+      }
+    }
+
+    // Login
+    document.getElementById('loginForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      const btn = document.getElementById('loginBtn');
+      btn.disabled = true; btn.textContent = 'Signing in…';
+      document.getElementById('loginError').textContent = '';
+      const { data, error } = await sb.auth.signInWithPassword({
+        email:    document.getElementById('email').value.trim(),
+        password: document.getElementById('password').value
+      });
+      if (error) {
+        document.getElementById('loginError').textContent = friendlyError(error.message);
+        btn.disabled = false; btn.textContent = 'Enter the Club';
+      } else {
+        await redirect(data.user);
+      }
+    });
+
+    // Reset password
+    document.getElementById('resetForm').addEventListener('submit', async e => {
+      e.preventDefault();
+      document.getElementById('resetError').textContent = '';
+      const { error } = await sb.auth.resetPasswordForEmail(
+        document.getElementById('resetEmail').value.trim(),
+        { redirectTo: window.location.origin + '/portal/login.html' }
+      );
+      if (error) document.getElementById('resetError').textContent = error.message;
+      else document.getElementById('resetSuccess').style.display = 'block';
+    });
+
+    function friendlyError(msg) {
+      if (msg.includes('Invalid login')) return 'Invalid email or password.';
+      if (msg.includes('Email not confirmed')) return 'Please confirm your email first.';
+      return msg;
+    }
+  </script>
+</body>
+</html>

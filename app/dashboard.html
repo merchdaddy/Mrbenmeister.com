@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Dashboard</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .welcome-bar { background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%); border: 1px solid var(--border); border-left: 3px solid var(--gold-d); border-radius: var(--radius); padding: 1.4rem 1.8rem; margin-bottom: 1.8rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+    .welcome-text h1 { font-size: 1.2rem; margin-bottom: 0.2rem; }
+    .welcome-text p  { font-size: 0.88rem; color: var(--muted); font-style: italic; margin: 0; }
+    .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem; margin-bottom: 1.8rem; }
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; }
+    .dashboard-left { display: flex; flex-direction: column; gap: 1.5rem; }
+    .dashboard-right { display: flex; flex-direction: column; gap: 1.5rem; }
+    .events-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+    .cigar-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; display: flex; }
+    .cigar-img  { width: 120px; flex-shrink: 0; object-fit: cover; }
+    .cigar-body { padding: 1.2rem; flex: 1; }
+    .cigar-stat { display: flex; gap: 1.5rem; margin-top: 0.8rem; }
+    .cigar-stat-item { display: flex; flex-direction: column; }
+    .cigar-stat-val { font-family: var(--font-h); font-size: 0.72rem; color: var(--gold); }
+    .cigar-stat-key { font-family: var(--font-h); font-size: 0.48rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--dim); }
+    .quick-links { display: grid; grid-template-columns: repeat(2,1fr); gap: 0.7rem; }
+    .quick-link { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; transition: all 0.2s; cursor: pointer; display: block; }
+    .quick-link:hover { border-color: var(--gold-d); background: var(--gold-glow); }
+    .quick-link i { font-size: 1.2rem; color: var(--gold-d); display: block; margin-bottom: 0.4rem; }
+    .quick-link span { font-family: var(--font-h); font-size: 0.55rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--muted); }
+    .spotlight-card { background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.2rem; }
+    .spotlight-member { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.8rem; }
+    .mini-cal { }
+    .mini-cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 1px; background: var(--border); border-radius: var(--radius); overflow: hidden; margin-top: 0.8rem; }
+    .mini-cal-dow { background: var(--surface3); padding: 0.3rem; text-align: center; font-family: var(--font-h); font-size: 0.45rem; letter-spacing: 0.15em; color: var(--dim); }
+    .mini-cal-day { background: var(--surface2); padding: 0.35rem; text-align: center; font-family: var(--font-h); font-size: 0.65rem; color: var(--muted); cursor: pointer; transition: background 0.15s; min-height: 32px; display: flex; flex-direction: column; align-items: center; }
+    .mini-cal-day:hover { background: var(--surface3); color: var(--ivory); }
+    .mini-cal-day.today { color: var(--gold); }
+    .mini-cal-day.has-event .mini-dot { width: 4px; height: 4px; background: var(--gold-d); border-radius: 50%; margin-top: 2px; }
+    .mini-cal-day.other { opacity: 0.3; }
+    @media(max-width:1100px){ .dashboard-grid{grid-template-columns:1fr;} .stats-row{grid-template-columns:repeat(2,1fr);} .events-row{grid-template-columns:repeat(2,1fr);} }
+    @media(max-width:640px){ .events-row{grid-template-columns:1fr;} .stats-row{grid-template-columns:repeat(2,1fr);} .welcome-bar{flex-direction:column;align-items:flex-start;} .cigar-card{flex-direction:column;} .cigar-img{width:100%;height:140px;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Dashboard</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search…" /></div>
+        <button class="topbar-btn"><i class="fa-regular fa-bell"></i><span class="dot"></span></button>
+        <button class="topbar-btn"><i class="fa-solid fa-right-from-bracket"></i></button>
+      </div>
+    </div>
+
+    <div class="page-body" id="pageBody">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('dashboard');
+
+const u  = GLC.currentUser;
+const upcoming = GLC.upcomingEvents();
+const featuredEvent = GLC.getEventById(GLC.featuredEventId);
+const loungeOfMonth = GLC.getLoungeById(GLC.loungeOfMonth);
+const spotlight = GLC.members.find(m => m.id === GLC.memberSpotlight.member);
+const fc = GLC.featuredCigar;
+
+// ── MINI CALENDAR ──────────────────────────────────────
+function buildMiniCal() {
+  const now   = new Date();
+  const year  = now.getFullYear();
+  const month = now.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const eventDays = GLC.events
+    .filter(e => { const d = new Date(e.date+'T12:00:00'); return d.getMonth()===month && d.getFullYear()===year; })
+    .map(e => new Date(e.date+'T12:00:00').getDate());
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  let html = `<div class="section-head"><h2>Calendar Preview</h2><a href="calendar.html">Full View →</a></div>
+  <div class="mini-cal">
+    <div style="font-family:var(--font-h);font-size:0.7rem;letter-spacing:0.12em;color:var(--cream);margin-bottom:0.5rem">${months[month]} ${year}</div>
+    <div class="mini-cal-grid">
+      ${['S','M','T','W','T','F','S'].map(d=>`<div class="mini-cal-dow">${d}</div>`).join('')}
+      ${Array(firstDay).fill(`<div class="mini-cal-day other"></div>`).join('')}
+      ${Array.from({length:daysInMonth},(_,i)=>{
+        const day = i+1;
+        const isToday = day===now.getDate();
+        const hasEv = eventDays.includes(day);
+        return `<div class="mini-cal-day${isToday?' today':''}${hasEv?' has-event':''}" onclick="window.location='calendar.html'">
+          ${day}${hasEv?'<div class="mini-dot"></div>':''}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+  return html;
+}
+
+// ── PAGE RENDER ────────────────────────────────────────
+function render() {
+  const counts = GLC.getRsvpCounts(featuredEvent);
+  const myRsvp = GLC.getUserRsvp(featuredEvent);
+  const dp = GLC.getDateParts(featuredEvent.date);
+
+  document.getElementById('pageBody').innerHTML = `
+  <!-- WELCOME -->
+  <div class="welcome-bar">
+    <div class="welcome-text">
+      <h1>Good evening, ${u.firstName}.</h1>
+      <p>Member since ${u.memberSince} · ${upcoming.length} upcoming events · ${GLC.lounges.length} lounges reviewed</p>
+    </div>
+    <div style="display:flex;gap:0.6rem">
+      <a href="events.html" class="btn btn-outline btn-sm"><i class="fa-solid fa-calendar-star"></i>Events</a>
+      <a href="lounges.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-whiskey-glass"></i>Lounges</a>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-calendar-star"></i></div>
+      <div><div class="stat-num">${upcoming.length}</div><div class="stat-label">Upcoming Events</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-whiskey-glass"></i></div>
+      <div><div class="stat-num">${GLC.lounges.length}</div><div class="stat-label">Lounges Reviewed</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+      <div><div class="stat-num">${GLC.members.length}</div><div class="stat-label">Members</div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon"><i class="fa-solid fa-earth-americas"></i></div>
+      <div><div class="stat-num">${new Set(GLC.lounges.map(l=>l.country)).size}</div><div class="stat-label">Countries Visited</div></div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <div class="dashboard-left">
+
+      <!-- FEATURED EVENT -->
+      <div>
+        <div class="section-head"><h2>Featured Event</h2><a href="events.html">All Events →</a></div>
+        <div class="feature-card card-gold">
+          <img src="${featuredEvent.img}" alt="${featuredEvent.title}" />
+          <div class="feature-overlay"></div>
+          <div class="feature-body">
+            <div class="feature-badge">
+              ${featuredEvent.isPrivate ? '<span class="badge badge-private"><i class="fa-solid fa-lock"></i> Private</span>' : ''}
+              <span class="badge badge-gold">Featured</span>
+            </div>
+            <div class="feature-title">${featuredEvent.title}</div>
+            <div class="feature-meta"><i class="fa-regular fa-calendar" style="color:var(--gold-d)"></i> ${dp.month} ${dp.day} · ${featuredEvent.time} · ${featuredEvent.location}</div>
+            <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap">
+              <div class="rsvp-group">
+                <button class="rsvp-btn ${myRsvp==='going'?'going':''}" onclick="doRsvp('${featuredEvent.id}','going')"><i class="fa-solid fa-check"></i> Going (${counts.going})</button>
+                <button class="rsvp-btn ${myRsvp==='interested'?'interested':''}" onclick="doRsvp('${featuredEvent.id}','interested')"><i class="fa-solid fa-star"></i> Interested (${counts.interested})</button>
+              </div>
+              <a href="event.html?id=${featuredEvent.id}" class="btn btn-gold btn-sm">View Event →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- UPCOMING EVENTS -->
+      <div>
+        <div class="section-head"><h2>Upcoming Events</h2><a href="events.html">See All →</a></div>
+        <div class="events-row">
+          ${upcoming.slice(0,3).map(ev => {
+            const dp2 = GLC.getDateParts(ev.date);
+            const c2  = GLC.getRsvpCounts(ev);
+            const r2  = GLC.getUserRsvp(ev);
+            return `
+            <div class="card card-gold event-card">
+              <div class="event-img">
+                <img src="${ev.img}" alt="${ev.title}" style="width:100%;height:130px;object-fit:cover">
+                <div class="event-img-overlay"></div>
+              </div>
+              <div class="event-date-strip">
+                <div class="date-left">
+                  <div class="date-num">${dp2.day}</div>
+                  <div class="date-info">
+                    <span class="date-mon">${dp2.month}</span>
+                    <span class="date-dow" style="font-size:0.72rem;color:var(--muted)">${dp2.dow.slice(0,3)}</span>
+                  </div>
+                </div>
+                ${ev.isPrivate ? '<span class="badge badge-private" style="font-size:0.45rem"><i class="fa-solid fa-lock"></i> Private</span>' : ''}
+              </div>
+              <div class="card-body">
+                <div class="event-title" style="font-size:0.85rem;margin-bottom:0.4rem">${ev.title}</div>
+                <div class="event-meta">
+                  <span><i class="fa-solid fa-location-dot"></i>${ev.location.split(',')[0]}</span>
+                  <span><i class="fa-solid fa-clock"></i>${ev.time}</span>
+                </div>
+                <div style="display:flex;gap:0.4rem;margin-top:0.8rem;align-items:center;justify-content:space-between">
+                  <div style="display:flex;gap:0.3rem">
+                    <button class="rsvp-btn btn-sm ${r2==='going'?'going':''}" style="padding:0.3rem 0.7rem;font-size:0.48rem" onclick="doRsvp('${ev.id}','going')">✓ ${c2.going}</button>
+                    <button class="rsvp-btn btn-sm ${r2==='interested'?'interested':''}" style="padding:0.3rem 0.7rem;font-size:0.48rem" onclick="doRsvp('${ev.id}','interested')">★ ${c2.interested}</button>
+                  </div>
+                  <a href="event.html?id=${ev.id}" style="font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--gold-d)">Details →</a>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <!-- FEATURED CIGAR -->
+      <div>
+        <div class="section-head"><h2>Featured Smoke of the Month</h2></div>
+        <div class="cigar-card card-gold">
+          <img src="${fc.img}" alt="${fc.name}" class="cigar-img" />
+          <div class="cigar-body">
+            <div class="eyebrow" style="margin-bottom:0.4rem">Smoke of the Month</div>
+            <h3 style="margin-bottom:0.3rem">${fc.name}</h3>
+            <p style="font-size:0.88rem;color:var(--muted);margin-bottom:0.6rem">${fc.notes}</p>
+            <div class="cigar-stat">
+              <div class="cigar-stat-item"><span class="cigar-stat-val">${fc.origin}</span><span class="cigar-stat-key">Origin</span></div>
+              <div class="cigar-stat-item"><span class="cigar-stat-val">${fc.strength}</span><span class="cigar-stat-key">Strength</span></div>
+              <div class="cigar-stat-item"><span class="cigar-stat-val">${fc.rating}/10</span><span class="cigar-stat-key">Rating</span></div>
+            </div>
+            <p style="font-size:0.82rem;color:var(--dim);margin-top:0.6rem;font-style:italic">Pairing: ${fc.pairing}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TOP LOUNGES -->
+      <div>
+        <div class="section-head"><h2>Top Rated Lounges</h2><a href="lounges.html">All Lounges →</a></div>
+        <div class="grid-3" style="gap:1rem">
+          ${GLC.lounges.sort((a,b)=>b.ratings.overall-a.ratings.overall).slice(0,3).map(l=>`
+          <a href="lounge.html?id=${l.id}" style="text-decoration:none">
+            <div class="card card-gold lounge-card">
+              <div class="lounge-img">
+                <img src="${l.img}" alt="${l.name}" />
+                <div class="lounge-rating"><i class="fa-solid fa-star"></i> ${l.ratings.overall}</div>
+              </div>
+              <div class="card-body">
+                <div class="lounge-name">${l.name}</div>
+                <div class="lounge-loc"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i>${l.city}, ${l.country}</div>
+                <div class="lounge-tags">
+                  ${l.features.bar?'<span class="lounge-tag">Bar</span>':''}
+                  ${l.features.privateLounge?'<span class="lounge-tag">Private Room</span>':''}
+                  <span class="lounge-tag">${l.priceLevel}</span>
+                </div>
+              </div>
+            </div>
+          </a>`).join('')}
+        </div>
+      </div>
+
+    </div><!-- /dashboard-left -->
+
+    <div class="dashboard-right">
+
+      <!-- ANNOUNCEMENTS -->
+      <div class="card">
+        <div class="card-header">
+          <h4 style="font-size:0.6rem;letter-spacing:0.25em;margin:0">Club Announcements</h4>
+          <i class="fa-solid fa-bullhorn" style="color:var(--gold-d);font-size:0.8rem"></i>
+        </div>
+        <div class="card-body" style="padding:1rem">
+          ${GLC.announcements.map(a=>`
+          <div class="announcement">
+            ${a.pinned?'<span class="badge badge-gold" style="margin-bottom:0.3rem;font-size:0.45rem">Pinned</span>':''}
+            <div class="announcement-title">${a.title}</div>
+            <div class="announcement-text">${a.text}</div>
+            <div class="announcement-date">${a.date}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- MINI CALENDAR -->
+      <div class="card">
+        <div class="card-body">
+          ${buildMiniCal()}
+        </div>
+      </div>
+
+      <!-- LOUNGE OF MONTH -->
+      <div>
+        <div class="section-head"><h2 style="font-size:0.9rem">Lounge of the Month</h2></div>
+        <a href="lounge.html?id=${loungeOfMonth.id}" style="text-decoration:none">
+          <div class="card card-gold">
+            <img src="${loungeOfMonth.img}" alt="${loungeOfMonth.name}" style="width:100%;height:140px;object-fit:cover" />
+            <div class="card-body">
+              <div class="eyebrow" style="margin-bottom:0.3rem">Featured Lounge</div>
+              <div style="font-family:var(--font-h);font-size:0.9rem;color:var(--cream);margin-bottom:0.2rem">${loungeOfMonth.name}</div>
+              <div style="font-size:0.82rem;color:var(--muted)">${loungeOfMonth.city}, ${loungeOfMonth.country}</div>
+              <div style="margin-top:0.6rem">${GLC.renderStars(loungeOfMonth.ratings.overall)}</div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- MEMBER SPOTLIGHT -->
+      <div class="card">
+        <div class="card-header"><h4 style="font-size:0.6rem;letter-spacing:0.25em;margin:0">Member Spotlight</h4><i class="fa-solid fa-star" style="color:var(--gold-d);font-size:0.8rem"></i></div>
+        <div class="card-body" style="padding:1rem">
+          <div class="spotlight-member">
+            <img src="${spotlight.avatar}" class="member-av" style="width:42px;height:42px" />
+            <div>
+              <div style="font-family:var(--font-h);font-size:0.72rem;color:var(--cream)">${spotlight.name}</div>
+              <div style="font-size:0.78rem;color:var(--muted)">${spotlight.city}</div>
+            </div>
+          </div>
+          <div class="badge badge-gold" style="margin-bottom:0.6rem">${GLC.memberSpotlight.achievement}</div>
+          <p style="font-size:0.85rem;color:var(--muted);line-height:1.6;margin:0">${GLC.memberSpotlight.text}</p>
+        </div>
+      </div>
+
+      <!-- QUICK LINKS -->
+      <div>
+        <div style="font-family:var(--font-h);font-size:0.6rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted);margin-bottom:0.8rem">Quick Actions</div>
+        <div class="quick-links">
+          <a href="events.html" class="quick-link"><i class="fa-solid fa-calendar-check"></i><span>RSVP to Event</span></a>
+          <a href="map.html" class="quick-link"><i class="fa-solid fa-earth-americas"></i><span>View Map</span></a>
+          <a href="lounges.html" class="quick-link"><i class="fa-solid fa-star"></i><span>Browse Reviews</span></a>
+          <a href="lounges.html#suggest" class="quick-link"><i class="fa-solid fa-plus"></i><span>Suggest Lounge</span></a>
+        </div>
+      </div>
+
+    </div><!-- /dashboard-right -->
+  </div>`;
+}
+
+function doRsvp(eventId, status) {
+  handleRsvp(eventId, status);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

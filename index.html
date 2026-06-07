@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mr. Ben Meister</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Special+Elite&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black: #0d0d0d;
+      --off-black: #1a1a1a;
+      --dark-gray: #2a2a2a;
+      --mid-gray: #555;
+      --light-gray: #aaa;
+      --off-white: #f0ebe3;
+      --cream: #e8e0d0;
+      --red: #b22222;
+      --gold: #c8a96e;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--off-white);
+      font-family: 'Lora', serif;
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(13,13,13,0.92);
+      backdrop-filter: blur(6px);
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .nav-logo {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 400;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--off-white);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--light-gray);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--off-white); }
+
+    .nav-links .live-events-link {
+      color: var(--gold);
+      border: 1px solid var(--gold);
+      padding: 0.4rem 1rem;
+      letter-spacing: 0.15em;
+    }
+
+    .nav-links .live-events-link:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding: 0 3rem 5rem;
+      position: relative;
+      overflow: hidden;
+      background: var(--black);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        160deg,
+        #0d0d0d 0%,
+        #1a1a1a 40%,
+        #2a1a0a 100%
+      );
+    }
+
+    /* Grain texture overlay */
+    .hero-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.35;
+      pointer-events: none;
+    }
+
+    .hero-rule {
+      position: absolute;
+      top: 0; left: 3rem;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(to bottom, transparent, var(--red) 30%, var(--red) 70%, transparent);
+      opacity: 0.4;
+    }
+
+    .hero-content {
+      position: relative;
+      max-width: 800px;
+    }
+
+    .hero-eyebrow {
+      font-family: 'Special Elite', cursive;
+      font-size: 0.85rem;
+      color: var(--red);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+
+    .hero-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(4rem, 9vw, 8rem);
+      font-weight: 700;
+      line-height: 0.92;
+      text-transform: uppercase;
+      letter-spacing: -0.01em;
+      color: var(--off-white);
+      margin-bottom: 1.5rem;
+    }
+
+    .hero-title span {
+      display: block;
+      color: var(--cream);
+      opacity: 0.15;
+      font-size: clamp(2rem, 5vw, 4rem);
+      font-weight: 300;
+      letter-spacing: 0.3em;
+    }
+
+    .hero-sub {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--light-gray);
+      max-width: 480px;
+      line-height: 1.6;
+    }
+
+    /* ── SECTIONS ── */
+    section {
+      padding: 6rem 3rem;
+    }
+
+    .section-inner {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+
+    .section-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(2.2rem, 4vw, 3.2rem);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+      color: var(--off-white);
+      line-height: 1.1;
+      margin-bottom: 2rem;
+    }
+
+    .divider {
+      width: 60px;
+      height: 2px;
+      background: var(--red);
+      margin-bottom: 2.5rem;
+    }
+
+    /* ── ABOUT ── */
+    .about {
+      background: var(--off-black);
+    }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .about-text p {
+      color: #bbb;
+      margin-bottom: 1.2rem;
+    }
+
+    .about-text p:first-of-type {
+      font-size: 1.1rem;
+      color: var(--off-white);
+    }
+
+    .about-quote {
+      border-left: 3px solid var(--red);
+      padding: 1.5rem 2rem;
+      background: rgba(178,34,34,0.06);
+    }
+
+    .about-quote blockquote {
+      font-family: 'Lora', serif;
+      font-style: italic;
+      font-size: 1.4rem;
+      color: var(--cream);
+      line-height: 1.5;
+    }
+
+    .about-quote cite {
+      display: block;
+      margin-top: 1rem;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--red);
+      font-style: normal;
+    }
+
+    /* ── VIDEOS ── */
+    .videos {
+      background: var(--black);
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .video-card {
+      background: var(--off-black);
+      border: 1px solid #2a2a2a;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .video-card:hover { border-color: var(--red); }
+
+    .video-thumb {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: var(--dark-gray);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      color: var(--mid-gray);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .video-thumb::before {
+      content: '▶';
+      font-size: 1.8rem;
+      color: var(--off-white);
+      opacity: 0.7;
+      z-index: 2;
+    }
+
+    .video-card-body {
+      padding: 1.2rem 1.5rem 1.5rem;
+    }
+
+    .video-tag {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+    }
+
+    .video-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--off-white);
+      line-height: 1.3;
+    }
+
+    .videos-note {
+      margin-top: 2.5rem;
+      font-family: 'Special Elite', cursive;
+      font-size: 0.9rem;
+      color: var(--mid-gray);
+      text-align: center;
+    }
+
+    /* ── VENTURES ── */
+    .ventures {
+      background: var(--off-black);
+    }
+
+    .ventures-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    .venture-card {
+      padding: 2.5rem;
+      border: 1px solid #2a2a2a;
+      background: var(--black);
+      transition: border-color 0.3s, background 0.3s;
+      cursor: pointer;
+      text-decoration: none;
+      display: block;
+    }
+
+    .venture-card:hover {
+      border-color: var(--gold);
+      background: rgba(200,169,110,0.04);
+    }
+
+    .venture-number {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #2a2a2a;
+      line-height: 1;
+      margin-bottom: 1rem;
+    }
+
+    .venture-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--off-white);
+      margin-bottom: 0.6rem;
+    }
+
+    .venture-desc {
+      font-size: 0.9rem;
+      color: var(--mid-gray);
+      line-height: 1.6;
+    }
+
+    /* ── SOCIALS ── */
+    .socials {
+      background: var(--black);
+      text-align: center;
+    }
+
+    .socials-grid {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-top: 3rem;
+    }
+
+    .social-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+      padding: 1.5rem 2rem;
+      border: 1px solid #2a2a2a;
+      min-width: 120px;
+      transition: border-color 0.3s, color 0.3s;
+    }
+
+    .social-link:hover {
+      border-color: var(--off-white);
+    }
+
+    .social-icon {
+      font-size: 1.6rem;
+    }
+
+    .social-name {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--light-gray);
+    }
+
+    .social-link:hover .social-name {
+      color: var(--off-white);
+    }
+
+    /* ── GOLD LABEL CTA ── */
+    .glc-cta {
+      background: #0a0800;
+      border-top: 1px solid #2a2200;
+      border-bottom: 1px solid #2a2200;
+      text-align: center;
+    }
+
+    .glc-cta .section-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .glc-eyebrow {
+      font-family: 'Special Elite', cursive;
+      font-size: 0.85rem;
+      color: var(--gold);
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+    }
+
+    .glc-cta h2 {
+      font-family: 'Oswald', sans-serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.8rem);
+      font-weight: 300;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--off-white);
+    }
+
+    .glc-cta p {
+      font-style: italic;
+      color: var(--light-gray);
+      max-width: 480px;
+      font-size: 1rem;
+    }
+
+    .btn-gold {
+      display: inline-block;
+      margin-top: 0.5rem;
+      padding: 1rem 2.5rem;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .btn-gold:hover {
+      background: var(--gold);
+      color: var(--black);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      padding: 3rem;
+      background: var(--black);
+      border-top: 1px solid #1e1e1e;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mid-gray);
+    }
+
+    .footer-copy {
+      font-size: 0.78rem;
+      color: #444;
+      font-family: 'Oswald', sans-serif;
+      letter-spacing: 0.1em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      section { padding: 4rem 1.5rem; }
+      .hero { padding: 0 1.5rem 4rem; }
+      .about-grid { grid-template-columns: 1fr; gap: 3rem; }
+      .video-grid { grid-template-columns: 1fr; }
+      .ventures-grid { grid-template-columns: 1fr; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">Mr. Ben Meister</a>
+    <ul class="nav-links">
+      <li><a href="#videos">Videos</a></li>
+      <li><a href="#ventures">Ventures</a></li>
+      <li><a href="#connect">Connect</a></li>
+      <li><a href="gold-label-club.html" class="live-events-link">Live Events</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-rule"></div>
+    <div class="hero-content">
+      <h1 class="hero-title">
+        Mr. Ben<br>Meister
+        <span>@mrbenmeister</span>
+      </h1>
+    </div>
+  </section>
+
+  <!-- VIDEOS -->
+  <section class="videos" id="videos">
+    <div class="section-inner">
+      <p class="section-label">On Camera</p>
+      <h2 class="section-title">Watch</h2>
+      <div class="divider"></div>
+
+      <div class="video-grid">
+        <div class="video-card">
+          <div class="video-thumb"></div>
+          <div class="video-card-body">
+            <p class="video-tag">Latest</p>
+            <p class="video-title">Coming Soon</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb"></div>
+          <div class="video-card-body">
+            <p class="video-tag">Featured</p>
+            <p class="video-title">Coming Soon</p>
+          </div>
+        </div>
+        <div class="video-card">
+          <div class="video-thumb"></div>
+          <div class="video-card-body">
+            <p class="video-tag">Popular</p>
+            <p class="video-title">Coming Soon</p>
+          </div>
+        </div>
+      </div>
+
+      <p class="videos-note">— Videos load here as they drop. Follow @mrbenmeister to catch them first. —</p>
+    </div>
+  </section>
+
+  <!-- VENTURES -->
+  <section class="ventures" id="ventures">
+    <div class="section-inner">
+      <p class="section-label">Business</p>
+      <h2 class="section-title">Ventures</h2>
+      <div class="divider"></div>
+
+      <div class="ventures-grid">
+        <div class="venture-card">
+          <div class="venture-number">01</div>
+          <p class="venture-name">Merch Daddy Apparel</p>
+          <p class="venture-desc">
+            Premium streetwear and custom apparel. Built different.
+          </p>
+        </div>
+        <div class="venture-card">
+          <div class="venture-number">02</div>
+          <p class="venture-name">Merch Daddy OS</p>
+          <p class="venture-desc">
+            The operating system for merch brands. Tools, systems, and strategy.
+          </p>
+        </div>
+        <a href="gold-label-club.html" class="venture-card">
+          <div class="venture-number">03</div>
+          <p class="venture-name">Gold Label Club</p>
+          <p class="venture-desc">
+            A private cigar &amp; live events club for the discerning few.
+            Invitation only. Curated experiences. Exceptional company.
+          </p>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- GOLD LABEL CTA -->
+  <section class="glc-cta">
+    <div class="section-inner">
+      <p class="glc-eyebrow">By Invitation</p>
+      <h2>Gold Label Club</h2>
+      <p>A private world of live events, rare cigars, and curated company. Not everyone gets in.</p>
+      <a href="gold-label-club.html" class="btn-gold">Enter the Club</a>
+    </div>
+  </section>
+
+  <!-- CONNECT / SOCIALS -->
+  <section class="socials" id="connect">
+    <div class="section-inner">
+      <p class="section-label">Platforms</p>
+      <h2 class="section-title">Find Me</h2>
+      <div class="divider" style="margin: 0 auto 2.5rem;"></div>
+
+      <div class="socials-grid">
+        <a href="https://instagram.com/mrbenmeister" target="_blank" class="social-link">
+          <span class="social-icon">📷</span>
+          <span class="social-name">Instagram</span>
+        </a>
+        <a href="https://tiktok.com/@mrbenmeister" target="_blank" class="social-link">
+          <span class="social-icon">🎵</span>
+          <span class="social-name">TikTok</span>
+        </a>
+        <a href="https://youtube.com/@mrbenmeister" target="_blank" class="social-link">
+          <span class="social-icon">▶</span>
+          <span class="social-name">YouTube</span>
+        </a>
+        <a href="https://twitter.com/mrbenmeister" target="_blank" class="social-link">
+          <span class="social-icon">𝕏</span>
+          <span class="social-name">X / Twitter</span>
+        </a>
+        <a href="https://linkedin.com/in/mrbenmeister" target="_blank" class="social-link">
+          <span class="social-icon">💼</span>
+          <span class="social-name">LinkedIn</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-logo">Mr. Ben Meister</span>
+    <span class="footer-copy">© 2026 — All Rights Reserved</span>
+  </footer>
+
+</body>
+</html>

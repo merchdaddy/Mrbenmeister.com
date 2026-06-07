@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Events</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .events-hero { position:relative; border-radius:var(--radius); overflow:hidden; margin-bottom:2rem; border:1px solid var(--border); }
+    .events-hero img { width:100%; height:280px; object-fit:cover; display:block; }
+    .events-hero .hero-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(7,6,5,0.95) 20%,rgba(7,6,5,0.3) 70%,transparent); }
+    .events-hero .hero-body { position:absolute;bottom:0;left:0;right:0;padding:2rem; }
+    .events-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:1.2rem; }
+    .attendees-preview { display:flex; align-items:center; gap:0.6rem; margin-top:0.8rem; }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Events</span>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn"><i class="fa-regular fa-bell"></i></button>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('events');
+let activeFilter = 'upcoming';
+
+function render() {
+  const featured = GLC.getEventById(GLC.featuredEventId);
+  const fdp = GLC.getDateParts(featured.date);
+  const fcounts = GLC.getRsvpCounts(featured);
+  const fRsvp = GLC.getUserRsvp(featured);
+
+  const now = new Date();
+  let events = GLC.events.filter(e => {
+    const d = new Date(e.date+'T12:00:00');
+    if (activeFilter === 'upcoming') return d >= now;
+    if (activeFilter === 'past') return d < now;
+    return true;
+  }).sort((a,b) => {
+    const da = new Date(a.date), db = new Date(b.date);
+    return activeFilter === 'past' ? db - da : da - db;
+  });
+
+  document.getElementById('pageBody').innerHTML = `
+  <!-- FEATURED -->
+  <div class="events-hero">
+    <img src="${featured.img}" alt="${featured.title}" />
+    <div class="hero-overlay"></div>
+    <div class="hero-body">
+      <div style="display:flex;gap:0.5rem;margin-bottom:0.7rem">
+        <span class="badge badge-gold">Featured Event</span>
+        ${featured.isPrivate?'<span class="badge badge-private"><i class="fa-solid fa-lock"></i> Private</span>':''}
+      </div>
+      <h1 style="font-size:clamp(1.2rem,3vw,2rem);margin-bottom:0.3rem">${featured.title}</h1>
+      <div style="font-style:italic;color:var(--ivory);font-size:0.95rem;margin-bottom:1rem">
+        <i class="fa-regular fa-calendar" style="color:var(--gold-d)"></i> ${GLC.formatDate(featured.date)} &nbsp;·&nbsp;
+        <i class="fa-solid fa-clock" style="color:var(--gold-d)"></i> ${featured.time} &nbsp;·&nbsp;
+        <i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${featured.location}
+      </div>
+      <div style="display:flex;gap:0.8rem;flex-wrap:wrap;align-items:center">
+        <div class="rsvp-group">
+          <button class="rsvp-btn ${fRsvp==='going'?'going':''}" onclick="doRsvp('${featured.id}','going')"><i class="fa-solid fa-check"></i> Going (${fcounts.going})</button>
+          <button class="rsvp-btn ${fRsvp==='interested'?'interested':''}" onclick="doRsvp('${featured.id}','interested')"><i class="fa-solid fa-star"></i> Interested (${fcounts.interested})</button>
+          <button class="rsvp-btn ${fRsvp==='notGoing'?'notgoing':''}" onclick="doRsvp('${featured.id}','notGoing')"><i class="fa-solid fa-xmark"></i> Not Going</button>
+        </div>
+        <a href="event.html?id=${featured.id}" class="btn btn-gold btn-sm">Full Details →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="tabs">
+    <button class="tab-btn ${activeFilter==='upcoming'?'active':''}" onclick="setFilter('upcoming')">Upcoming</button>
+    <button class="tab-btn ${activeFilter==='all'?'active':''}" onclick="setFilter('all')">All Events</button>
+    <button class="tab-btn ${activeFilter==='past'?'active':''}" onclick="setFilter('past')">Past</button>
+  </div>
+
+  <!-- EVENT GRID -->
+  <div class="events-grid">
+    ${events.map(ev => {
+      const dp = GLC.getDateParts(ev.date);
+      const ct = GLC.getRsvpCounts(ev);
+      const rv = GLC.getUserRsvp(ev);
+      const goingMembers = ev.rsvps.going.slice(0,3).map(id => GLC.getMemberById(id)).filter(Boolean);
+      return `
+      <div class="card card-gold event-card">
+        <div class="event-img">
+          <img src="${ev.img}" alt="${ev.title}" style="width:100%;height:160px;object-fit:cover">
+          <div class="event-img-overlay"></div>
+        </div>
+        <div class="event-date-strip">
+          <div class="date-left">
+            <div class="date-num">${dp.day}</div>
+            <div class="date-info">
+              <span class="date-mon">${dp.month} ${dp.year}</span>
+              <span class="date-dow">${dp.dow}</span>
+            </div>
+          </div>
+          <div style="display:flex;gap:0.3rem">
+            ${ev.isPrivate?'<span class="badge badge-private" style="font-size:0.45rem"><i class="fa-solid fa-lock"></i> Private</span>':''}
+            ${ev.tags.map(t=>`<span class="badge badge-gray" style="font-size:0.45rem">${t}</span>`).join('')}
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="event-title">${ev.title}</div>
+          <div class="event-meta">
+            <span><i class="fa-solid fa-location-dot"></i>${ev.location.split(',')[0]}</span>
+            <span><i class="fa-solid fa-clock"></i>${ev.time}</span>
+            <span><i class="fa-solid fa-user-tie"></i>${ev.host}</span>
+          </div>
+          <div class="attendees-preview">
+            <div class="avatar-stack">
+              ${goingMembers.map(m=>`<img class="av" src="${m.avatar}" title="${m.name}" />`).join('')}
+              ${ct.going > 3 ? `<div class="av av-more">+${ct.going-3}</div>` : ''}
+            </div>
+            <span style="font-size:0.78rem;color:var(--muted)">${ct.going} going · ${ct.interested} interested</span>
+          </div>
+          <div style="display:flex;gap:0.4rem;margin-top:0.9rem;flex-wrap:wrap;align-items:center;justify-content:space-between">
+            <div class="rsvp-group" style="gap:0.4rem">
+              <button class="rsvp-btn ${rv==='going'?'going':''}" style="padding:0.4rem 0.8rem;font-size:0.5rem" onclick="doRsvp('${ev.id}','going')"><i class="fa-solid fa-check"></i> Going</button>
+              <button class="rsvp-btn ${rv==='interested'?'interested':''}" style="padding:0.4rem 0.8rem;font-size:0.5rem" onclick="doRsvp('${ev.id}','interested')">★ Interested</button>
+              <button class="rsvp-btn ${rv==='notGoing'?'notgoing':''}" style="padding:0.4rem 0.8rem;font-size:0.5rem" onclick="doRsvp('${ev.id}','notGoing')">✕</button>
+            </div>
+            <a href="event.html?id=${ev.id}" class="btn btn-ghost btn-sm">Details →</a>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function setFilter(f) { activeFilter = f; render(); }
+function doRsvp(id, status) { handleRsvp(id, status); render(); }
+render();
+</script>
+</body>
+</html>

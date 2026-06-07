@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Lounge Review</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .lounge-layout { display:grid;grid-template-columns:1fr 300px;gap:1.5rem; }
+    .gallery { display:grid;grid-template-columns:2fr 1fr;gap:0.5rem;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem; }
+    .gallery-main img { width:100%;height:340px;object-fit:cover;display:block; }
+    .gallery-side { display:flex;flex-direction:column;gap:0.5rem; }
+    .gallery-side img { width:100%;flex:1;object-fit:cover;display:block;height:165px; }
+    .overall-score { display:flex;align-items:center;gap:1.2rem;padding:1.2rem;background:var(--surface3);border:1px solid var(--gold-d);border-radius:var(--radius);margin-bottom:1.5rem; }
+    .score-big { font-family:var(--font-h);font-size:3rem;color:var(--gold);line-height:1; }
+    .score-label { font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--muted); }
+    .feature-pill { display:inline-flex;align-items:center;gap:0.4rem;font-family:var(--font-h);font-size:0.52rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.4rem 0.8rem;border-radius:var(--radius);border:1px solid; }
+    .feature-yes { background:rgba(45,106,79,0.15);border-color:var(--green);color:#7ecca0; }
+    .feature-no  { background:rgba(122,40,40,0.1);border-color:var(--red);color:#e09090; }
+    .best-for-chip { display:inline-block;font-family:var(--font-h);font-size:0.52rem;letter-spacing:0.12em;text-transform:uppercase;background:var(--surface3);color:var(--gold-d);border:1px solid var(--border);padding:0.35rem 0.8rem;border-radius:var(--radius);margin:0.2rem; }
+    .contact-row { display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0;border-bottom:1px solid var(--border); }
+    .contact-row:last-child { border-bottom:none; }
+    .contact-icon { color:var(--gold-d);width:20px;text-align:center;font-size:0.85rem; }
+    .comment-input-row { display:flex;gap:0.7rem;align-items:flex-start;margin-top:1rem; }
+    .comment-bubble { background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius);padding:0.9rem 1rem;margin-bottom:0.6rem; }
+    .comment-meta { display:flex;align-items:center;gap:0.6rem;margin-bottom:0.4rem; }
+    .comment-author { font-family:var(--font-h);font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--ivory); }
+    .comment-date { font-size:0.75rem;color:var(--dim); }
+    @media(max-width:900px){ .lounge-layout{grid-template-columns:1fr;} .gallery{grid-template-columns:1fr;} .gallery-side{flex-direction:row;} .gallery-side img{height:100px;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <a href="lounges.html" style="color:var(--muted);font-size:0.8rem"><i class="fa-solid fa-arrow-left"></i> Lounges</a>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('lounges');
+
+const params = new URLSearchParams(window.location.search);
+const id = params.get('id') || 'l1';
+const l = GLC.getLoungeById(id) || GLC.lounges[0];
+
+const ratingLabels = {
+  overall:'Overall', humidor:'Humidor Quality', atmosphere:'Atmosphere', chairs:'Comfortable Chairs',
+  service:'Service', drinks:'Drinks / Bar', food:'Food', cigarSelection:'Cigar Selection',
+  ventilation:'Ventilation', parking:'Parking', memberFriendliness:'Member-Friendliness'
+};
+
+document.title = `${l.name} — Gold Label Club`;
+
+// Sample comments
+const comments = [
+  { user:'u2', text:'Phenomenal spot. The humidor walk-in is worth the trip alone. Staff was incredibly knowledgeable.', date:'May 12, 2026' },
+  { user:'u5', text:'Visited on a Wednesday evening — quiet, perfect for a solo smoke. The Macallan list is exceptional.', date:'April 28, 2026' },
+];
+
+function render() {
+  const m1 = GLC.getMemberById(comments[0].user);
+  const m2 = GLC.getMemberById(comments[1].user);
+
+  document.getElementById('pageBody').innerHTML = `
+  <!-- GALLERY -->
+  <div class="gallery">
+    <div class="gallery-main"><img src="${l.photos[0]||l.img}" alt="${l.name}" /></div>
+    <div class="gallery-side">
+      ${l.photos.slice(1,3).map(p=>`<img src="${p}" alt="${l.name}" />`).join('')}
+      ${l.photos.length < 2 ? `<img src="${l.img}" alt="" style="filter:brightness(0.5)" />` : ''}
+    </div>
+  </div>
+
+  <div class="lounge-layout">
+    <div>
+      <!-- HEADER -->
+      <div style="margin-bottom:1.2rem">
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.5rem">
+          ${l.isFeatured?'<span class="badge badge-gold">Featured</span>':''}
+          <span class="badge badge-gray">${l.priceLevel}</span>
+          <span class="badge badge-gray">${l.country}</span>
+        </div>
+        <h1 style="margin-bottom:0.2rem">${l.name}</h1>
+        <div style="color:var(--muted);font-size:0.95rem;font-style:italic"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${l.address}</div>
+        <div style="color:var(--dim);font-size:0.8rem;margin-top:0.2rem">Visited: ${l.visitedDate}</div>
+      </div>
+
+      <!-- OVERALL SCORE -->
+      <div class="overall-score">
+        <div>
+          <div class="score-big">${l.ratings.overall}</div>
+          <div class="score-label">Overall Score</div>
+        </div>
+        <div>
+          <div style="margin-bottom:0.4rem">${GLC.renderStars(l.ratings.overall)}</div>
+          <div style="font-size:0.88rem;color:var(--muted)">Based on ${Object.keys(l.ratings).length-1} rating categories</div>
+          <div style="font-size:0.78rem;color:var(--dim);margin-top:0.2rem">Noise level: ${l.noiseLevel}</div>
+        </div>
+      </div>
+
+      <!-- RATINGS BREAKDOWN -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header"><h4>Ratings Breakdown</h4></div>
+        <div class="card-body">
+          ${Object.entries(l.ratings).filter(([k])=>k!=='overall').map(([key,val])=>`
+          <div class="rating-bar-row">
+            <div class="rating-bar-label">${ratingLabels[key]||key}</div>
+            <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${val*10}%"></div></div>
+            <div class="rating-bar-val">${val}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- WRITTEN REVIEW -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header"><h4>Written Review</h4><span style="font-size:0.78rem;color:var(--muted);font-style:italic">by ${GLC.currentUser.name}</span></div>
+        <div class="card-body"><p>${l.review}</p></div>
+      </div>
+
+      <!-- FEATURES -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header"><h4>Features & Amenities</h4></div>
+        <div class="card-body">
+          <div style="display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.2rem">
+            <span class="feature-pill ${l.features.bar?'feature-yes':'feature-no'}"><i class="fa-solid fa-martini-glass-citrus"></i> Bar: ${l.features.bar?'Yes':'No'}</span>
+            <span class="feature-pill ${l.features.outdoor?'feature-yes':'feature-no'}"><i class="fa-solid fa-sun"></i> Outdoor: ${l.features.outdoor?'Yes':'No'}</span>
+            <span class="feature-pill ${l.features.privateLounge?'feature-yes':'feature-no'}"><i class="fa-solid fa-lock"></i> Private Lounge: ${l.features.privateLounge?'Yes':'No'}</span>
+            <span class="feature-pill ${l.features.byo?'feature-yes':'feature-no'}"><i class="fa-solid fa-fire"></i> BYO Cigars: ${l.features.byo?'Yes':'No'}</span>
+          </div>
+          <div style="font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">Best For</div>
+          <div>${l.bestFor.map(b=>`<span class="best-for-chip">${b}</span>`).join('')}</div>
+        </div>
+      </div>
+
+      <!-- COMMENTS -->
+      <div class="card">
+        <div class="card-header"><h4>Member Comments</h4></div>
+        <div class="card-body">
+          ${comments.map((c,i) => {
+            const m = i===0?m1:m2;
+            return `<div class="comment-bubble">
+              <div class="comment-meta">
+                <img src="${m?.avatar}" style="width:28px;height:28px;border-radius:50%;object-fit:cover" />
+                <span class="comment-author">${m?.name||'Member'}</span>
+                <span class="comment-date">${c.date}</span>
+              </div>
+              <p style="font-size:0.9rem;margin:0">${c.text}</p>
+            </div>`;
+          }).join('')}
+          <div class="comment-input-row">
+            <img src="${GLC.currentUser.avatar}" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0" />
+            <div style="flex:1">
+              <textarea class="form-control" placeholder="Add a comment…" id="commentInput" rows="2"></textarea>
+              <button class="btn btn-outline btn-sm" style="margin-top:0.5rem" onclick="addComment()"><i class="fa-solid fa-paper-plane"></i> Post</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-header"><h4>Contact & Links</h4></div>
+        <div class="card-body" style="padding:0.6rem 1.2rem">
+          ${l.phone?`<div class="contact-row"><i class="fa-solid fa-phone contact-icon"></i><a href="tel:${l.phone}" style="color:var(--ivory);font-size:0.88rem">${l.phone}</a></div>`:''}
+          ${l.website?`<div class="contact-row"><i class="fa-solid fa-globe contact-icon"></i><a href="${l.website}" target="_blank" style="font-size:0.88rem">Website</a></div>`:''}
+          ${l.googleBusiness?`<div class="contact-row"><i class="fa-brands fa-google contact-icon"></i><a href="${l.googleBusiness}" target="_blank" style="font-size:0.88rem">Google Maps</a></div>`:''}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-body">
+          <div style="font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--dim);margin-bottom:0.8rem">Quick Scores</div>
+          ${[['humidor','Humidor'],['atmosphere','Atmosphere'],['cigarSelection','Cigar Selection'],['service','Service'],['drinks','Drinks']].map(([k,lbl])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem">
+            <span style="font-size:0.82rem;color:var(--muted)">${lbl}</span>
+            <span style="font-family:var(--font-h);font-size:0.72rem;color:var(--gold)">${l.ratings[k]}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-body">
+          <div style="font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--dim);margin-bottom:0.6rem">Price Level</div>
+          <div style="font-family:var(--font-h);font-size:1.4rem;color:var(--gold)">${l.priceLevel}</div>
+          <div style="font-size:0.78rem;color:var(--muted);margin-top:0.2rem">
+            ${l.priceLevel==='$$$$'?'Luxury / Premium':l.priceLevel==='$$$'?'Upscale':l.priceLevel==='$$'?'Mid-range':'Budget'}
+          </div>
+        </div>
+      </div>
+
+      <a href="map.html" class="btn btn-outline" style="width:100%;justify-content:center;margin-bottom:0.6rem"><i class="fa-solid fa-earth-americas"></i> View on Map</a>
+      <a href="lounges.html" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fa-solid fa-arrow-left"></i> All Lounges</a>
+    </div>
+  </div>`;
+}
+
+function addComment() {
+  const txt = document.getElementById('commentInput').value.trim();
+  if (!txt) return;
+  showToast('Comment posted!');
+  document.getElementById('commentInput').value = '';
+}
+
+render();
+</script>
+</body>
+</html>

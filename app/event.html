@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Event</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .event-layout { display:grid; grid-template-columns:1fr 320px; gap:1.5rem; }
+    .event-hero { position:relative; border-radius:var(--radius); overflow:hidden; margin-bottom:1.5rem; border:1px solid var(--border); }
+    .event-hero img { width:100%; height:360px; object-fit:cover; }
+    .event-hero-overlay { position:absolute;inset:0;background:linear-gradient(to top,rgba(7,6,5,0.9) 0%,transparent 50%); }
+    .event-hero-badges { position:absolute;top:1rem;left:1rem;display:flex;gap:0.4rem; }
+    .detail-row { display:flex;align-items:flex-start;gap:0.9rem;padding:0.9rem 0;border-bottom:1px solid var(--border); }
+    .detail-row:last-child { border-bottom:none; }
+    .detail-icon { width:32px;text-align:center;color:var(--gold-d);font-size:0.9rem;flex-shrink:0;padding-top:0.1rem; }
+    .detail-key { font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--dim);margin-bottom:0.2rem; }
+    .detail-val { font-size:0.95rem;color:var(--cream); }
+    .attendee-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.6rem;margin-top:0.8rem; }
+    .attendee-chip { display:flex;align-items:center;gap:0.5rem;background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius);padding:0.5rem 0.7rem; }
+    .attendee-chip img { width:26px;height:26px;border-radius:50%;object-fit:cover; }
+    .attendee-chip span { font-size:0.78rem;color:var(--ivory); white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+    @media(max-width:900px){ .event-layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <a href="events.html" style="color:var(--muted);font-size:0.8rem"><i class="fa-solid fa-arrow-left"></i> Events</a>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('events');
+
+const params = new URLSearchParams(window.location.search);
+const eventId = params.get('id') || GLC.featuredEventId;
+let ev = GLC.getEventById(eventId);
+if (!ev) ev = GLC.events[0];
+
+function render() {
+  const dp = GLC.getDateParts(ev.date);
+  const ct = GLC.getRsvpCounts(ev);
+  const rv = GLC.getUserRsvp(ev);
+
+  const goingMembers      = ev.rsvps.going.map(id => GLC.getMemberById(id)).filter(Boolean);
+  const interestedMembers = ev.rsvps.interested.map(id => GLC.getMemberById(id)).filter(Boolean);
+
+  document.title = `${ev.title} — Gold Label Club`;
+
+  document.getElementById('pageBody').innerHTML = `
+  <!-- HERO -->
+  <div class="event-hero">
+    <img src="${ev.img}" alt="${ev.title}" />
+    <div class="event-hero-overlay"></div>
+    <div class="event-hero-badges">
+      ${ev.isPrivate?'<span class="badge badge-private"><i class="fa-solid fa-lock"></i> Private</span>':''}
+      ${ev.tags.map(t=>`<span class="badge badge-gray">${t}</span>`).join('')}
+    </div>
+  </div>
+
+  <div class="event-layout">
+    <div>
+      <div class="eyebrow" style="margin-bottom:0.5rem">${dp.dow}, ${dp.month} ${dp.day}, ${dp.year}</div>
+      <h1 style="margin-bottom:0.3rem">${ev.title}</h1>
+      <p style="font-style:italic;color:var(--muted);margin-bottom:1.5rem">${ev.subtitle}</p>
+
+      <!-- RSVP -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-body">
+          <div style="font-family:var(--font-h);font-size:0.62rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem">Your RSVP</div>
+          <div class="rsvp-group">
+            <button class="rsvp-btn ${rv==='going'?'going':''}" onclick="doRsvp('going')"><i class="fa-solid fa-check"></i> Going (${ct.going})</button>
+            <button class="rsvp-btn ${rv==='interested'?'interested':''}" onclick="doRsvp('interested')"><i class="fa-solid fa-star"></i> Interested (${ct.interested})</button>
+            <button class="rsvp-btn ${rv==='notGoing'?'notgoing':''}" onclick="doRsvp('notGoing')"><i class="fa-solid fa-xmark"></i> Not Going (${ct.notGoing})</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header"><h4>About This Event</h4></div>
+        <div class="card-body"><p>${ev.description}</p></div>
+      </div>
+
+      <!-- GOING -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <h4>Who's Going</h4>
+          <span style="font-family:var(--font-h);font-size:0.6rem;color:var(--muted)">${ct.going} confirmed</span>
+        </div>
+        <div class="card-body">
+          ${goingMembers.length ? `<div class="attendee-grid">
+            ${goingMembers.map(m=>`
+            <div class="attendee-chip">
+              <img src="${m.avatar}" alt="${m.name}" />
+              <span>${m.name.split(' ')[0]}</span>
+            </div>`).join('')}
+          </div>` : '<p class="muted" style="font-size:0.88rem">No confirmed RSVPs yet. Be the first!</p>'}
+          ${interestedMembers.length ? `
+          <div style="margin-top:1rem">
+            <div style="font-family:var(--font-h);font-size:0.52rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim);margin-bottom:0.5rem">${ct.interested} Interested</div>
+            <div class="avatar-stack">
+              ${interestedMembers.slice(0,6).map(m=>`<img class="av" src="${m.avatar}" title="${m.name}" />`).join('')}
+              ${ct.interested > 6 ? `<div class="av av-more">+${ct.interested-6}</div>` : ''}
+            </div>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-header"><h4>Event Details</h4></div>
+        <div class="card-body" style="padding:0.5rem 1.2rem">
+          <div class="detail-row">
+            <div class="detail-icon"><i class="fa-regular fa-calendar"></i></div>
+            <div><div class="detail-key">Date</div><div class="detail-val">${GLC.formatDate(ev.date)}</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon"><i class="fa-solid fa-clock"></i></div>
+            <div><div class="detail-key">Time</div><div class="detail-val">${ev.time} – ${ev.endTime}</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon"><i class="fa-solid fa-location-dot"></i></div>
+            <div><div class="detail-key">Location</div><div class="detail-val">${ev.location}</div><div style="font-size:0.8rem;color:var(--muted)">${ev.address}</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon"><i class="fa-solid fa-user-tie"></i></div>
+            <div><div class="detail-key">Host</div><div class="detail-val">${ev.host}</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon"><i class="fa-solid fa-shirt"></i></div>
+            <div><div class="detail-key">Dress Code</div><div class="detail-val">${ev.dressCode}</div></div>
+          </div>
+          <div class="detail-row">
+            <div class="detail-icon"><i class="fa-solid fa-fire"></i></div>
+            <div><div class="detail-key">Featured Cigar</div><div class="detail-val">${ev.featuredCigar}</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RSVP COUNT SUMMARY -->
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-body">
+          <div style="font-family:var(--font-h);font-size:0.6rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem">RSVP Summary</div>
+          <div style="display:flex;justify-content:space-between;text-align:center">
+            <div><div style="font-family:var(--font-h);font-size:1.6rem;color:#7ecca0">${ct.going}</div><div style="font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim)">Going</div></div>
+            <div><div style="font-family:var(--font-h);font-size:1.6rem;color:var(--gold)">${ct.interested}</div><div style="font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim)">Interested</div></div>
+            <div><div style="font-family:var(--font-h);font-size:1.6rem;color:#e09090">${ct.notGoing}</div><div style="font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim)">Not Going</div></div>
+          </div>
+        </div>
+      </div>
+
+      <a href="events.html" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fa-solid fa-arrow-left"></i> Back to Events</a>
+    </div>
+  </div>`;
+}
+
+function doRsvp(status) { handleRsvp(ev.id, status); render(); }
+render();
+</script>
+</body>
+</html>

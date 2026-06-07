@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Calendar</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .cal-controls { display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem; }
+    .cal-grid-full { display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden; }
+    .cal-cell-dow { background:var(--surface3);padding:0.6rem 0.5rem;text-align:center;font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted); }
+    .cal-cell { background:var(--surface2);padding:0.5rem;min-height:100px;cursor:pointer;transition:background 0.15s;vertical-align:top; }
+    .cal-cell:hover { background:var(--surface3); }
+    .cal-cell.today { background:var(--gold-glow); }
+    .cal-cell.other-month { opacity:0.3;cursor:default; }
+    .cal-cell .day-num { font-family:var(--font-h);font-size:0.72rem;color:var(--muted);margin-bottom:0.3rem;display:block; }
+    .cal-cell.today .day-num { color:var(--gold); }
+    .cal-ev-pill { font-family:var(--font-h);font-size:0.48rem;letter-spacing:0.05em;background:var(--gold-d);color:var(--bg);padding:0.1rem 0.35rem;border-radius:2px;margin-bottom:0.15rem;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;transition:background 0.15s; }
+    .cal-ev-pill:hover { background:var(--gold); }
+    .cal-ev-pill.private { background:rgba(122,99,48,0.5);color:var(--gold-pale); }
+
+    /* LIST VIEW */
+    .list-event { display:grid;grid-template-columns:80px 1fr auto;gap:1rem;align-items:start;padding:1.2rem;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:0.7rem;transition:border-color 0.2s; }
+    .list-event:hover { border-color:var(--border2); }
+    .list-date-block { text-align:center;background:var(--surface3);border:1px solid var(--border);padding:0.7rem 0.4rem; }
+    .list-date-mon { font-family:var(--font-h);font-size:0.5rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--gold);display:block; }
+    .list-date-day { font-family:var(--font-h);font-size:1.6rem;font-weight:600;color:var(--cream);line-height:1;display:block; }
+    .list-date-dow { font-family:var(--font-h);font-size:0.48rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);display:block; }
+    .list-ev-title { font-family:var(--font-h);font-size:0.9rem;letter-spacing:0.06em;color:var(--cream);margin-bottom:0.3rem; }
+    .list-ev-meta  { font-size:0.82rem;color:var(--muted); }
+
+    /* WEEK VIEW */
+    .week-grid { display:grid;grid-template-columns:60px repeat(7,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden; }
+    .week-time { background:var(--surface3);padding:0.4rem;text-align:right;font-family:var(--font-h);font-size:0.5rem;color:var(--dim);border-right:1px solid var(--border); }
+    .week-day-header { background:var(--surface3);padding:0.5rem;text-align:center; }
+    .week-day-name { font-family:var(--font-h);font-size:0.52rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted); }
+    .week-day-num  { font-family:var(--font-h);font-size:1.1rem;color:var(--cream); }
+    .week-cell { background:var(--surface2);height:50px;border-top:1px solid var(--border); }
+    .week-event { background:var(--gold-glow);border:1px solid var(--gold-d);border-radius:2px;padding:0.2rem 0.4rem;margin:2px;font-family:var(--font-h);font-size:0.48rem;color:var(--gold);overflow:hidden;cursor:pointer;white-space:nowrap;text-overflow:ellipsis; }
+    @media(max-width:768px){ .cal-cell{min-height:55px;} .list-event{grid-template-columns:60px 1fr;} .list-event .btn{display:none;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Calendar</span>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('calendar');
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS   = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const DAYS_S = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+let viewMode = 'month';
+let currentDate = new Date();
+
+function getEventsForDay(year, month, day) {
+  return GLC.events.filter(e => {
+    const d = new Date(e.date+'T12:00:00');
+    return d.getFullYear()===year && d.getMonth()===month && d.getDate()===day;
+  });
+}
+
+function renderMonthView() {
+  const year  = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const today = new Date();
+
+  let grid = `<div class="cal-grid-full">
+    ${DAYS_S.map(d=>`<div class="cal-cell-dow">${d}</div>`).join('')}
+    ${Array(firstDay).fill(`<div class="cal-cell other-month"></div>`).join('')}`;
+
+  for (let d=1; d<=daysInMonth; d++) {
+    const isToday = d===today.getDate() && month===today.getMonth() && year===today.getFullYear();
+    const evs = getEventsForDay(year, month, d);
+    grid += `<div class="cal-cell ${isToday?'today':''}">
+      <span class="day-num">${d}</span>
+      ${evs.map(e=>`<span class="cal-ev-pill ${e.isPrivate?'private':''}" onclick="window.location='event.html?id=${e.id}'" title="${e.title}">${e.isPrivate?'🔒 ':''}${e.title}</span>`).join('')}
+    </div>`;
+  }
+  grid += '</div>';
+  return grid;
+}
+
+function renderListView() {
+  const now = new Date();
+  const events = GLC.events.filter(e => new Date(e.date+'T12:00:00') >= now)
+    .sort((a,b) => new Date(a.date)-new Date(b.date));
+
+  if (!events.length) return '<p class="muted" style="text-align:center;padding:3rem">No upcoming events.</p>';
+
+  return events.map(e => {
+    const dp = GLC.getDateParts(e.date);
+    const ct = GLC.getRsvpCounts(e);
+    return `<div class="list-event">
+      <div class="list-date-block">
+        <span class="list-date-mon">${dp.month}</span>
+        <span class="list-date-day">${dp.day}</span>
+        <span class="list-date-dow">${dp.dow.slice(0,3)}</span>
+      </div>
+      <div>
+        <div style="display:flex;gap:0.4rem;margin-bottom:0.4rem">
+          ${e.isPrivate?'<span class="badge badge-private" style="font-size:0.45rem"><i class="fa-solid fa-lock"></i> Private</span>':''}
+          ${e.tags.map(t=>`<span class="badge badge-gray" style="font-size:0.45rem">${t}</span>`).join('')}
+        </div>
+        <div class="list-ev-title">${e.title}</div>
+        <div class="list-ev-meta"><i class="fa-solid fa-clock" style="color:var(--gold-d)"></i> ${e.time} &nbsp;·&nbsp; <i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${e.location.split(',')[0]} &nbsp;·&nbsp; <i class="fa-solid fa-check" style="color:#7ecca0"></i> ${ct.going} going</div>
+      </div>
+      <a href="event.html?id=${e.id}" class="btn btn-outline btn-sm" style="white-space:nowrap">Details →</a>
+    </div>`;
+  }).join('');
+}
+
+function renderWeekView() {
+  // Get start of current week
+  const startOfWeek = new Date(currentDate);
+  startOfWeek.setDate(currentDate.getDate() - currentDate.getDay());
+  const today = new Date();
+
+  const days = Array.from({length:7}, (_,i) => {
+    const d = new Date(startOfWeek);
+    d.setDate(startOfWeek.getDate()+i);
+    return d;
+  });
+
+  const hours = [6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22];
+
+  return `<div class="week-grid">
+    <div class="week-time"></div>
+    ${days.map(d => {
+      const isToday = d.toDateString() === today.toDateString();
+      return `<div class="week-day-header" style="${isToday?'background:var(--gold-glow)':''}">
+        <div class="week-day-name" style="${isToday?'color:var(--gold)':''}">${DAYS_S[d.getDay()]}</div>
+        <div class="week-day-num" style="${isToday?'color:var(--gold)':''}">${d.getDate()}</div>
+      </div>`;
+    }).join('')}
+    ${hours.map(h => {
+      const timeLabel = h===12?'12 PM':h>12?`${h-12} PM`:`${h} AM`;
+      return `<div class="week-time">${timeLabel}</div>
+        ${days.map(d => {
+          const evs = getEventsForDay(d.getFullYear(), d.getMonth(), d.getDate())
+            .filter(e => { const t=parseInt(e.time); return t===h||(t===0&&h===12); });
+          return `<div class="week-cell">${evs.map(e=>`<div class="week-event" onclick="window.location='event.html?id=${e.id}'">${e.title}</div>`).join('')}</div>`;
+        }).join('')}`;
+    }).join('')}
+  </div>`;
+}
+
+function render() {
+  const year  = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const weekStart = new Date(currentDate);
+  weekStart.setDate(currentDate.getDate() - currentDate.getDay());
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate()+6);
+
+  const navLabel = viewMode === 'month'
+    ? `${MONTHS[month]} ${year}`
+    : viewMode === 'week'
+    ? `${weekStart.toLocaleDateString('en-US',{month:'short',day:'numeric'})} – ${weekEnd.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}`
+    : 'Upcoming Events';
+
+  let content = '';
+  if (viewMode==='month') content = renderMonthView();
+  else if (viewMode==='week') content = renderWeekView();
+  else content = renderListView();
+
+  document.getElementById('pageBody').innerHTML = `
+  <div class="cal-controls">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <div class="cal-nav">
+        <button onclick="navigate(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button onclick="goToday()">Today</button>
+        <button onclick="navigate(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <div style="font-family:var(--font-h);font-size:1rem;letter-spacing:0.1em;color:var(--cream)">${navLabel}</div>
+    </div>
+    <div class="tabs" style="margin:0;border:none;gap:0.3rem">
+      <button class="tab-btn ${viewMode==='month'?'active':''}" onclick="setView('month')"><i class="fa-solid fa-calendar"></i> Month</button>
+      <button class="tab-btn ${viewMode==='week'?'active':''}" onclick="setView('week')"><i class="fa-solid fa-calendar-week"></i> Week</button>
+      <button class="tab-btn ${viewMode==='list'?'active':''}" onclick="setView('list')"><i class="fa-solid fa-list"></i> List</button>
+    </div>
+  </div>
+  ${content}`;
+}
+
+function navigate(dir) {
+  if (viewMode==='month') currentDate.setMonth(currentDate.getMonth()+dir);
+  else if (viewMode==='week') currentDate.setDate(currentDate.getDate()+(dir*7));
+  render();
+}
+
+function goToday() { currentDate = new Date(); render(); }
+function setView(v) { viewMode = v; render(); }
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Admin</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .admin-layout { display:grid;grid-template-columns:1fr 320px;gap:1.5rem; }
+    .admin-tabs-content { }
+    .tab-content { display:none; }
+    .tab-content.active { display:block; }
+    .data-table { width:100%;border-collapse:collapse; }
+    .data-table th { font-family:var(--font-h);font-size:0.52rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--dim);text-align:left;padding:0.7rem 1rem;border-bottom:1px solid var(--border);background:var(--surface3); }
+    .data-table td { padding:0.8rem 1rem;border-bottom:1px solid var(--border);font-size:0.88rem;color:var(--ivory);vertical-align:middle; }
+    .data-table tr:hover td { background:var(--surface3); }
+    .action-btns { display:flex;gap:0.4rem; }
+    .btn-icon { background:none;border:1px solid var(--border);color:var(--muted);width:30px;height:30px;border-radius:var(--radius);font-size:0.75rem;transition:all 0.2s;display:flex;align-items:center;justify-content:center; }
+    .btn-icon:hover { border-color:var(--gold-d);color:var(--gold); }
+    .btn-icon.danger:hover { border-color:var(--red);color:#e09090; }
+    .suggestion-card { background:var(--surface2);border:1px solid var(--border);border-left:2px solid var(--gold-d);border-radius:var(--radius);padding:1.1rem;margin-bottom:0.8rem; }
+    .suggestion-card .sug-name { font-family:var(--font-h);font-size:0.8rem;color:var(--cream);margin-bottom:0.2rem; }
+    .suggestion-card .sug-meta { font-size:0.82rem;color:var(--muted);margin-bottom:0.5rem; }
+    .quick-action { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1rem;display:flex;align-items:center;gap:0.8rem;margin-bottom:0.6rem;transition:border-color 0.2s;cursor:pointer; }
+    .quick-action:hover { border-color:var(--gold-d); }
+    .quick-action i { color:var(--gold-d);font-size:1rem;width:24px;text-align:center; }
+    .quick-action-text { font-family:var(--font-h);font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--ivory); }
+    .quick-action-sub { font-size:0.78rem;color:var(--dim);font-style:italic; }
+    @media(max-width:1000px){ .admin-layout{grid-template-columns:1fr;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Admin Panel</span>
+      </div>
+      <div class="topbar-right">
+        <span class="badge badge-gold"><i class="fa-solid fa-shield-halved"></i> Admin</span>
+      </div>
+    </div>
+    <div class="page-body">
+
+      <!-- STATS -->
+      <div class="grid-4" style="margin-bottom:1.5rem">
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div><div class="stat-num" id="statMembers">0</div><div class="stat-label">Total Members</div></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-calendar-star"></i></div><div><div class="stat-num" id="statEvents">0</div><div class="stat-label">Total Events</div></div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-whiskey-glass"></i></div><div><div class="stat-num" id="statLounges">0</div><div class="stat-label">Lounges Reviewed</div></div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:rgba(201,168,76,0.15);border-color:rgba(201,168,76,0.3)"><i class="fa-solid fa-inbox" style="color:var(--gold)"></i></div><div><div class="stat-num" id="statPending" style="color:var(--gold)">0</div><div class="stat-label">Pending Suggestions</div></div></div>
+      </div>
+
+      <div class="admin-layout">
+        <div>
+          <!-- TABS -->
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('events',this)"><i class="fa-solid fa-calendar-star"></i> Events</button>
+            <button class="tab-btn" onclick="switchTab('lounges',this)"><i class="fa-solid fa-whiskey-glass"></i> Lounges</button>
+            <button class="tab-btn" onclick="switchTab('members',this)"><i class="fa-solid fa-users"></i> Members</button>
+            <button class="tab-btn" onclick="switchTab('suggestions',this)"><i class="fa-solid fa-inbox"></i> Suggestions <span class="nav-badge" id="sugBadge">0</span></button>
+            <button class="tab-btn" onclick="switchTab('announcements',this)"><i class="fa-solid fa-bullhorn"></i> Announcements</button>
+          </div>
+
+          <!-- EVENTS TAB -->
+          <div class="tab-content active" id="tab-events">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-size:0.9rem">All Events</h3>
+              <button class="btn btn-gold btn-sm" onclick="openModal('newEventModal')"><i class="fa-solid fa-plus"></i> New Event</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table" id="eventsTable"></table>
+            </div>
+          </div>
+
+          <!-- LOUNGES TAB -->
+          <div class="tab-content" id="tab-lounges">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-size:0.9rem">All Lounges</h3>
+              <button class="btn btn-gold btn-sm" onclick="openModal('newLoungeModal')"><i class="fa-solid fa-plus"></i> Add Lounge</button>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="data-table" id="loungesTable"></table>
+            </div>
+          </div>
+
+          <!-- MEMBERS TAB -->
+          <div class="tab-content" id="tab-members">
+            <h3 style="font-size:0.9rem;margin-bottom:1rem">All Members</h3>
+            <div style="overflow-x:auto">
+              <table class="data-table" id="membersTable"></table>
+            </div>
+          </div>
+
+          <!-- SUGGESTIONS TAB -->
+          <div class="tab-content" id="tab-suggestions">
+            <h3 style="font-size:0.9rem;margin-bottom:1rem">Lounge Suggestions</h3>
+            <div id="suggestionsContainer"></div>
+          </div>
+
+          <!-- ANNOUNCEMENTS TAB -->
+          <div class="tab-content" id="tab-announcements">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+              <h3 style="font-size:0.9rem">Announcements</h3>
+              <button class="btn btn-gold btn-sm" onclick="openModal('newAnnouncementModal')"><i class="fa-solid fa-plus"></i> New Announcement</button>
+            </div>
+            <div id="announcementsContainer"></div>
+          </div>
+        </div>
+
+        <!-- SIDEBAR -->
+        <div>
+          <div class="card" style="margin-bottom:1rem">
+            <div class="card-header"><h4>Quick Actions</h4></div>
+            <div class="card-body" style="padding:0.8rem">
+              <div class="quick-action" onclick="openModal('newEventModal')">
+                <i class="fa-solid fa-calendar-plus"></i>
+                <div><div class="quick-action-text">Create Event</div><div class="quick-action-sub">Schedule a new club gathering</div></div>
+              </div>
+              <div class="quick-action" onclick="openModal('newLoungeModal')">
+                <i class="fa-solid fa-plus"></i>
+                <div><div class="quick-action-text">Add Lounge Review</div><div class="quick-action-sub">Publish a new lounge review</div></div>
+              </div>
+              <div class="quick-action" onclick="openModal('newAnnouncementModal')">
+                <i class="fa-solid fa-bullhorn"></i>
+                <div><div class="quick-action-text">Post Announcement</div><div class="quick-action-sub">Broadcast to all members</div></div>
+              </div>
+              <div class="quick-action" onclick="window.location='dashboard.html'">
+                <i class="fa-solid fa-house"></i>
+                <div><div class="quick-action-text">View Dashboard</div><div class="quick-action-sub">Member-facing dashboard</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RECENT ACTIVITY -->
+          <div class="card">
+            <div class="card-header"><h4>Recent Activity</h4></div>
+            <div class="card-body" style="padding:0.8rem" id="activityFeed"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW EVENT MODAL -->
+<div class="modal-overlay" id="newEventModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Create New Event</span>
+      <button class="modal-close" onclick="closeModal('newEventModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group"><label class="form-label">Event Title</label><input type="text" class="form-control" id="evTitle" placeholder="Event name" /></div>
+        <div class="form-group"><label class="form-label">Date</label><input type="date" class="form-control" id="evDate" /></div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group"><label class="form-label">Start Time</label><input type="time" class="form-control" id="evTime" /></div>
+        <div class="form-group"><label class="form-label">Host</label><input type="text" class="form-control" id="evHost" placeholder="Host name" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Location</label><input type="text" class="form-control" id="evLocation" placeholder="Venue name, City" /></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-control" id="evDesc" placeholder="Event description…"></textarea></div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group"><label class="form-label">Dress Code</label><input type="text" class="form-control" id="evDress" placeholder="e.g. Business Formal" /></div>
+        <div class="form-group"><label class="form-label">Featured Cigar</label><input type="text" class="form-control" id="evCigar" placeholder="Cigar name" /></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Options</label>
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.88rem;color:var(--muted)"><input type="checkbox" id="evPrivate" style="accent-color:var(--gold)"> Private Event</label>
+        <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.88rem;color:var(--muted);margin-top:0.4rem"><input type="checkbox" id="evFeatured" style="accent-color:var(--gold)"> Feature on Dashboard</label>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('newEventModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="createEvent()"><i class="fa-solid fa-check"></i> Create Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW LOUNGE MODAL -->
+<div class="modal-overlay" id="newLoungeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Lounge Review</span>
+      <button class="modal-close" onclick="closeModal('newLoungeModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group"><label class="form-label">Lounge Name</label><input type="text" class="form-control" id="lName" placeholder="Name" /></div>
+        <div class="form-group"><label class="form-label">City</label><input type="text" class="form-control" id="lCity" placeholder="City, Country" /></div>
+      </div>
+      <div class="form-group"><label class="form-label">Address</label><input type="text" class="form-control" id="lAddr" placeholder="Full address" /></div>
+      <div class="form-group"><label class="form-label">Written Review</label><textarea class="form-control" id="lReview" placeholder="Your review…"></textarea></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+        <div class="form-group"><label class="form-label">Overall Rating (0-10)</label><input type="number" class="form-control" id="lRating" min="0" max="10" step="0.1" placeholder="8.5" /></div>
+        <div class="form-group"><label class="form-label">Price Level</label><select class="form-control" id="lPrice"><option>$</option><option>$$</option><option>$$$</option><option value="$$$$" selected>$$$$</option></select></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Features</label>
+        <div style="display:flex;gap:1.5rem;flex-wrap:wrap">
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--muted)"><input type="checkbox" id="lBar" style="accent-color:var(--gold)"> Has Bar</label>
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--muted)"><input type="checkbox" id="lOutdoor" style="accent-color:var(--gold)"> Outdoor Seating</label>
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--muted)"><input type="checkbox" id="lPrivate" style="accent-color:var(--gold)"> Private Lounge</label>
+          <label style="display:flex;align-items:center;gap:0.4rem;cursor:pointer;font-size:0.85rem;color:var(--muted)"><input type="checkbox" id="lByo" style="accent-color:var(--gold)"> BYO Cigars</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('newLoungeModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="createLounge()"><i class="fa-solid fa-check"></i> Add Lounge</button>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ANNOUNCEMENT MODAL -->
+<div class="modal-overlay" id="newAnnouncementModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Post Announcement</span>
+      <button class="modal-close" onclick="closeModal('newAnnouncementModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">Title</label><input type="text" class="form-control" id="annTitle" placeholder="Announcement title" /></div>
+      <div class="form-group"><label class="form-label">Message</label><textarea class="form-control" id="annText" placeholder="What would you like to communicate to members?" style="min-height:120px"></textarea></div>
+      <div class="form-group"><label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-size:0.88rem;color:var(--muted)"><input type="checkbox" id="annPin" style="accent-color:var(--gold)"> Pin to top of announcements</label></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('newAnnouncementModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="postAnnouncement()"><i class="fa-solid fa-bullhorn"></i> Post</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('admin');
+
+// Only admins can access
+if (GLC.currentUser.role !== 'admin') window.location.href = 'dashboard.html';
+
+// Set stats
+document.getElementById('statMembers').textContent  = GLC.members.length;
+document.getElementById('statEvents').textContent   = GLC.events.length;
+document.getElementById('statLounges').textContent  = GLC.lounges.length;
+const pendingCount = GLC.suggestedLounges.filter(s=>s.status==='pending').length;
+document.getElementById('statPending').textContent  = pendingCount;
+document.getElementById('sugBadge').textContent     = pendingCount;
+if (pendingCount === 0) document.getElementById('sugBadge').style.display = 'none';
+
+// ── TAB MANAGEMENT ──────────────────────────────────────
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  el.classList.add('active');
+  renderTab(tab);
+}
+
+function renderTab(tab) {
+  if (tab==='events')        renderEventsTable();
+  else if (tab==='lounges')  renderLoungesTable();
+  else if (tab==='members')  renderMembersTable();
+  else if (tab==='suggestions') renderSuggestions();
+  else if (tab==='announcements') renderAnnouncements();
+}
+
+// ── EVENTS TABLE ────────────────────────────────────────
+function renderEventsTable() {
+  const t = document.getElementById('eventsTable');
+  const rows = GLC.events.map(e => {
+    const ct = GLC.getRsvpCounts(e);
+    return `<tr>
+      <td><div style="font-family:var(--font-h);font-size:0.78rem;color:var(--cream)">${e.title}</div></td>
+      <td>${GLC.formatDateShort(e.date)}</td>
+      <td>${e.location.split(',')[0]}</td>
+      <td><span class="badge badge-green">${ct.going} going</span></td>
+      <td>${e.isPrivate?'<span class="badge badge-private">Private</span>':''}</td>
+      <td><div class="action-btns">
+        <a href="event.html?id=${e.id}" class="btn-icon" title="View"><i class="fa-solid fa-eye"></i></a>
+        <button class="btn-icon" title="Feature" onclick="toggleFeature('${e.id}')"><i class="fa-solid fa-star"></i></button>
+        <button class="btn-icon danger" title="Delete" onclick="deleteEvent('${e.id}')"><i class="fa-solid fa-trash"></i></button>
+      </div></td>
+    </tr>`;
+  }).join('');
+  t.innerHTML = `<thead><tr><th>Event</th><th>Date</th><th>Location</th><th>RSVPs</th><th>Type</th><th>Actions</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+// ── LOUNGES TABLE ───────────────────────────────────────
+function renderLoungesTable() {
+  const t = document.getElementById('loungesTable');
+  const rows = GLC.lounges.map(l => `<tr>
+    <td><div style="font-family:var(--font-h);font-size:0.78rem;color:var(--cream)">${l.name}</div></td>
+    <td>${l.city}, ${l.country}</td>
+    <td><span style="font-family:var(--font-h);font-size:0.7rem;color:var(--gold)">${l.ratings.overall}</span></td>
+    <td>${l.priceLevel}</td>
+    <td><div class="action-btns">
+      <a href="lounge.html?id=${l.id}" class="btn-icon" title="View"><i class="fa-solid fa-eye"></i></a>
+      <button class="btn-icon" title="Feature" onclick="toggleLoungeFeatured('${l.id}')"><i class="fa-solid fa-star"></i></button>
+      <button class="btn-icon danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+    </div></td>
+  </tr>`).join('');
+  t.innerHTML = `<thead><tr><th>Lounge</th><th>Location</th><th>Rating</th><th>Price</th><th>Actions</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+// ── MEMBERS TABLE ───────────────────────────────────────
+function renderMembersTable() {
+  const t = document.getElementById('membersTable');
+  const rows = GLC.members.map(m => `<tr>
+    <td><div style="display:flex;align-items:center;gap:0.6rem"><img src="${m.avatar}" style="width:28px;height:28px;border-radius:50%;object-fit:cover"><span style="font-family:var(--font-h);font-size:0.78rem;color:var(--cream)">${m.name}</span></div></td>
+    <td>${m.city}</td>
+    <td>${m.memberSince}</td>
+    <td>${m.role==='admin'?'<span class="badge badge-gold">Admin</span>':'<span class="badge badge-gray">Member</span>'}</td>
+    <td><div class="action-btns">
+      <button class="btn-icon" title="Toggle Admin" onclick="showToast('Role updated')"><i class="fa-solid fa-shield-halved"></i></button>
+      <button class="btn-icon danger" title="Remove" onclick="showToast('Member removed')"><i class="fa-solid fa-user-minus"></i></button>
+    </div></td>
+  </tr>`).join('');
+  t.innerHTML = `<thead><tr><th>Member</th><th>City</th><th>Since</th><th>Role</th><th>Actions</th></tr></thead><tbody>${rows}</tbody>`;
+}
+
+// ── SUGGESTIONS ─────────────────────────────────────────
+function renderSuggestions() {
+  const c = document.getElementById('suggestionsContainer');
+  if (!GLC.suggestedLounges.length) { c.innerHTML='<p class="muted" style="text-align:center;padding:2rem">No suggestions yet.</p>'; return; }
+  c.innerHTML = GLC.suggestedLounges.map(s => {
+    const submitter = GLC.getMemberById(s.submittedBy);
+    return `<div class="suggestion-card">
+      <div style="display:flex;justify-content:space-between;align-items:start">
+        <div>
+          <div style="display:flex;gap:0.4rem;margin-bottom:0.4rem">
+            <span class="pill ${s.status}">${s.status}</span>
+          </div>
+          <div class="sug-name">${s.name}</div>
+          <div class="sug-meta"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${s.city} &nbsp;·&nbsp; Submitted by ${submitter?.name||'Member'} · ${s.submittedDate}</div>
+          ${s.notes?`<div style="font-size:0.85rem;color:var(--muted);font-style:italic">"${s.notes}"</div>`:''}
+        </div>
+      </div>
+      ${s.status==='pending'?`<div style="display:flex;gap:0.6rem;margin-top:0.8rem">
+        <button class="btn btn-green btn-sm" onclick="approveSuggestion('${s.id}')"><i class="fa-solid fa-check"></i> Approve</button>
+        <button class="btn btn-red btn-sm" onclick="rejectSuggestion('${s.id}')"><i class="fa-solid fa-xmark"></i> Reject</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── ANNOUNCEMENTS ───────────────────────────────────────
+function renderAnnouncements() {
+  const c = document.getElementById('announcementsContainer');
+  c.innerHTML = GLC.announcements.map(a => `
+  <div class="announcement" style="display:flex;justify-content:space-between;align-items:start">
+    <div>
+      ${a.pinned?'<span class="badge badge-gold" style="margin-bottom:0.3rem;font-size:0.45rem">Pinned</span>':''}
+      <div class="announcement-title">${a.title}</div>
+      <div class="announcement-text">${a.text}</div>
+      <div class="announcement-date">${a.date}</div>
+    </div>
+    <button class="btn-icon danger" onclick="deleteAnnouncement('${a.id}')"><i class="fa-solid fa-trash"></i></button>
+  </div>`).join('');
+}
+
+// ── ACTIVITY FEED ────────────────────────────────────────
+function renderActivity() {
+  const activities = [
+    { icon:'fa-user-plus', text:'Diana Reyes RSVP\'d Going to Black Label Evening', time:'2h ago' },
+    { icon:'fa-comment', text:'Marcus Webb commented on Carnegie Club review', time:'4h ago' },
+    { icon:'fa-star', text:'Victor Sterling saved Grand Havana Room', time:'6h ago' },
+    { icon:'fa-calendar-plus', text:'New event suggested by James Calloway', time:'1d ago' },
+    { icon:'fa-whiskey-glass', text:'Havana 1957 review published', time:'2d ago' },
+  ];
+  document.getElementById('activityFeed').innerHTML = activities.map(a => `
+  <div style="display:flex;gap:0.8rem;padding:0.6rem 0;border-bottom:1px solid var(--border)">
+    <i class="fa-solid ${a.icon}" style="color:var(--gold-d);width:16px;margin-top:0.15rem;font-size:0.8rem;flex-shrink:0"></i>
+    <div>
+      <div style="font-size:0.82rem;color:var(--ivory);line-height:1.4">${a.text}</div>
+      <div style="font-size:0.72rem;color:var(--dim)">${a.time}</div>
+    </div>
+  </div>`).join('');
+}
+
+// ── ACTIONS ──────────────────────────────────────────────
+function createEvent() {
+  const title = document.getElementById('evTitle').value.trim();
+  if (!title) { showToast('Event title is required.'); return; }
+  showToast('Event created successfully!');
+  closeModal('newEventModal');
+  document.getElementById('evTitle').value = '';
+}
+
+function createLounge() {
+  const name = document.getElementById('lName').value.trim();
+  if (!name) { showToast('Lounge name is required.'); return; }
+  showToast('Lounge review added!');
+  closeModal('newLoungeModal');
+}
+
+function postAnnouncement() {
+  const title = document.getElementById('annTitle').value.trim();
+  const text  = document.getElementById('annText').value.trim();
+  if (!title || !text) { showToast('Title and message required.'); return; }
+  GLC.announcements.unshift({ id:'a'+Date.now(), title, text, date:'Just now', pinned: document.getElementById('annPin').checked });
+  showToast('Announcement posted to all members!');
+  closeModal('newAnnouncementModal');
+  renderAnnouncements();
+}
+
+function deleteEvent(id) {
+  if (!confirm('Delete this event?')) return;
+  GLC.events = GLC.events.filter(e=>e.id!==id);
+  renderEventsTable();
+  showToast('Event deleted.');
+}
+
+function toggleFeature(id) {
+  const ev = GLC.getEventById(id);
+  if (ev) { ev.isFeatured = !ev.isFeatured; showToast(ev.isFeatured ? 'Event featured!' : 'Event unfeatured'); }
+}
+
+function toggleLoungeFeatured(id) {
+  const l = GLC.getLoungeById(id);
+  if (l) { l.isFeatured = !l.isFeatured; showToast(l.isFeatured ? 'Lounge featured!' : 'Lounge unfeatured'); }
+}
+
+function approveSuggestion(id) {
+  const s = GLC.suggestedLounges.find(x=>x.id===id);
+  if (s) { s.status = 'approved'; showToast('Suggestion approved!'); renderSuggestions(); }
+}
+
+function rejectSuggestion(id) {
+  const s = GLC.suggestedLounges.find(x=>x.id===id);
+  if (s) { s.status = 'rejected'; showToast('Suggestion declined.'); renderSuggestions(); }
+}
+
+function deleteAnnouncement(id) {
+  GLC.announcements = GLC.announcements.filter(a=>a.id!==id);
+  renderAnnouncements();
+  showToast('Announcement deleted.');
+}
+
+// Init
+renderEventsTable();
+renderActivity();
+</script>
+</body>
+</html>

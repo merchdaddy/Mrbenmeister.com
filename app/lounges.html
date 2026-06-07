@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gold Label Club — Lounges</title>
+  <link rel="stylesheet" href="css/glc.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    .lounges-layout { display:grid;grid-template-columns:240px 1fr;gap:1.5rem; }
+    .filter-sidebar { background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem;height:fit-content;position:sticky;top:70px; }
+    .filter-section { margin-bottom:1.5rem; }
+    .filter-section-title { font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.28em;text-transform:uppercase;color:var(--gold-d);margin-bottom:0.7rem; }
+    .filter-option { display:flex;align-items:center;gap:0.5rem;margin-bottom:0.4rem;cursor:pointer; }
+    .filter-option input { accent-color:var(--gold); }
+    .filter-option label { font-size:0.85rem;color:var(--muted);cursor:pointer; }
+    .lounges-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:0.8rem; }
+    .sort-row { display:flex;align-items:center;gap:0.7rem;flex-wrap:wrap; }
+    .suggest-btn { margin-top:0.5rem; }
+    .suggest-panel { background:var(--surface2);border:1px solid var(--border);border-top:1px solid var(--gold-d);border-radius:var(--radius);padding:1.4rem;margin-top:1.5rem;display:none; }
+    .suggest-panel.open { display:block; }
+    @media(max-width:900px){ .lounges-layout{grid-template-columns:1fr;} .filter-sidebar{position:static;} }
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:0.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Lounge Directory</span>
+      </div>
+      <div class="topbar-right">
+        <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" id="searchInput" placeholder="Search lounges…" oninput="applyFilters()" /></div>
+      </div>
+    </div>
+    <div class="page-body">
+      <div class="lounges-layout">
+
+        <!-- FILTER SIDEBAR -->
+        <aside class="filter-sidebar">
+          <div style="font-family:var(--font-h);font-size:0.65rem;letter-spacing:0.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem">Filters</div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Country</div>
+            <div id="countryFilters"></div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Min Rating</div>
+            <input type="range" id="ratingFilter" min="0" max="10" step="0.5" value="0" oninput="updateRatingLabel();applyFilters()" style="width:100%;accent-color:var(--gold)" />
+            <div style="font-family:var(--font-h);font-size:0.65rem;color:var(--gold);margin-top:0.3rem">Min: <span id="ratingLabel">Any</span></div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Features</div>
+            <div class="filter-option"><input type="checkbox" id="fBar" onchange="applyFilters()"><label for="fBar">Has Bar</label></div>
+            <div class="filter-option"><input type="checkbox" id="fOutdoor" onchange="applyFilters()"><label for="fOutdoor">Outdoor Seating</label></div>
+            <div class="filter-option"><input type="checkbox" id="fPrivate" onchange="applyFilters()"><label for="fPrivate">Private Lounge</label></div>
+            <div class="filter-option"><input type="checkbox" id="fByo" onchange="applyFilters()"><label for="fByo">BYO Allowed</label></div>
+          </div>
+
+          <button class="btn btn-ghost btn-sm" style="width:100%" onclick="clearFilters()"><i class="fa-solid fa-xmark"></i> Clear Filters</button>
+        </aside>
+
+        <!-- MAIN -->
+        <div>
+          <div class="lounges-header">
+            <div>
+              <h2 style="font-size:1.1rem;margin-bottom:0.2rem">Reviewed Lounges</h2>
+              <div style="font-size:0.82rem;color:var(--muted)" id="resultCount"></div>
+            </div>
+            <div class="sort-row">
+              <span style="font-family:var(--font-h);font-size:0.55rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--dim)">Sort:</span>
+              <div class="filter-chip active" id="sort-rating" onclick="setSort('rating',this)">Rating</div>
+              <div class="filter-chip" id="sort-name" onclick="setSort('name',this)">Name</div>
+              <div class="filter-chip" id="sort-recent" onclick="setSort('recent',this)">Recently Visited</div>
+              <a href="map.html" class="btn btn-outline btn-sm"><i class="fa-solid fa-earth-americas"></i> Map View</a>
+            </div>
+          </div>
+
+          <div class="grid-auto" id="loungesGrid"></div>
+
+          <!-- SUGGEST A LOUNGE -->
+          <div id="suggest" style="margin-top:2rem">
+            <button class="btn btn-ghost suggest-btn" onclick="toggleSuggest()"><i class="fa-solid fa-plus"></i> Suggest a Lounge</button>
+            <div class="suggest-panel" id="suggestPanel">
+              <div class="eyebrow" style="margin-bottom:0.5rem">Suggest a Lounge</div>
+              <h3 style="font-size:1rem;margin-bottom:0.3rem">Know a great spot?</h3>
+              <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1.2rem">Submit a lounge for admin review. We'll consider it for our next club visit.</p>
+              <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+                <div class="form-group"><label class="form-label">Lounge Name</label><input type="text" class="form-control" placeholder="Name of the lounge" id="sugName" /></div>
+                <div class="form-group"><label class="form-label">City</label><input type="text" class="form-control" placeholder="City, State/Country" id="sugCity" /></div>
+              </div>
+              <div class="form-group"><label class="form-label">Why should we visit?</label><textarea class="form-control" placeholder="Tell us what makes it special…" id="sugNotes"></textarea></div>
+              <button class="btn btn-gold" onclick="submitSuggestion()"><i class="fa-solid fa-paper-plane"></i> Submit Suggestion</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/nav.js"></script>
+<script>
+renderNav('lounges');
+
+let sortMode = 'rating';
+let filtered = [...GLC.lounges];
+
+// Build country checkboxes
+const countries = [...new Set(GLC.lounges.map(l => l.country))].sort();
+document.getElementById('countryFilters').innerHTML = countries.map(c =>
+  `<div class="filter-option"><input type="checkbox" id="c_${c}" value="${c}" onchange="applyFilters()"><label for="c_${c}">${c}</label></div>`
+).join('');
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const minRating = parseFloat(document.getElementById('ratingFilter').value);
+  const checkedCountries = [...document.querySelectorAll('[id^=c_]:checked')].map(i => i.value);
+  const fBar     = document.getElementById('fBar').checked;
+  const fOutdoor = document.getElementById('fOutdoor').checked;
+  const fPrivate = document.getElementById('fPrivate').checked;
+  const fByo     = document.getElementById('fByo').checked;
+
+  filtered = GLC.lounges.filter(l => {
+    if (search && !l.name.toLowerCase().includes(search) && !l.city.toLowerCase().includes(search)) return false;
+    if (minRating > 0 && l.ratings.overall < minRating) return false;
+    if (checkedCountries.length && !checkedCountries.includes(l.country)) return false;
+    if (fBar && !l.features.bar) return false;
+    if (fOutdoor && !l.features.outdoor) return false;
+    if (fPrivate && !l.features.privateLounge) return false;
+    if (fByo && !l.features.byo) return false;
+    return true;
+  });
+  renderLounges();
+}
+
+function setSort(s, el) {
+  sortMode = s;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderLounges();
+}
+
+function renderLounges() {
+  const sorted = [...filtered].sort((a,b) => {
+    if (sortMode==='rating') return b.ratings.overall - a.ratings.overall;
+    if (sortMode==='name')   return a.name.localeCompare(b.name);
+    return 0; // recent — keep original order
+  });
+
+  document.getElementById('resultCount').textContent = `${sorted.length} lounge${sorted.length!==1?'s':''} found`;
+
+  document.getElementById('loungesGrid').innerHTML = sorted.map(l => `
+  <a href="lounge.html?id=${l.id}" style="text-decoration:none">
+    <div class="card card-gold lounge-card" style="height:100%">
+      <div class="lounge-img">
+        <img src="${l.img}" alt="${l.name}" />
+        <div class="lounge-rating"><i class="fa-solid fa-star"></i> ${l.ratings.overall}</div>
+        ${l.isFeatured ? '<span class="badge badge-gold" style="position:absolute;top:0.5rem;left:0.5rem;font-size:0.45rem">Featured</span>' : ''}
+      </div>
+      <div class="card-body">
+        <div class="lounge-name">${l.name}</div>
+        <div class="lounge-loc"><i class="fa-solid fa-location-dot"></i>${l.city}, ${l.country}</div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:0.6rem">
+          ${GLC.renderStars(l.ratings.overall)}
+        </div>
+        <div class="lounge-tags">
+          ${l.features.bar?'<span class="lounge-tag"><i class="fa-solid fa-martini-glass-citrus"></i> Bar</span>':''}
+          ${l.features.outdoor?'<span class="lounge-tag"><i class="fa-solid fa-sun"></i> Outdoor</span>':''}
+          ${l.features.privateLounge?'<span class="lounge-tag"><i class="fa-solid fa-lock"></i> Private Room</span>':''}
+          ${l.features.byo?'<span class="lounge-tag">BYO</span>':''}
+          <span class="lounge-tag">${l.priceLevel}</span>
+        </div>
+        <div style="margin-top:0.7rem;font-size:0.78rem;color:var(--dim)">
+          Best for: ${l.bestFor.slice(0,2).join(', ')}
+        </div>
+      </div>
+    </div>
+  </a>`).join('');
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('ratingFilter').value = 0;
+  document.getElementById('ratingLabel').textContent = 'Any';
+  document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+  filtered = [...GLC.lounges];
+  renderLounges();
+}
+
+function updateRatingLabel() {
+  const v = document.getElementById('ratingFilter').value;
+  document.getElementById('ratingLabel').textContent = v > 0 ? v : 'Any';
+}
+
+function toggleSuggest() {
+  document.getElementById('suggestPanel').classList.toggle('open');
+}
+
+function submitSuggestion() {
+  const name = document.getElementById('sugName').value.trim();
+  const city = document.getElementById('sugCity').value.trim();
+  if (!name || !city) { showToast('Please fill in the lounge name and city.'); return; }
+  GLC.suggestedLounges.push({ id:'s'+Date.now(), submittedBy:GLC.currentUser.id, name, city, notes:document.getElementById('sugNotes').value.trim(), status:'pending', submittedDate:'Just now' });
+  document.getElementById('suggestPanel').classList.remove('open');
+  document.getElementById('sugName').value = '';
+  document.getElementById('sugCity').value = '';
+  document.getElementById('sugNotes').value = '';
+  showToast('Suggestion submitted! We\'ll review it soon.');
+}
+
+renderLounges();
+
+// Open suggest panel if hash
+if (window.location.hash === '#suggest') { toggleSuggest(); setTimeout(()=>document.getElementById('suggest').scrollIntoView({behavior:'smooth'}),300); }
+</script>
+</body>
+</html>

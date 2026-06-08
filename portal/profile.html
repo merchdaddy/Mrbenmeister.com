@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Profile — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .profile-layout{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;align-items:start;}
+    .privacy-toggle{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0;border-bottom:1px solid var(--border);}
+    .privacy-toggle:last-child{border-bottom:none;}
+    .privacy-label{font-size:.88rem;color:var(--ivory);}
+    .privacy-sub{font-size:.78rem;color:var(--muted);margin-top:.15rem;}
+    .toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;cursor:pointer;inset:0;background:var(--border);border-radius:22px;transition:.3s;}
+    .toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:var(--muted);border-radius:50%;transition:.3s;}
+    .toggle input:checked+.toggle-slider{background:var(--gold-d);}
+    .toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--gold);}
+    .stat-row{display:flex;justify-content:space-around;padding:1rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:.8rem 0;}
+    .stat-item{text-align:center;}
+    .stat-item .n{font-family:var(--fh);font-size:1.4rem;color:var(--cream);}
+    .stat-item .l{font-family:var(--fh);font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);}
+    @media(max-width:900px){.profile-layout{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">My Profile</span>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-gold btn-sm" onclick="saveProfile()"><i class="fa-solid fa-check"></i> Save Changes</button>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+const user = GLC_AUTH.guard();
+if (!user) throw '';
+renderPortalNav('profile');
+
+const memberData = GLC.getMemberById(user.id) || GLC.members[0];
+
+document.getElementById('pageBody').innerHTML = `
+  <!-- PROFILE HEADER -->
+  <div class="profile-header">
+    <div class="profile-av-wrap">
+      <img src="${user.avatar}" class="profile-av" alt="${user.name}"/>
+      <div class="profile-av-edit" title="Change photo"><i class="fa-solid fa-camera"></i></div>
+    </div>
+    <div class="profile-info">
+      <h2>${user.name}</h2>
+      <div class="role">${user.role === 'admin' ? 'Club Admin' : 'Gold Label Member'}</div>
+      <div class="city"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${user.city}</div>
+      <div style="margin-top:.5rem"><span class="badge badge-gold">Member since ${user.memberSince}</span></div>
+    </div>
+    <div style="margin-left:auto">
+      <div class="stat-row" style="border:none;flex-direction:column;gap:.8rem;padding:0">
+        ${[
+          [GLC.events.filter(e=>e.rsvps.going.includes(user.id)).length,'Events Attended'],
+          [GLC.lounges.length,'Lounges Reviewed'],
+          [GLC.members.length-1,'Connections'],
+        ].map(([n,l])=>`<div class="stat-item"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('')}
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-layout">
+    <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+      <!-- EDIT PROFILE -->
+      <div class="card">
+        <div class="card-header"><h4>Profile Information</h4></div>
+        <div class="card-body">
+          <div class="grid-2" style="gap:1rem">
+            <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" id="pfFirst" value="${user.firstName}"/></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" id="pfLast" value="${user.name.split(' ').slice(1).join(' ')}"/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control" id="pfEmail" value="${user.email}"/></div>
+          <div class="form-group"><label class="form-label">City</label><input type="text" class="form-control" id="pfCity" value="${user.city}"/></div>
+          <div class="form-group"><label class="form-label">Short Bio</label><textarea class="form-control" id="pfBio" placeholder="Tell the club a little about yourself…" rows="3"></textarea></div>
+          <div class="form-group"><label class="form-label">Favorite Cigars</label><input type="text" class="form-control" id="pfCigars" placeholder="e.g. Padron 1964, Opus X, Cohiba Behike"/></div>
+        </div>
+      </div>
+
+      <!-- SOCIAL / CONTACT -->
+      <div class="card">
+        <div class="card-header"><h4>Social & Contact</h4><span style="font-size:.78rem;color:var(--muted);font-style:italic">Shared only with connected members</span></div>
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Instagram Handle</label>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="color:var(--muted);font-size:1rem"><i class="fa-brands fa-instagram"></i></span>
+              <input type="text" class="form-control" id="pfIg" placeholder="@yourhandle"/>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">LinkedIn Profile</label>
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="color:var(--muted);font-size:1rem"><i class="fa-brands fa-linkedin"></i></span>
+              <input type="url" class="form-control" id="pfLinkedin" placeholder="linkedin.com/in/yourprofile"/>
+            </div>
+          </div>
+          <div class="form-group"><label class="form-label">Phone (optional)</label><input type="tel" class="form-control" id="pfPhone" placeholder="Visible only to connected members"/></div>
+        </div>
+      </div>
+
+      <!-- CHANGE PASSWORD -->
+      <div class="card">
+        <div class="card-header"><h4>Change Password</h4></div>
+        <div class="card-body">
+          <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+          <div class="grid-2" style="gap:1rem">
+            <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+            <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+          </div>
+          <button class="btn btn-outline btn-sm" onclick="showToast('Password updated successfully.')">Update Password</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+      <!-- PRIVACY CONTROLS -->
+      <div class="card">
+        <div class="card-header"><h4>Privacy Controls</h4><i class="fa-solid fa-shield-halved" style="color:var(--gold-d);font-size:.8rem"></i></div>
+        <div class="card-body" style="padding:.8rem 1.2rem">
+          ${[
+            ['Show my profile to members','Your name and city are visible in the member directory.',true],
+            ['Show my event activity','Members can see which events you\'ve RSVP\'d to.',true],
+            ['Show my contact info','Instagram and phone visible to connected members.',false],
+            ['Allow direct messages','Members can send you direct messages.',true],
+            ['Show me as going to events','Your RSVP is visible on event pages.',true],
+          ].map(([label,sub,checked])=>`
+          <div class="privacy-toggle">
+            <div>
+              <div class="privacy-label">${label}</div>
+              <div class="privacy-sub">${sub}</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" ${checked?'checked':''} onchange="showToast('Privacy setting updated.')"/>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- MEMBER SINCE -->
+      <div class="card">
+        <div class="card-body" style="text-align:center">
+          <div class="eyebrow" style="margin-bottom:.5rem">Gold Label Member</div>
+          <div style="font-family:var(--fh);font-size:1rem;color:var(--cream);margin-bottom:.2rem">${user.memberSince}</div>
+          <div style="font-size:.78rem;color:var(--muted)">Founding Circle</div>
+          <div style="margin-top:.8rem"><span class="badge badge-gold">Active Member</span></div>
+        </div>
+      </div>
+
+      <!-- DANGER ZONE -->
+      <div class="card" style="border-color:rgba(122,40,40,.3)">
+        <div class="card-header" style="border-color:rgba(122,40,40,.3)"><h4 style="color:#e09090;font-size:.6rem;letter-spacing:.22em">Account</h4></div>
+        <div class="card-body" style="padding:.8rem 1.2rem">
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-bottom:.5rem;color:#e09090;border-color:rgba(122,40,40,.3)" onclick="GLC_AUTH.logout()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;color:var(--dim);font-size:.5rem" onclick="showToast('Contact admin to deactivate your account.')">Deactivate Account</button>
+        </div>
+      </div>
+
+    </div>
+  </div>`;
+
+function saveProfile() {
+  showToast('Profile saved successfully!');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Lounge Reviews — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .lounges-layout{display:grid;grid-template-columns:240px 1fr;gap:2rem;align-items:start;}
+    .filter-sidebar{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;position:sticky;top:calc(var(--pub-nav-h) + 1rem);}
+    .filter-section{margin-bottom:1.4rem;}
+    .filter-section-title{font-family:var(--fh);font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-d);margin-bottom:.7rem;}
+    .filter-option{display:flex;align-items:center;gap:.5rem;margin-bottom:.4rem;cursor:pointer;}
+    .filter-option input{accent-color:var(--gold);}
+    .filter-option label{font-size:.85rem;color:var(--muted);cursor:pointer;}
+    .lounges-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:1.2rem;}
+    @media(max-width:900px){.lounges-layout{grid-template-columns:1fr;}.filter-sidebar{position:static;}}
+  </style>
+</head>
+<body>
+<div id="pubNav"></div>
+<div class="pub-mobile-menu" id="pubMobileMenu"></div>
+<main class="pub-page">
+
+  <!-- HERO -->
+  <section class="pub-hero" style="min-height:32vh">
+    <div class="pub-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1679419860191-278d0720bc1b?w=1800&q=80')"></div>
+    <div class="pub-hero-overlay"></div>
+    <div class="pub-hero-content" style="padding-top:3rem">
+      <p class="eyebrow" style="margin-bottom:.8rem">Reviewed by the Club</p>
+      <h1>Cigar Lounge Directory</h1>
+      <p style="color:var(--ivory);font-style:italic;font-size:1rem;margin-top:.5rem">Every lounge personally visited and reviewed by Gold Label Club members.</p>
+    </div>
+  </section>
+
+  <section class="pub-section">
+    <div class="pub-section-inner" style="max-width:1200px">
+
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem">
+        <div>
+          <h2 style="font-size:1.1rem;margin-bottom:.2rem">All Reviewed Lounges</h2>
+          <div style="font-size:.82rem;color:var(--muted)" id="resultCount"></div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;align-items:center;gap:.4rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);padding:.4rem .8rem">
+            <i class="fa-solid fa-magnifying-glass" style="color:var(--dim);font-size:.8rem"></i>
+            <input type="text" id="searchInput" placeholder="Search lounges…" oninput="applyFilters()" style="background:none;border:none;color:var(--cream);font-size:.85rem;outline:none;width:160px"/>
+          </div>
+          <a href="/glc/map.html" class="btn btn-outline btn-sm"><i class="fa-solid fa-earth-americas"></i> Map View</a>
+        </div>
+      </div>
+
+      <div class="lounges-layout">
+        <!-- FILTERS -->
+        <aside class="filter-sidebar">
+          <div style="font-family:var(--fh);font-size:.65rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:1.2rem">Filters</div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Country</div>
+            <div id="countryFilters"></div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Min Rating</div>
+            <input type="range" id="ratingFilter" min="0" max="10" step=".5" value="0" oninput="updateRatingLabel();applyFilters()" style="width:100%;accent-color:var(--gold)"/>
+            <div style="font-family:var(--fh);font-size:.65rem;color:var(--gold);margin-top:.3rem">Min: <span id="ratingLabel">Any</span></div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Features</div>
+            <div class="filter-option"><input type="checkbox" id="fBar" onchange="applyFilters()"><label for="fBar">Has Bar</label></div>
+            <div class="filter-option"><input type="checkbox" id="fOutdoor" onchange="applyFilters()"><label for="fOutdoor">Outdoor Seating</label></div>
+            <div class="filter-option"><input type="checkbox" id="fPrivate" onchange="applyFilters()"><label for="fPrivate">Private Room</label></div>
+            <div class="filter-option"><input type="checkbox" id="fByo" onchange="applyFilters()"><label for="fByo">BYO Cigars</label></div>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-section-title">Sort By</div>
+            <select class="form-control" id="sortSelect" onchange="applyFilters()" style="font-size:.82rem">
+              <option value="rating">Highest Rated</option>
+              <option value="name">Name A–Z</option>
+            </select>
+          </div>
+
+          <button class="btn btn-ghost btn-sm" style="width:100%;margin-top:.5rem" onclick="clearFilters()"><i class="fa-solid fa-xmark"></i> Clear All</button>
+        </aside>
+
+        <!-- GRID -->
+        <div>
+          <div class="lounges-grid" id="loungesGrid"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer style="background:var(--s1);border-top:1px solid var(--border);padding:2rem;text-align:center">
+  <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">© 2026 Gold Label Club — <a href="/glc/index.html" style="color:var(--dim)">Home</a></div>
+</footer>
+
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+renderPublicNav('lounges');
+
+const countries = [...new Set(GLC.lounges.map(l => l.country))].sort();
+document.getElementById('countryFilters').innerHTML = countries.map(c =>
+  `<div class="filter-option"><input type="checkbox" id="c_${c.replace(/\s/g,'_')}" value="${c}" onchange="applyFilters()"><label for="c_${c.replace(/\s/g,'_')}">${c}</label></div>`
+).join('');
+
+function applyFilters() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const minRating = parseFloat(document.getElementById('ratingFilter').value);
+  const checked = [...document.querySelectorAll('[id^=c_]:checked')].map(i => i.value);
+  const fBar = document.getElementById('fBar').checked;
+  const fOutdoor = document.getElementById('fOutdoor').checked;
+  const fPrivate = document.getElementById('fPrivate').checked;
+  const fByo = document.getElementById('fByo').checked;
+  const sort = document.getElementById('sortSelect').value;
+
+  let filtered = GLC.lounges.filter(l => {
+    if (search && !l.name.toLowerCase().includes(search) && !l.city.toLowerCase().includes(search)) return false;
+    if (minRating > 0 && l.ratings.overall < minRating) return false;
+    if (checked.length && !checked.includes(l.country)) return false;
+    if (fBar && !l.features.bar) return false;
+    if (fOutdoor && !l.features.outdoor) return false;
+    if (fPrivate && !l.features.privateLounge) return false;
+    if (fByo && !l.features.byo) return false;
+    return true;
+  }).sort((a, b) => sort === 'rating' ? b.ratings.overall - a.ratings.overall : a.name.localeCompare(b.name));
+
+  document.getElementById('resultCount').textContent = `${filtered.length} lounge${filtered.length !== 1 ? 's' : ''} found`;
+
+  document.getElementById('loungesGrid').innerHTML = filtered.map(l => `
+  <a href="/glc/lounge.html?id=${l.id}" style="text-decoration:none">
+    <div class="card card-gold lounge-card" style="height:100%">
+      <div class="lounge-img">
+        <img src="${l.img}" alt="${l.name}"/>
+        <div class="lounge-rating"><i class="fa-solid fa-star"></i> ${l.ratings.overall}</div>
+        ${l.isFeatured ? '<span class="badge badge-gold" style="position:absolute;top:.5rem;left:.5rem;font-size:.42rem">Featured</span>' : ''}
+      </div>
+      <div class="card-body">
+        <div class="lounge-name">${l.name}</div>
+        <div class="lounge-loc"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i>${l.city}, ${l.country}</div>
+        <div style="margin-bottom:.7rem">${GLC.renderStars(l.ratings.overall)}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem">
+          ${l.features.bar ? '<span class="lounge-tag">Bar</span>' : ''}
+          ${l.features.outdoor ? '<span class="lounge-tag">Outdoor</span>' : ''}
+          ${l.features.privateLounge ? '<span class="lounge-tag">Private Room</span>' : ''}
+          <span class="lounge-tag">${l.priceLevel}</span>
+        </div>
+        <div style="font-size:.78rem;color:var(--dim)">Best for: ${l.bestFor.slice(0,2).join(', ')}</div>
+      </div>
+    </div>
+  </a>`).join('') || '<p class="muted" style="text-align:center;padding:3rem;grid-column:1/-1">No lounges match your filters.</p>';
+}
+
+function updateRatingLabel() {
+  const v = document.getElementById('ratingFilter').value;
+  document.getElementById('ratingLabel').textContent = v > 0 ? v : 'Any';
+}
+
+function clearFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('ratingFilter').value = 0;
+  document.getElementById('ratingLabel').textContent = 'Any';
+  document.querySelectorAll('input[type=checkbox]').forEach(c => c.checked = false);
+  applyFilters();
+}
+
+applyFilters();
+</script>
+</body>
+</html>

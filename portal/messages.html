@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Messages — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content" style="overflow:hidden">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Messages</span>
+      </div>
+      <div class="topbar-right">
+        <button class="topbar-btn" title="New Message" onclick="showNewMsg()"><i class="fa-solid fa-edit"></i></button>
+      </div>
+    </div>
+
+    <div class="msg-layout" id="msgLayout">
+      <!-- CONVERSATION LIST -->
+      <div class="conv-list">
+        <div class="conv-header">Direct Messages</div>
+        <div id="convList"></div>
+      </div>
+
+      <!-- CHAT AREA -->
+      <div class="chat-area" id="chatArea">
+        <div class="chat-empty" id="chatEmpty">
+          <i class="fa-solid fa-message"></i>
+          <p>Select a conversation to begin</p>
+        </div>
+        <div id="activeChat" style="display:none;flex-direction:column;height:100%">
+          <div class="chat-header" id="chatHeader"></div>
+          <div class="chat-messages" id="chatMessages"></div>
+          <div class="chat-input-bar">
+            <textarea class="chat-input" id="msgInput" placeholder="Write a message…" rows="1" onkeydown="handleMsgKey(event)"></textarea>
+            <button class="btn btn-gold btn-sm" onclick="sendMsg()"><i class="fa-solid fa-paper-plane"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW MESSAGE MODAL -->
+<div class="modal-overlay" id="newMsgModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">New Message</span>
+      <button class="modal-close" onclick="closeModal('newMsgModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">To</label>
+        <select class="form-control" id="newMsgTo">
+          <option value="" disabled selected>Select a member…</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">Message</label>
+        <textarea class="form-control" id="newMsgText" placeholder="Write your message…" rows="4"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal('newMsgModal')">Cancel</button>
+      <button class="btn btn-gold" onclick="startConversation()"><i class="fa-solid fa-paper-plane"></i> Send</button>
+    </div>
+  </div>
+</div>
+
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+const user = GLC_AUTH.guard();
+if (!user) throw '';
+renderPortalNav('messages');
+
+// Sample conversations
+const conversations = [
+  { id:'c1', memberId:'u2', lastMsg:'See you at the Black Label Evening!', time:'2h ago', unread:2, messages:[
+    {from:'u2',text:'Hey Ben, are you planning to attend the founder\'s night?',time:'Yesterday 4:12 PM'},
+    {from:'u1',text:'Absolutely — wouldn\'t miss it. You?',time:'Yesterday 4:45 PM'},
+    {from:'u2',text:'100%. See you at the Black Label Evening!',time:'2h ago'},
+  ]},
+  { id:'c2', memberId:'u5', lastMsg:'That Padron was exceptional.', time:'1d ago', unread:0, messages:[
+    {from:'u5',text:'Ben, incredible event last month.',time:'2d ago 7:30 PM'},
+    {from:'u1',text:'Thank you Simone — the Opus X was the highlight for me.',time:'2d ago 8:00 PM'},
+    {from:'u5',text:'That Padron was exceptional.',time:'1d ago'},
+  ]},
+  { id:'c3', memberId:'u8', lastMsg:'Nashville has some hidden gems.', time:'3d ago', unread:0, messages:[
+    {from:'u8',text:'Would love to suggest a lounge in Nashville when you\'re next here.',time:'4d ago'},
+    {from:'u1',text:'I\'d love that — send me a suggestion through the portal.',time:'3d ago'},
+    {from:'u8',text:'Nashville has some hidden gems.',time:'3d ago'},
+  ]},
+];
+
+let activeConvId = null;
+
+function renderConvList() {
+  document.getElementById('convList').innerHTML = conversations.map(c => {
+    const m = GLC.getMemberById(c.memberId);
+    return `
+    <div class="conv-item ${activeConvId===c.id?'active':''}" onclick="openConv('${c.id}')">
+      <img src="${m.avatar}" class="conv-av" alt="${m.name}"/>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div class="conv-name">${m.name}</div>
+          <div class="conv-time">${c.time}</div>
+        </div>
+        <div class="conv-preview">${c.lastMsg}</div>
+      </div>
+      ${c.unread>0?`<span class="nav-badge">${c.unread}</span>`:''}
+    </div>`;
+  }).join('');
+}
+
+function openConv(id) {
+  activeConvId = id;
+  const conv = conversations.find(c => c.id===id);
+  const m = GLC.getMemberById(conv.memberId);
+  conv.unread = 0;
+
+  document.getElementById('chatEmpty').style.display = 'none';
+  document.getElementById('activeChat').style.display = 'flex';
+
+  document.getElementById('chatHeader').innerHTML = `
+    <img src="${m.avatar}" class="conv-av" alt="${m.name}"/>
+    <div>
+      <div style="font-family:var(--fh);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--cream)">${m.name}</div>
+      <div style="font-size:.78rem;color:var(--muted);font-style:italic">${m.city}</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:.5rem">
+      <button class="btn btn-ghost btn-sm" title="View Profile" onclick="window.location='/portal/members.html'"><i class="fa-solid fa-user"></i></button>
+    </div>`;
+
+  renderMessages(conv.messages);
+  renderConvList();
+
+  // Mobile: show chat
+  document.getElementById('msgLayout').classList.remove('show-list');
+}
+
+function renderMessages(messages) {
+  const box = document.getElementById('chatMessages');
+  box.innerHTML = messages.map(msg => {
+    const isOwn = msg.from === (GLC_AUTH.currentUser()?.id||'u1');
+    const sender = GLC.getMemberById(msg.from);
+    return `
+    <div class="msg-bubble-wrap ${isOwn?'own':''}">
+      <img src="${sender?.avatar}" class="msg-av-sm" alt="${sender?.name}"/>
+      <div>
+        <div class="msg-meta-sm">${isOwn?'You':sender?.name?.split(' ')[0]} · ${msg.time}</div>
+        <div class="msg-bubble">${msg.text}</div>
+      </div>
+    </div>`;
+  }).join('');
+  box.scrollTop = box.scrollHeight;
+}
+
+function sendMsg() {
+  const input = document.getElementById('msgInput');
+  const text = input.value.trim();
+  if (!text || !activeConvId) return;
+
+  const conv = conversations.find(c => c.id === activeConvId);
+  const newMsg = { from: GLC_AUTH.currentUser()?.id||'u1', text, time:'Just now' };
+  conv.messages.push(newMsg);
+  conv.lastMsg = text;
+  conv.time = 'Just now';
+
+  input.value = '';
+  input.style.height = '';
+  renderMessages(conv.messages);
+  renderConvList();
+}
+
+function handleMsgKey(e) {
+  if (e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+}
+
+document.getElementById('msgInput').addEventListener('input', function(){
+  this.style.height='auto';
+  this.style.height=Math.min(this.scrollHeight,110)+'px';
+});
+
+function showNewMsg() {
+  const select = document.getElementById('newMsgTo');
+  select.innerHTML = '<option value="" disabled selected>Select a member…</option>' +
+    GLC.members.filter(m=>m.id!==(GLC_AUTH.currentUser()?.id||'u1')).map(m =>
+      `<option value="${m.id}">${m.name} — ${m.city}</option>`
+    ).join('');
+  openModal('newMsgModal');
+}
+
+function startConversation() {
+  const toId = document.getElementById('newMsgTo').value;
+  const text = document.getElementById('newMsgText').value.trim();
+  if (!toId || !text) { showToast('Please select a member and write a message.'); return; }
+
+  const existing = conversations.find(c => c.memberId === toId);
+  if (existing) {
+    existing.messages.push({from:GLC_AUTH.currentUser()?.id||'u1',text,time:'Just now'});
+    existing.lastMsg = text;
+    closeModal('newMsgModal');
+    openConv(existing.id);
+    return;
+  }
+
+  const newConv = {id:'c'+Date.now(),memberId:toId,lastMsg:text,time:'Just now',unread:0,messages:[{from:GLC_AUTH.currentUser()?.id||'u1',text,time:'Just now'}]};
+  conversations.unshift(newConv);
+  closeModal('newMsgModal');
+  renderConvList();
+  openConv(newConv.id);
+  showToast('Message sent!');
+}
+
+renderConvList();
+</script>
+</body>
+</html>

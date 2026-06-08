@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Events — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .events-hero{min-height:38vh;background-image:url('https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1800&q=80');}
+    .events-hero h1{font-size:clamp(2rem,4vw,3.2rem);}
+    .events-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1.4rem;}
+    .pub-event-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .25s;}
+    .pub-event-card:hover{border-color:var(--gold-d);}
+    .pub-event-img{width:100%;height:200px;object-fit:cover;display:block;}
+    .pub-event-body{padding:1.4rem;}
+    .pub-event-date{font-family:var(--fh);font-size:.55rem;letter-spacing:.32em;text-transform:uppercase;color:var(--gold);margin-bottom:.5rem;}
+    .pub-event-title{font-family:var(--fh);font-size:1rem;letter-spacing:.05em;color:var(--cream);margin-bottom:.4rem;}
+    .pub-event-city{font-size:.85rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;margin-bottom:.6rem;}
+    .pub-event-desc{font-size:.88rem;color:var(--ivory);line-height:1.7;margin-bottom:.8rem;}
+    .past-card{opacity:.7;}
+    .past-card:hover{opacity:1;}
+    .filter-bar{display:flex;gap:.7rem;flex-wrap:wrap;align-items:center;margin-bottom:2rem;}
+  </style>
+</head>
+<body>
+<div id="pubNav"></div>
+<div class="pub-mobile-menu" id="pubMobileMenu"></div>
+<main class="pub-page">
+
+  <!-- HERO -->
+  <section class="pub-hero events-hero" style="min-height:38vh">
+    <div class="pub-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=1800&q=80')"></div>
+    <div class="pub-hero-overlay"></div>
+    <div class="pub-hero-content" style="padding-top:4rem">
+      <p class="eyebrow" style="margin-bottom:.8rem">The Calendar</p>
+      <h1>Club Events</h1>
+      <p style="color:var(--ivory);font-style:italic;font-size:1rem;margin-top:.5rem">Gatherings crafted for those who appreciate the finer things.</p>
+    </div>
+  </section>
+
+  <!-- EVENTS -->
+  <section class="pub-section">
+    <div class="pub-section-inner">
+
+      <div class="filter-bar">
+        <span style="font-family:var(--fh);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim)">Filter:</span>
+        <div class="filter-chip active" onclick="setFilter('upcoming',this)">Upcoming</div>
+        <div class="filter-chip" onclick="setFilter('past',this)">Past Events</div>
+        <div class="filter-chip" onclick="setFilter('all',this)">All</div>
+      </div>
+
+      <div class="events-grid" id="eventsGrid"></div>
+    </div>
+  </section>
+
+  <!-- MEMBERS CTA -->
+  <section class="pub-section" style="background:var(--s1);border-top:1px solid var(--border);text-align:center">
+    <div class="pub-section-inner narrow">
+      <p class="eyebrow" style="margin-bottom:.8rem">Members Only</p>
+      <h2 style="margin-bottom:1rem">See the Full Picture</h2>
+      <p style="color:var(--muted);margin-bottom:1.5rem">Members get full event details, private itineraries, photo galleries, RSVP access, and the ability to see who else is attending.</p>
+      <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap">
+        <a href="/portal/login.html" class="btn btn-outline">Member Login</a>
+        <a href="/glc/about.html#apply" class="btn btn-gold">Request Membership</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer style="background:var(--s1);border-top:1px solid var(--border);padding:2rem;text-align:center">
+  <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">© 2026 Gold Label Club — <a href="/glc/index.html" style="color:var(--dim)">Home</a></div>
+</footer>
+
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+renderPublicNav('events');
+
+let activeFilter = 'upcoming';
+
+function setFilter(f, el) {
+  activeFilter = f;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderEvents();
+}
+
+function renderEvents() {
+  const now = new Date();
+  let events = GLC.events.filter(e => {
+    const d = new Date(e.date + 'T12:00:00');
+    if (activeFilter === 'upcoming') return d >= now;
+    if (activeFilter === 'past') return d < now;
+    return true;
+  }).sort((a, b) => {
+    const da = new Date(a.date), db = new Date(b.date);
+    return activeFilter === 'past' ? db - da : da - db;
+  });
+
+  const isPast = activeFilter === 'past';
+
+  document.getElementById('eventsGrid').innerHTML = events.map(ev => {
+    const dp = GLC.getDateParts(ev.date);
+    // Public: show title, date, city, short description, badges only
+    // NEVER show: attendee counts, member names, RSVP lists, private photos
+    const desc = ev.description.split('.')[0] + '.';
+    return `
+    <div class="pub-event-card ${isPast ? 'past-card' : ''}">
+      <img src="${ev.img}" alt="${ev.title}" class="pub-event-img" style="${isPast ? 'filter:grayscale(.5)' : ''}" />
+      <div class="pub-event-body">
+        <div style="display:flex;gap:.4rem;margin-bottom:.6rem">
+          ${ev.isPrivate ? '<span class="badge badge-private"><i class="fa-solid fa-lock"></i> Private</span>' : '<span class="badge badge-gray">Open</span>'}
+          ${isPast ? '<span class="badge badge-gray">Past Event</span>' : ''}
+          ${ev.tags.slice(0,1).map(t => `<span class="badge badge-gray">${t}</span>`).join('')}
+        </div>
+        <div class="pub-event-date">${dp.dow}, ${dp.month} ${dp.day}, ${dp.year}</div>
+        <div class="pub-event-title">${ev.title}</div>
+        <div class="pub-event-city"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i>${ev.location.split(',').slice(-2).join(',').trim()}</div>
+        <div class="pub-event-desc">${desc}</div>
+        <div style="display:flex;gap:.5rem;font-family:var(--fh);font-size:.5rem;letter-spacing:.15em;text-transform:uppercase;color:var(--dim)">
+          <span><i class="fa-solid fa-clock" style="color:var(--gold-d)"></i> ${ev.time}</span>
+          ${ev.dressCode ? `<span>· ${ev.dressCode.split('—')[0].trim()}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') || '<p class="muted" style="text-align:center;padding:3rem;grid-column:1/-1">No events in this category.</p>';
+}
+
+renderEvents();
+</script>
+</body>
+</html>

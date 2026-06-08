@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Event — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .event-layout{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;}
+    .detail-row{display:flex;align-items:flex-start;gap:.9rem;padding:.85rem 0;border-bottom:1px solid var(--border);}
+    .detail-row:last-child{border-bottom:none;}
+    .detail-icon{width:30px;text-align:center;color:var(--gold-d);font-size:.9rem;flex-shrink:0;}
+    .detail-key{font-family:var(--fh);font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:.2rem;}
+    .detail-val{font-size:.92rem;color:var(--cream);}
+    .attendee-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:.5rem;margin-top:.8rem;}
+    .attendee-chip{display:flex;align-items:center;gap:.5rem;background:var(--s3);border:1px solid var(--border);border-radius:var(--radius);padding:.45rem .7rem;}
+    .attendee-chip img{width:24px;height:24px;border-radius:50%;object-fit:cover;}
+    .attendee-chip span{font-size:.78rem;color:var(--ivory);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    @media(max-width:900px){.event-layout{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <a href="/portal/events.html" style="color:var(--muted);font-size:.8rem"><i class="fa-solid fa-arrow-left"></i> Events</a>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+const user = GLC_AUTH.guard(); if(!user) throw '';
+renderPortalNav('events');
+
+const params = new URLSearchParams(window.location.search);
+let ev = GLC.getEventById(params.get('id')) || GLC.events[0];
+
+function render() {
+  const dp=GLC.getDateParts(ev.date),ct=GLC.getRsvpCounts(ev),rv=GLC.getUserRsvp(ev);
+  const goers=ev.rsvps.going.map(id=>GLC.getMemberById(id)).filter(Boolean);
+  const interested=ev.rsvps.interested.map(id=>GLC.getMemberById(id)).filter(Boolean);
+  document.title=`${ev.title} — Gold Label Club`;
+
+  document.getElementById('pageBody').innerHTML = `
+  <div style="position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:1.5rem;border:1px solid var(--border)">
+    <img src="${ev.img}" style="width:100%;height:340px;object-fit:cover"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(7,6,5,.8) 0%,transparent 50%)"></div>
+    <div style="position:absolute;top:1rem;left:1rem;display:flex;gap:.4rem">
+      ${ev.isPrivate?'<span class="badge badge-private"><i class="fa-solid fa-lock"></i> Private</span>':''}
+      ${ev.tags.map(t=>`<span class="badge badge-gray">${t}</span>`).join('')}
+    </div>
+  </div>
+
+  <div class="event-layout">
+    <div>
+      <p class="eyebrow" style="margin-bottom:.4rem">${dp.dow}, ${dp.month} ${dp.day}, ${dp.year}</p>
+      <h1 style="margin-bottom:.3rem">${ev.title}</h1>
+      <p style="font-style:italic;color:var(--muted);margin-bottom:1.2rem">${ev.subtitle}</p>
+
+      <!-- RSVP -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-body">
+          <div style="font-family:var(--fh);font-size:.6rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem">Your RSVP</div>
+          <div class="rsvp-group">
+            <button class="rsvp-btn ${rv==='going'?'going':''}" onclick="doRsvp('going')"><i class="fa-solid fa-check"></i> Going (${ct.going})</button>
+            <button class="rsvp-btn ${rv==='interested'?'interested':''}" onclick="doRsvp('interested')"><i class="fa-solid fa-star"></i> Interested (${ct.interested})</button>
+            <button class="rsvp-btn ${rv==='notGoing'?'notgoing':''}" onclick="doRsvp('notGoing')"><i class="fa-solid fa-xmark"></i> Not Going (${ct.notGoing})</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- DESCRIPTION -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header"><h4>About This Event</h4></div>
+        <div class="card-body"><p>${ev.description}</p></div>
+      </div>
+
+      <!-- ATTENDEES — private, members only -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <h4>Who's Going</h4>
+          <span style="font-family:var(--fh);font-size:.58rem;color:var(--muted)">${ct.going} confirmed · <i class="fa-solid fa-lock" style="color:var(--gold-d)"></i> Members only</span>
+        </div>
+        <div class="card-body">
+          ${goers.length?`<div class="attendee-grid">${goers.map(m=>`<div class="attendee-chip"><img src="${m.avatar}" alt="${m.name}"/><span>${m.name.split(' ')[0]}</span></div>`).join('')}</div>`:'<p class="muted" style="font-size:.88rem">No confirmed RSVPs yet.</p>'}
+          ${interested.length?`
+          <div style="margin-top:1rem">
+            <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.5rem">${ct.interested} Interested</div>
+            <div class="avatar-stack">${interested.slice(0,8).map(m=>`<img class="av" src="${m.avatar}" title="${m.name}"/>`).join('')}${ct.interested>8?`<div class="av av-more">+${ct.interested-8}</div>`:''}</div>
+          </div>`:''}
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div>
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-header"><h4>Event Details</h4></div>
+        <div class="card-body" style="padding:.5rem 1.2rem">
+          ${[
+            ['fa-regular fa-calendar','Date',GLC.formatDate(ev.date)],
+            ['fa-solid fa-clock','Time',`${ev.time} – ${ev.endTime}`],
+            ['fa-solid fa-location-dot','Location',ev.location,ev.address],
+            ['fa-solid fa-user-tie','Host',ev.host],
+            ['fa-solid fa-shirt','Dress Code',ev.dressCode],
+            ['fa-solid fa-fire','Featured Cigar',ev.featuredCigar],
+          ].map(([icon,key,val,sub])=>`
+          <div class="detail-row">
+            <div class="detail-icon"><i class="${icon}"></i></div>
+            <div><div class="detail-key">${key}</div><div class="detail-val">${val}</div>${sub?`<div style="font-size:.78rem;color:var(--muted)">${sub}</div>`:''}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-body">
+          <div style="font-family:var(--fh);font-size:.58rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem">RSVP Summary</div>
+          <div style="display:flex;justify-content:space-between;text-align:center">
+            <div><div style="font-family:var(--fh);font-size:1.5rem;color:#7ecca0">${ct.going}</div><div style="font-family:var(--fh);font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">Going</div></div>
+            <div><div style="font-family:var(--fh);font-size:1.5rem;color:var(--gold)">${ct.interested}</div><div style="font-family:var(--fh);font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">Interested</div></div>
+            <div><div style="font-family:var(--fh);font-size:1.5rem;color:#e09090">${ct.notGoing}</div><div style="font-family:var(--fh);font-size:.48rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dim)">Not Going</div></div>
+          </div>
+        </div>
+      </div>
+
+      <a href="/portal/events.html" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fa-solid fa-arrow-left"></i> Back to Events</a>
+    </div>
+  </div>`;
+}
+
+function doRsvp(s){handleRsvp(ev.id,s);render();}
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Calendar — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .cal-controls{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;flex-wrap:wrap;gap:.8rem;}
+    .cal-month-label{font-family:var(--fh);font-size:1rem;letter-spacing:.1em;color:var(--cream);}
+    .cal-nav{display:flex;gap:.4rem;}
+    .cal-nav button{background:var(--s2);border:1px solid var(--border);color:var(--muted);width:32px;height:32px;border-radius:var(--radius);font-size:.8rem;transition:all .2s;}
+    .cal-nav button:hover{border-color:var(--gold-d);color:var(--gold);}
+    .list-ev{display:grid;grid-template-columns:70px 1fr auto;gap:1rem;align-items:start;padding:1.1rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:.7rem;transition:border-color .2s;}
+    .list-ev:hover{border-color:var(--border2);}
+    .list-date{text-align:center;background:var(--s3);border:1px solid var(--border);padding:.6rem .3rem;}
+    .list-date-mon{font-family:var(--fh);font-size:.5rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);display:block;}
+    .list-date-day{font-family:var(--fh);font-size:1.5rem;font-weight:600;color:var(--cream);line-height:1;display:block;}
+    .list-date-dow{font-family:var(--fh);font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:block;}
+  </style>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Calendar</span>
+      </div>
+    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+const user = GLC_AUTH.guard(); if(!user) throw '';
+renderPortalNav('calendar');
+
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_S=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+let viewMode='month', currentDate=new Date();
+
+function getEventsForDay(y,m,d){return GLC.events.filter(e=>{const dt=new Date(e.date+'T12:00:00');return dt.getFullYear()===y&&dt.getMonth()===m&&dt.getDate()===d;});}
+
+function renderMonth(){
+  const y=currentDate.getFullYear(),m=currentDate.getMonth();
+  const firstDay=new Date(y,m,1).getDay(),daysInMonth=new Date(y,m+1,0).getDate();
+  const today=new Date();
+  return `<div class="cal-grid">
+    ${DAYS_S.map(d=>`<div class="cal-dow">${d}</div>`).join('')}
+    ${Array(firstDay).fill('<div class="cal-day other-month"></div>').join('')}
+    ${Array.from({length:daysInMonth},(_,i)=>{
+      const day=i+1,isToday=day===today.getDate()&&m===today.getMonth()&&y===today.getFullYear();
+      const evs=getEventsForDay(y,m,day);
+      return `<div class="cal-day ${isToday?'today':''}">
+        <span class="cal-day-num">${day}</span>
+        ${evs.map(e=>`<a href="/portal/event.html?id=${e.id}" class="cal-ev-pill ${e.isPrivate?'private':''}" style="text-decoration:none">${e.isPrivate?'🔒 ':''}${e.title}</a>`).join('')}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderList(){
+  const now=new Date();
+  const events=GLC.events.filter(e=>new Date(e.date+'T12:00:00')>=now).sort((a,b)=>new Date(a.date)-new Date(b.date));
+  if(!events.length) return '<p class="muted" style="text-align:center;padding:3rem">No upcoming events.</p>';
+  return events.map(e=>{
+    const dp=GLC.getDateParts(e.date),ct=GLC.getRsvpCounts(e),rv=GLC.getUserRsvp(e);
+    return `<div class="list-ev">
+      <div class="list-date"><span class="list-date-mon">${dp.month}</span><span class="list-date-day">${dp.day}</span><span class="list-date-dow">${dp.dow.slice(0,3)}</span></div>
+      <div>
+        <div style="display:flex;gap:.3rem;margin-bottom:.3rem">${e.isPrivate?'<span class="badge badge-private" style="font-size:.42rem"><i class="fa-solid fa-lock"></i> Private</span>':''}${e.tags.map(t=>`<span class="badge badge-gray" style="font-size:.42rem">${t}</span>`).join('')}</div>
+        <div style="font-family:var(--fh);font-size:.88rem;letter-spacing:.05em;color:var(--cream);margin-bottom:.3rem">${e.title}</div>
+        <div style="font-size:.8rem;color:var(--muted)"><i class="fa-solid fa-clock" style="color:var(--gold-d)"></i> ${e.time} &nbsp;·&nbsp; <i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${e.location.split(',')[0]} &nbsp;·&nbsp; <i class="fa-solid fa-check" style="color:#7ecca0"></i> ${ct.going} going</div>
+        <div class="rsvp-group" style="margin-top:.6rem;gap:.3rem">
+          <button class="rsvp-btn ${rv==='going'?'going':''}" style="padding:.3rem .6rem;font-size:.46rem" onclick="handleRsvp('${e.id}','going');render()">✓ Going</button>
+          <button class="rsvp-btn ${rv==='interested'?'interested':''}" style="padding:.3rem .6rem;font-size:.46rem" onclick="handleRsvp('${e.id}','interested');render()">★ Interested</button>
+        </div>
+      </div>
+      <a href="/portal/event.html?id=${e.id}" class="btn btn-outline btn-sm" style="white-space:nowrap;flex-shrink:0">Details →</a>
+    </div>`;
+  }).join('');
+}
+
+function render(){
+  const y=currentDate.getFullYear(),m=currentDate.getMonth();
+  const navLabel=viewMode==='month'?`${MONTHS[m]} ${y}`:viewMode==='list'?'Upcoming Events':'';
+  document.getElementById('pageBody').innerHTML=`
+  <div class="cal-controls">
+    <div style="display:flex;align-items:center;gap:1rem">
+      <div class="cal-nav">
+        <button onclick="nav(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+        <button onclick="goToday()">Today</button>
+        <button onclick="nav(1)"><i class="fa-solid fa-chevron-right"></i></button>
+      </div>
+      <span class="cal-month-label">${navLabel}</span>
+    </div>
+    <div class="tabs" style="margin:0;border:none;gap:.2rem">
+      <button class="tab-btn ${viewMode==='month'?'active':''}" onclick="setView('month')"><i class="fa-solid fa-calendar"></i> Month</button>
+      <button class="tab-btn ${viewMode==='list'?'active':''}" onclick="setView('list')"><i class="fa-solid fa-list"></i> Agenda</button>
+    </div>
+  </div>
+  ${viewMode==='month'?renderMonth():renderList()}`;
+}
+
+function nav(d){if(viewMode==='month')currentDate.setMonth(currentDate.getMonth()+d);render();}
+function goToday(){currentDate=new Date();render();}
+function setView(v){viewMode=v;render();}
+render();
+</script>
+</body>
+</html>

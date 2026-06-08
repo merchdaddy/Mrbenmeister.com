@@ -1,294 +1,278 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gold Label Club — Members</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Dashboard — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --black:  #060504;
-      --deep:   #0e0c09;
-      --panel:  #131109;
-      --dark:   #1a1714;
-      --gold:   #c9a84c;
-      --gold-d: #7a6330;
-      --cream:  #f0ead8;
-      --ivory:  #c8bfad;
-      --muted:  #7a7060;
-      --border: #22201a;
-      --active: rgba(201,168,76,0.07);
-    }
-    html, body { height:100%; font-family:'Cormorant Garamond',serif; background:var(--black); color:var(--cream); overflow:hidden; }
-
-    .app { display:flex; height:100vh; }
-
-    /* SIDEBAR */
-    .sidebar { width:230px; flex-shrink:0; background:var(--deep); border-right:1px solid var(--border); display:flex; flex-direction:column; }
-
-    .sb-logo { display:flex; flex-direction:column; align-items:center; gap:0.4rem; padding:1.8rem 1.5rem 1.5rem; border-bottom:1px solid var(--border); }
-    .sb-logo img { width:55px; height:55px; object-fit:contain; }
-    .sb-wordmark { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.32em; text-transform:uppercase; color:var(--gold); text-align:center; }
-
-    .nav-item { display:flex; align-items:center; gap:0.8rem; padding:0.9rem 1.6rem; cursor:pointer; font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.22em; text-transform:uppercase; color:var(--muted); border-left:2px solid transparent; transition:all 0.2s; user-select:none; }
-    .nav-item:hover { color:var(--ivory); background:var(--active); }
-    .nav-item.active { color:var(--gold); border-left-color:var(--gold); background:var(--active); }
-    .nav-icon { font-size:0.9rem; }
-
-    .sb-foot { margin-top:auto; padding:1.4rem 1.6rem; border-top:1px solid var(--border); }
-    .sb-user { font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.18em; text-transform:uppercase; color:var(--muted); margin-bottom:0.7rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .btn-logout { font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.18em; text-transform:uppercase; color:#3a3530; background:none; border:none; cursor:pointer; transition:color 0.2s; padding:0; }
-    .btn-logout:hover { color:var(--muted); }
-
-    /* MAIN */
-    .main { flex:1; display:flex; flex-direction:column; overflow:hidden; min-width:0; }
-
-    .topbar { padding:1.1rem 1.8rem; border-bottom:1px solid var(--border); background:var(--deep); display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
-    .topbar-title { font-family:'Cinzel',serif; font-size:0.7rem; letter-spacing:0.28em; text-transform:uppercase; color:var(--gold); }
-    .topbar-date { font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.82rem; color:var(--muted); }
-
-    /* VIEWS */
-    .view { flex:1; overflow:hidden; display:none; flex-direction:column; }
-    .view.active { display:flex; }
-
-    /* ── CHAT ── */
-    .chat-messages {
-      flex:1; overflow-y:auto; padding:1.5rem 2rem;
-      display:flex; flex-direction:column; gap:1.1rem;
-      scrollbar-width:thin; scrollbar-color:var(--border) transparent;
-    }
-
-    .chat-intro { text-align:center; padding:2rem 1rem; font-style:italic; font-size:0.9rem; color:var(--muted); }
-
-    .msg { display:flex; gap:0.9rem; max-width:640px; }
-    .msg.own { align-self:flex-end; flex-direction:row-reverse; }
-
-    .msg-av { width:34px; height:34px; border-radius:50%; background:var(--dark); border:1px solid var(--gold-d); display:flex; align-items:center; justify-content:center; font-family:'Cinzel',serif; font-size:0.6rem; color:var(--gold); flex-shrink:0; }
-    .msg-body { display:flex; flex-direction:column; gap:0.25rem; }
-    .msg-meta { display:flex; align-items:baseline; gap:0.5rem; }
-    .msg.own .msg-meta { flex-direction:row-reverse; }
-    .msg-author { font-family:'Cinzel',serif; font-size:0.55rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--gold-d); }
-    .msg-time { font-size:0.75rem; color:#3a3530; }
-    .msg-bubble { background:var(--panel); border:1px solid var(--border); padding:0.7rem 1rem; font-size:0.98rem; color:var(--ivory); line-height:1.6; word-break:break-word; }
-    .msg.own .msg-bubble { background:var(--dark); border-color:var(--gold-d); }
-
-    .chat-bar { padding:1rem 1.8rem; border-top:1px solid var(--border); background:var(--deep); display:flex; gap:0.9rem; align-items:flex-end; flex-shrink:0; }
-    .chat-input { flex:1; background:var(--panel); border:none; border-bottom:1px solid var(--border); color:var(--cream); font-family:'Cormorant Garamond',serif; font-size:1rem; padding:0.7rem 0.8rem; outline:none; resize:none; max-height:110px; line-height:1.5; transition:border-color 0.25s; }
-    .chat-input::placeholder { color:#3a3530; font-style:italic; }
-    .chat-input:focus { border-bottom-color:var(--gold); }
-    .send-btn { padding:0.7rem 1.4rem; background:transparent; border:1px solid var(--gold); color:var(--gold); font-family:'Cinzel',serif; font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase; cursor:pointer; transition:all 0.3s; white-space:nowrap; flex-shrink:0; }
-    .send-btn:hover { background:var(--gold); color:var(--black); }
-
-    /* ── EVENTS ── */
-    .events-scroll { flex:1; overflow-y:auto; padding:2rem; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
-    .ev-header { font-family:'Cinzel',serif; font-size:0.62rem; letter-spacing:0.35em; text-transform:uppercase; color:var(--gold); margin-bottom:1.5rem; padding-bottom:1rem; border-bottom:1px solid var(--border); }
-    .ev-empty { text-align:center; padding:4rem 2rem; font-style:italic; color:var(--muted); }
-
-    .ev-card { background:var(--panel); border:1px solid var(--border); border-left:2px solid var(--gold-d); padding:1.6rem 1.8rem; margin-bottom:0.9rem; display:grid; grid-template-columns:72px 1fr; gap:1.4rem; transition:border-left-color 0.25s; }
-    .ev-card:hover { border-left-color:var(--gold); }
-    .ev-date-block { text-align:center; background:var(--dark); border:1px solid var(--border); padding:0.7rem 0.4rem; }
-    .ev-mon { font-family:'Cinzel',serif; font-size:0.52rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--gold); display:block; }
-    .ev-day { font-family:'Cinzel',serif; font-size:1.7rem; font-weight:600; color:var(--cream); line-height:1; display:block; margin:0.15rem 0; }
-    .ev-dow { font-family:'Cinzel',serif; font-size:0.48rem; letter-spacing:0.25em; text-transform:uppercase; color:var(--muted); display:block; }
-    .ev-title { font-family:'Cinzel',serif; font-size:0.9rem; letter-spacing:0.1em; color:var(--cream); margin-bottom:0.45rem; }
-    .ev-detail { font-style:italic; font-size:0.88rem; color:var(--muted); margin-bottom:0.2rem; }
-    .ev-tag { display:inline-block; font-family:'Cinzel',serif; font-size:0.5rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--gold-d); border:1px solid var(--border); padding:0.18rem 0.55rem; margin-top:0.5rem; }
-
-    @media (max-width: 640px) {
-      .sidebar { display:none; }
-      .topbar-date { display:none; }
-    }
+    .dash-grid{display:grid;grid-template-columns:1fr 300px;gap:1.5rem;}
+    .dash-left{display:flex;flex-direction:column;gap:1.5rem;}
+    .dash-right{display:flex;flex-direction:column;gap:1.5rem;}
+    .events-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;}
+    .cigar-card{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;display:flex;}
+    .cigar-img{width:110px;flex-shrink:0;object-fit:cover;}
+    .cigar-body{padding:1.1rem;flex:1;}
+    .cigar-stats{display:flex;gap:1.2rem;margin-top:.7rem;}
+    .cigar-stat-val{font-family:var(--fh);font-size:.72rem;color:var(--gold);}
+    .cigar-stat-key{font-family:var(--fh);font-size:.46rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);}
+    .quick-links{display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;}
+    .quick-link{background:var(--s2);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem;text-align:center;transition:all .2s;display:block;cursor:pointer;}
+    .quick-link:hover{border-color:var(--gold-d);background:var(--gold-glow);}
+    .quick-link i{font-size:1.1rem;color:var(--gold-d);display:block;margin-bottom:.4rem;}
+    .quick-link span{font-family:var(--fh);font-size:.5rem;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);}
+    .mini-cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;margin-top:.8rem;}
+    .mini-dow{background:var(--s3);padding:.3rem;text-align:center;font-family:var(--fh);font-size:.44rem;letter-spacing:.15em;color:var(--dim);}
+    .mini-day{background:var(--s2);padding:.35rem;text-align:center;font-family:var(--fh);font-size:.64rem;color:var(--muted);cursor:pointer;min-height:30px;display:flex;flex-direction:column;align-items:center;transition:background .15s;}
+    .mini-day:hover{background:var(--s3);color:var(--ivory);}
+    .mini-day.today{color:var(--gold);}
+    .mini-day .mini-dot{width:4px;height:4px;background:var(--gold-d);border-radius:50%;margin-top:1px;}
+    .mini-day.other{opacity:.3;}
+    .welcome-bar{background:linear-gradient(135deg,var(--s2) 0%,var(--s3) 100%);border:1px solid var(--border);border-left:3px solid var(--gold-d);border-radius:var(--radius);padding:1.3rem 1.7rem;margin-bottom:1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;}
+    @media(max-width:1100px){.dash-grid{grid-template-columns:1fr;}.events-row{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:640px){.events-row{grid-template-columns:1fr;}.cigar-card{flex-direction:column;}.cigar-img{width:100%;height:130px;}}
   </style>
 </head>
 <body>
-<div class="app">
-  <aside class="sidebar">
-    <div class="sb-logo">
-      <img src="../GLC%20Logo.png" alt="GLC" />
-      <span class="sb-wordmark">Gold Label Club</span>
-    </div>
-    <div class="nav-item active" onclick="switchView('chat',this)"><span class="nav-icon">◈</span> Chat</div>
-    <div class="nav-item" onclick="switchView('events',this)"><span class="nav-icon">◇</span> Events</div>
-    <div class="sb-foot">
-      <div class="sb-user" id="userName">Member</div>
-      <button class="btn-logout" onclick="logout()">Sign Out</button>
-    </div>
-  </aside>
-
-  <main class="main">
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar"></aside>
+  <div class="main-content">
     <div class="topbar">
-      <span class="topbar-title" id="viewTitle">Member Chat</span>
-      <span class="topbar-date" id="todayDate"></span>
-    </div>
-
-    <!-- CHAT -->
-    <div class="view active" id="chatView">
-      <div class="chat-messages" id="chatMessages">
-        <div class="chat-intro">Welcome to Gold Label Club.<br>This conversation is private to members.</div>
+      <div style="display:flex;align-items:center;gap:.8rem">
+        <button class="hamburger" id="hamburger"><i class="fa-solid fa-bars"></i></button>
+        <span class="topbar-title">Dashboard</span>
       </div>
-      <div class="chat-bar">
-        <textarea class="chat-input" id="chatInput" placeholder="Say something…" rows="1" onkeydown="handleKey(event)"></textarea>
-        <button class="send-btn" onclick="sendMsg()">Send</button>
+      <div class="topbar-right">
+        <div class="topbar-search"><i class="fa-solid fa-magnifying-glass"></i><input type="text" placeholder="Search…"/></div>
+        <button class="topbar-btn" onclick="window.location='/portal/messages.html'"><i class="fa-solid fa-message"></i><span class="dot"></span></button>
+        <button class="topbar-btn" onclick="GLC_AUTH.logout()"><i class="fa-solid fa-right-from-bracket"></i></button>
       </div>
     </div>
-
-    <!-- EVENTS -->
-    <div class="view" id="eventsView">
-      <div class="events-scroll">
-        <div class="ev-header">Upcoming Events</div>
-        <div id="evList"></div>
-      </div>
-    </div>
-  </main>
+    <div class="page-body" id="pageBody"></div>
+  </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../supabase-config.js"></script>
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
 <script>
-  const { createClient } = supabase;
-  const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const user = GLC_AUTH.guard();
+if (!user) throw new Error('redirect');
+renderPortalNav('dashboard');
 
-  let currentUser = null, profile = null;
+const upcoming = GLC.upcomingEvents();
+const featuredEvent = GLC.getEventById(GLC.featuredEventId);
+const loungeOfMonth = GLC.getLoungeById(GLC.loungeOfMonth);
+const spotlight = GLC.members.find(m => m.id === GLC.memberSpotlight.member);
+const fc = GLC.featuredCigar;
 
-  document.getElementById('todayDate').textContent =
-    new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
-
-  // Auth guard
-  sb.auth.getSession().then(async ({ data: { session } }) => {
-    if (!session) { window.location.href = 'login.html'; return; }
-    if (session.user.email === GLC_ADMIN_EMAIL) { window.location.href = 'admin.html'; return; }
-
-    const { data: p } = await sb.from('profiles').select('*').eq('id', session.user.id).single();
-    if (!p?.approved) { await sb.auth.signOut(); window.location.href = 'login.html'; return; }
-
-    currentUser = session.user;
-    profile     = p;
-    document.getElementById('userName').textContent = (p.first_name + ' ' + p.last_name).trim() || 'Member';
-
-    loadChat();
-    loadEvents();
-  });
-
-  // ── CHAT ──────────────────────────────────────────────────────────────────
-  async function loadChat() {
-    // Load last 80 messages
-    const { data } = await sb.from('messages').select('*').order('created_at', { ascending: true }).limit(80);
-    const box = document.getElementById('chatMessages');
-    box.innerHTML = '';
-    if (!data?.length) {
-      box.innerHTML = '<div class="chat-intro">Welcome to Gold Label Club.<br>This conversation is private to members.</div>';
-    } else {
-      data.forEach(m => renderMsg(m, false));
-      box.scrollTop = box.scrollHeight;
-    }
-
-    // Real-time subscription
-    sb.channel('messages-channel')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
-        // Remove intro if present
-        const intro = box.querySelector('.chat-intro');
-        if (intro) intro.remove();
-        renderMsg(payload.new, true);
-      })
-      .subscribe();
-  }
-
-  function renderMsg(m, scroll) {
-    const box    = document.getElementById('chatMessages');
-    const isOwn  = m.user_id === currentUser.id;
-    const initials = (m.user_name || '?').split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
-    const time   = new Date(m.created_at).toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-
-    const div = document.createElement('div');
-    div.className = 'msg' + (isOwn ? ' own' : '');
-    div.innerHTML = `
-      <div class="msg-av">${initials}</div>
-      <div class="msg-body">
-        <div class="msg-meta">
-          <span class="msg-author">${esc(m.user_name)}</span>
-          <span class="msg-time">${time}</span>
-        </div>
-        <div class="msg-bubble">${esc(m.content)}</div>
+function buildMiniCal() {
+  const now = new Date(), year = now.getFullYear(), month = now.getMonth();
+  const firstDay = new Date(year,month,1).getDay();
+  const daysInMonth = new Date(year,month+1,0).getDate();
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const eventDays = GLC.events.filter(e => {
+    const d = new Date(e.date+'T12:00:00');
+    return d.getMonth()===month && d.getFullYear()===year;
+  }).map(e => new Date(e.date+'T12:00:00').getDate());
+  return `
+  <div style="font-family:var(--fh);font-size:.68rem;letter-spacing:.12em;color:var(--cream);margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center">
+    <span>${MONTHS[month]} ${year}</span>
+    <a href="/portal/calendar.html" style="font-family:var(--fh);font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold-d)">Full →</a>
+  </div>
+  <div class="mini-cal-grid">
+    ${['S','M','T','W','T','F','S'].map(d=>`<div class="mini-dow">${d}</div>`).join('')}
+    ${Array(firstDay).fill('<div class="mini-day other"></div>').join('')}
+    ${Array.from({length:daysInMonth},(_,i)=>{
+      const day=i+1,isToday=day===now.getDate(),hasEv=eventDays.includes(day);
+      return `<div class="mini-day${isToday?' today':''}${hasEv?' has-event':''}" onclick="window.location='/portal/calendar.html'">
+        ${day}${hasEv?'<div class="mini-dot"></div>':''}
       </div>`;
-    box.appendChild(div);
-    if (scroll) box.scrollTop = box.scrollHeight;
-  }
+    }).join('')}
+  </div>`;
+}
 
-  async function sendMsg() {
-    const input = document.getElementById('chatInput');
-    const text  = input.value.trim();
-    if (!text) return;
-    input.value = '';
-    input.style.height = '';
+function render() {
+  const dp = GLC.getDateParts(featuredEvent.date);
+  const ct = GLC.getRsvpCounts(featuredEvent);
+  const rv = GLC.getUserRsvp(featuredEvent);
 
-    await sb.from('messages').insert({
-      user_id:   currentUser.id,
-      user_name: (profile.first_name + ' ' + profile.last_name).trim() || 'Member',
-      content:   text
-    });
-  }
+  document.getElementById('pageBody').innerHTML = `
+  <div class="welcome-bar">
+    <div>
+      <h1 style="font-size:1.15rem;margin-bottom:.2rem">Good evening, ${user.firstName}.</h1>
+      <p style="font-size:.85rem;color:var(--muted);margin:0;font-style:italic">Member since ${user.memberSince} · ${upcoming.length} upcoming events · ${GLC.lounges.length} lounges reviewed</p>
+    </div>
+    <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+      <a href="/portal/events.html" class="btn btn-ghost btn-sm"><i class="fa-solid fa-calendar-star"></i>Events</a>
+      <a href="/portal/lounges.html" class="btn btn-gold btn-sm"><i class="fa-solid fa-whiskey-glass"></i>Lounges</a>
+    </div>
+  </div>
 
-  function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
-  }
+  <!-- STATS -->
+  <div class="grid-4" style="margin-bottom:1.5rem">
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-calendar-star"></i></div><div><div class="stat-num">${upcoming.length}</div><div class="stat-label">Upcoming Events</div></div></div>
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-whiskey-glass"></i></div><div><div class="stat-num">${GLC.lounges.length}</div><div class="stat-label">Lounges Reviewed</div></div></div>
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-users"></i></div><div><div class="stat-num">${GLC.members.length}</div><div class="stat-label">Members</div></div></div>
+    <div class="stat-card"><div class="stat-icon"><i class="fa-solid fa-earth-americas"></i></div><div><div class="stat-num">${new Set(GLC.lounges.map(l=>l.country)).size}</div><div class="stat-label">Countries</div></div></div>
+  </div>
 
-  document.getElementById('chatInput').addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 110) + 'px';
-  });
+  <div class="dash-grid">
+    <div class="dash-left">
 
-  // ── EVENTS ────────────────────────────────────────────────────────────────
-  async function loadEvents() {
-    const now = new Date().toISOString();
-    const { data } = await sb.from('events').select('*').gte('event_date', now).order('event_date');
-    const list = document.getElementById('evList');
-
-    if (!data?.length) { list.innerHTML = '<div class="ev-empty">No upcoming events. Check back soon.</div>'; return; }
-
-    list.innerHTML = '';
-    data.forEach(ev => {
-      const d   = new Date(ev.event_date);
-      const mon = d.toLocaleString('en-US', { month:'short' }).toUpperCase();
-      const day = d.getDate();
-      const dow = d.toLocaleString('en-US', { weekday:'short' }).toUpperCase();
-      const t   = d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
-
-      const card = document.createElement('div');
-      card.className = 'ev-card';
-      card.innerHTML = `
-        <div class="ev-date-block">
-          <span class="ev-mon">${mon}</span>
-          <span class="ev-day">${day}</span>
-          <span class="ev-dow">${dow}</span>
+      <!-- FEATURED EVENT -->
+      <div>
+        <div class="section-head"><h2>Featured Event</h2><a href="/portal/events.html">All Events →</a></div>
+        <div class="feature-card card-gold">
+          <img src="${featuredEvent.img}" alt="${featuredEvent.title}" style="height:300px"/>
+          <div class="feature-overlay"></div>
+          <div class="feature-body">
+            <div style="display:flex;gap:.4rem;margin-bottom:.6rem">
+              ${featuredEvent.isPrivate?'<span class="badge badge-private"><i class="fa-solid fa-lock"></i> Private</span>':''}
+              <span class="badge badge-gold">Featured</span>
+            </div>
+            <div class="feature-title">${featuredEvent.title}</div>
+            <div class="feature-meta"><i class="fa-regular fa-calendar" style="color:var(--gold-d)"></i> ${dp.month} ${dp.day} · ${featuredEvent.time} · ${featuredEvent.location.split(',')[0]}</div>
+            <div style="display:flex;align-items:center;gap:.8rem;flex-wrap:wrap">
+              <div class="rsvp-group">
+                <button class="rsvp-btn ${rv==='going'?'going':''}" onclick="doRsvp('${featuredEvent.id}','going')"><i class="fa-solid fa-check"></i> Going (${ct.going})</button>
+                <button class="rsvp-btn ${rv==='interested'?'interested':''}" onclick="doRsvp('${featuredEvent.id}','interested')"><i class="fa-solid fa-star"></i> Interested (${ct.interested})</button>
+              </div>
+              <a href="/portal/event.html?id=${featuredEvent.id}" class="btn btn-gold btn-sm">Full Details →</a>
+            </div>
+          </div>
         </div>
-        <div>
-          <div class="ev-title">${esc(ev.title)}</div>
-          <div class="ev-detail">📍 ${esc(ev.location || 'Location TBA')}</div>
-          <div class="ev-detail">🕐 ${t}</div>
-          ${ev.description ? `<div class="ev-detail" style="margin-top:.4rem">${esc(ev.description)}</div>` : ''}
-          <span class="ev-tag">${esc(ev.type || 'Members Only')}</span>
-        </div>`;
-      list.appendChild(card);
-    });
-  }
+      </div>
 
-  // ── NAV ───────────────────────────────────────────────────────────────────
-  function switchView(v, el) {
-    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
-    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
-    document.getElementById(v + 'View').classList.add('active');
-    el.classList.add('active');
-    document.getElementById('viewTitle').textContent = v === 'chat' ? 'Member Chat' : 'Upcoming Events';
-  }
+      <!-- UPCOMING EVENTS -->
+      <div>
+        <div class="section-head"><h2>Upcoming Events</h2><a href="/portal/events.html">See All →</a></div>
+        <div class="events-row">
+          ${upcoming.slice(0,3).map(ev => {
+            const dp2 = GLC.getDateParts(ev.date);
+            const c2  = GLC.getRsvpCounts(ev);
+            const r2  = GLC.getUserRsvp(ev);
+            return `
+            <div class="card card-gold event-card">
+              <img src="${ev.img}" style="width:100%;height:120px;object-fit:cover"/>
+              <div class="event-date-strip">
+                <div class="date-left"><div class="date-num">${dp2.day}</div><div><span class="date-mon">${dp2.month}</span><span class="date-dow" style="font-size:.72rem;color:var(--muted)">${dp2.dow.slice(0,3)}</span></div></div>
+                ${ev.isPrivate?'<span class="badge badge-private" style="font-size:.42rem"><i class="fa-solid fa-lock"></i></span>':''}
+              </div>
+              <div class="card-body" style="padding:1rem">
+                <div class="event-title" style="font-size:.85rem">${ev.title}</div>
+                <div class="event-meta" style="margin:.4rem 0"><span><i class="fa-solid fa-location-dot"></i>${ev.location.split(',')[0]}</span></div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.6rem">
+                  <div style="display:flex;gap:.3rem">
+                    <button class="rsvp-btn ${r2==='going'?'going':''}" style="padding:.3rem .6rem;font-size:.45rem" onclick="doRsvp('${ev.id}','going')">✓ ${c2.going}</button>
+                    <button class="rsvp-btn ${r2==='interested'?'interested':''}" style="padding:.3rem .6rem;font-size:.45rem" onclick="doRsvp('${ev.id}','interested')">★ ${c2.interested}</button>
+                  </div>
+                  <a href="/portal/event.html?id=${ev.id}" style="font-family:var(--fh);font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--gold-d)">Details →</a>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
 
-  function logout() { sb.auth.signOut().then(() => window.location.href = 'login.html'); }
+      <!-- FEATURED CIGAR -->
+      <div>
+        <div class="section-head"><h2>Smoke of the Month</h2></div>
+        <div class="cigar-card card-gold">
+          <img src="${fc.img}" alt="${fc.name}" class="cigar-img"/>
+          <div class="cigar-body">
+            <p class="eyebrow" style="margin-bottom:.3rem">Featured Smoke</p>
+            <h3 style="margin-bottom:.3rem;font-size:.95rem">${fc.name}</h3>
+            <p style="font-size:.85rem;color:var(--muted);margin-bottom:.5rem">${fc.notes}</p>
+            <div class="cigar-stats">
+              <div><div class="cigar-stat-val">${fc.origin}</div><div class="cigar-stat-key">Origin</div></div>
+              <div><div class="cigar-stat-val">${fc.strength}</div><div class="cigar-stat-key">Strength</div></div>
+              <div><div class="cigar-stat-val">${fc.rating}/10</div><div class="cigar-stat-key">Rating</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-  function esc(s) {
-    return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-  }
+      <!-- TOP LOUNGES -->
+      <div>
+        <div class="section-head"><h2>Top Rated Lounges</h2><a href="/portal/lounges.html">All →</a></div>
+        <div class="grid-3" style="gap:1rem">
+          ${GLC.lounges.sort((a,b)=>b.ratings.overall-a.ratings.overall).slice(0,3).map(l=>`
+          <a href="/portal/lounge.html?id=${l.id}" style="text-decoration:none">
+            <div class="card card-gold lounge-card">
+              <div class="lounge-img"><img src="${l.img}" alt="${l.name}"/><div class="lounge-rating"><i class="fa-solid fa-star"></i> ${l.ratings.overall}</div></div>
+              <div class="card-body" style="padding:1rem">
+                <div class="lounge-name" style="font-size:.82rem">${l.name}</div>
+                <div class="lounge-loc" style="font-size:.78rem"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i>${l.city}</div>
+              </div>
+            </div>
+          </a>`).join('')}
+        </div>
+      </div>
+
+    </div><!-- /dash-left -->
+
+    <div class="dash-right">
+
+      <!-- ANNOUNCEMENTS -->
+      <div class="card">
+        <div class="card-header"><h4 style="font-size:.6rem;letter-spacing:.22em;margin:0">Announcements</h4><i class="fa-solid fa-bullhorn" style="color:var(--gold-d);font-size:.8rem"></i></div>
+        <div class="card-body" style="padding:1rem">
+          ${GLC.announcements.map(a=>`
+          <div class="announcement">
+            ${a.pinned?'<span class="badge badge-gold" style="margin-bottom:.3rem;font-size:.42rem">Pinned</span>':''}
+            <div class="announcement-title">${a.title}</div>
+            <div class="announcement-text">${a.text}</div>
+            <div class="announcement-date">${a.date}</div>
+          </div>`).join('')}
+        </div>
+      </div>
+
+      <!-- MINI CALENDAR -->
+      <div class="card"><div class="card-body">${buildMiniCal()}</div></div>
+
+      <!-- LOUNGE OF MONTH -->
+      <div>
+        <div style="font-family:var(--fh);font-size:.6rem;letter-spacing:.28em;text-transform:uppercase;color:var(--muted);margin-bottom:.8rem">Lounge of the Month</div>
+        <a href="/portal/lounge.html?id=${loungeOfMonth.id}" style="text-decoration:none">
+          <div class="card card-gold">
+            <img src="${loungeOfMonth.img}" alt="${loungeOfMonth.name}" style="width:100%;height:130px;object-fit:cover"/>
+            <div class="card-body" style="padding:1rem">
+              <p class="eyebrow" style="margin-bottom:.3rem">Featured</p>
+              <div style="font-family:var(--fh);font-size:.85rem;color:var(--cream);margin-bottom:.2rem">${loungeOfMonth.name}</div>
+              <div style="font-size:.8rem;color:var(--muted)">${loungeOfMonth.city}, ${loungeOfMonth.country}</div>
+              <div style="margin-top:.5rem">${GLC.renderStars(loungeOfMonth.ratings.overall)}</div>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <!-- MEMBER SPOTLIGHT -->
+      <div class="card">
+        <div class="card-header"><h4 style="font-size:.6rem;letter-spacing:.22em;margin:0">Member Spotlight</h4></div>
+        <div class="card-body" style="padding:1rem">
+          <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem">
+            <img src="${spotlight.avatar}" style="width:40px;height:40px;border-radius:50%;border:1.5px solid var(--gold-d);object-fit:cover"/>
+            <div><div style="font-family:var(--fh);font-size:.7rem;color:var(--cream)">${spotlight.name}</div><div style="font-size:.78rem;color:var(--muted)">${spotlight.city}</div></div>
+          </div>
+          <span class="badge badge-gold" style="margin-bottom:.6rem">${GLC.memberSpotlight.achievement}</span>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.6;margin:0">${GLC.memberSpotlight.text}</p>
+        </div>
+      </div>
+
+      <!-- QUICK LINKS -->
+      <div class="quick-links">
+        <a href="/portal/events.html" class="quick-link"><i class="fa-solid fa-calendar-check"></i><span>RSVP</span></a>
+        <a href="/portal/map.html" class="quick-link"><i class="fa-solid fa-earth-americas"></i><span>Map</span></a>
+        <a href="/portal/messages.html" class="quick-link"><i class="fa-solid fa-message"></i><span>Messages</span></a>
+        <a href="/portal/members.html" class="quick-link"><i class="fa-solid fa-users"></i><span>Members</span></a>
+      </div>
+
+    </div><!-- /dash-right -->
+  </div>`;
+}
+
+function doRsvp(id, status) { handleRsvp(id, status); render(); }
+render();
 </script>
 </body>
 </html>

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>About — Gold Label Club</title>
+  <link rel="stylesheet" href="/css/glc.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;}
+    .timeline{border-left:1px solid var(--gold-d);padding-left:2rem;margin-top:2rem;}
+    .timeline-item{position:relative;margin-bottom:2rem;}
+    .timeline-item::before{content:'';position:absolute;left:-2.35rem;top:.3rem;width:10px;height:10px;background:var(--gold-d);border-radius:50%;}
+    .timeline-year{font-family:var(--fh);font-size:.6rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem;}
+    .timeline-text{font-size:.9rem;color:var(--muted);}
+    .apply-form{background:var(--s2);border:1px solid var(--border);border-top:1px solid var(--gold-d);border-radius:var(--radius);padding:2rem;}
+    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+    @media(max-width:768px){.about-grid{grid-template-columns:1fr;gap:2rem;}.form-row{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+<div id="pubNav"></div>
+<div class="pub-mobile-menu" id="pubMobileMenu"></div>
+<main class="pub-page">
+
+  <!-- HERO -->
+  <section class="pub-hero" style="min-height:36vh">
+    <div class="pub-hero-bg" style="background-image:url('https://images.unsplash.com/photo-1574943320219-553eb213f72d?w=1800&q=80')"></div>
+    <div class="pub-hero-overlay"></div>
+    <div class="pub-hero-content" style="padding-top:3rem">
+      <p class="eyebrow" style="margin-bottom:.8rem">The Club</p>
+      <h1>About Gold Label Club</h1>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="pub-section">
+    <div class="pub-section-inner">
+      <div class="about-grid">
+        <div>
+          <p class="eyebrow" style="margin-bottom:.8rem">Who We Are</p>
+          <h2 style="margin-bottom:1.2rem">A Circle, Not a Brand</h2>
+          <div class="gold-rule" style="margin-bottom:1.5rem"></div>
+          <p style="margin-bottom:1rem">Gold Label Club is a private society dedicated to the art of the cigar, the craft of curated experiences, and the value of exceptional company. We are not a venue, a subscription, or a marketing campaign. We are a circle — carefully assembled, discreetly maintained.</p>
+          <p style="margin-bottom:1rem">Founded by <strong style="color:var(--cream)">Benjamin Meister</strong>, the club began as a private gathering of discerning professionals who believed that the finest experiences belong to those who can truly appreciate them. What started as a monthly smoke in New York has grown into a national and international society with chapters visiting the world's finest cigar establishments.</p>
+          <p>Every event is intentional. Every lounge we visit is reviewed with the same rigor. Every member earns their place.</p>
+        </div>
+        <div>
+          <img src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80" alt="Gold Label Club" style="width:100%;height:360px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--border)"/>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <section class="pub-section" style="background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border)">
+    <div class="pub-section-inner narrow" style="text-align:center">
+      <p class="eyebrow" style="margin-bottom:.8rem">Our Standards</p>
+      <h2 style="margin-bottom:.5rem">What We Believe</h2>
+      <div class="gold-rule center" style="margin-bottom:2.5rem"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2rem;text-align:left">
+        ${[
+          ['fa-fire','Craft Over Convenience','We will never sacrifice quality for accessibility. Every cigar, every event, every lounge is chosen with uncompromising standards.'],
+          ['fa-eye-slash','Privacy by Design','Member identities, activities, and conversations are never shared publicly. Discretion is not a feature — it is the foundation.'],
+          ['fa-users','Curated Community','We do not grow for growth\'s sake. We grow for quality. Every member adds something irreplaceable to the circle.'],
+        ].map(([icon,title,text])=>`
+        <div style="padding:1.5rem;background:var(--s2);border:1px solid var(--border);border-radius:var(--radius)">
+          <i class="fa-solid ${icon}" style="color:var(--gold-d);font-size:1.3rem;margin-bottom:1rem;display:block"></i>
+          <h3 style="font-size:.9rem;margin-bottom:.6rem">${title}</h3>
+          <p style="font-size:.85rem;margin:0;color:var(--muted)">${text}</p>
+        </div>`).join('')}
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMBERSHIP TIERS -->
+  <section class="pub-section">
+    <div class="pub-section-inner">
+      <p class="eyebrow" style="text-align:center;margin-bottom:.8rem">Membership</p>
+      <h2 style="text-align:center;margin-bottom:.5rem">Levels of Access</h2>
+      <div class="gold-rule center" style="margin-bottom:2.5rem"></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-width:800px;margin:0 auto">
+        ${[
+          ['I','Reserve','Entry into the circle. Quarterly events, lounge directory access, member chat.'],
+          ['II','Gold Label','The full experience. Monthly events, priority seating, private receptions. All features unlocked.'],
+          ['III','Founding','Original inner circle. Lifetime standing, advisory access. No longer available.'],
+        ].map(([num,name,desc],i)=>`
+        <div style="background:${i===1?'var(--s3)':'var(--s2)'};padding:2.5rem 1.8rem;text-align:center;${i===1?'border:1px solid var(--gold-d)':''}">
+          <div style="font-family:var(--fh);font-size:.58rem;letter-spacing:.4em;text-transform:uppercase;color:var(--gold-d);margin-bottom:.5rem">Tier ${num}</div>
+          <h3 style="font-size:1rem;color:${i===1?'var(--gold)':'var(--cream)'};margin-bottom:.8rem">${name}</h3>
+          <div style="width:30px;height:1px;background:var(--gold-d);margin:0 auto .8rem"></div>
+          <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin:0">${desc}</p>
+        </div>`).join('')}
+      </div>
+      <p style="text-align:center;font-style:italic;color:var(--dim);font-size:.85rem;margin-top:1.5rem">Pricing and details are shared privately upon application review.</p>
+    </div>
+  </section>
+
+  <!-- APPLY FORM -->
+  <section class="pub-section" id="apply" style="background:var(--s1);border-top:1px solid var(--border)">
+    <div class="pub-section-inner narrow">
+      <p class="eyebrow" style="text-align:center;margin-bottom:.8rem">Membership Application</p>
+      <h2 style="text-align:center;margin-bottom:.5rem">Request Access</h2>
+      <div class="gold-rule center" style="margin-bottom:.8rem"></div>
+      <p style="text-align:center;color:var(--muted);font-style:italic;margin-bottom:2rem">All submissions are reviewed privately. Should you be approved, you will hear from us directly.</p>
+
+      <div class="apply-form">
+        <form id="applyForm" onsubmit="handleApply(event)">
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" id="appFirst" placeholder="First" required/></div>
+            <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" id="appLast" placeholder="Last" required/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Email Address</label><input type="email" class="form-control" id="appEmail" placeholder="your@email.com" required/></div>
+          <div class="form-row">
+            <div class="form-group"><label class="form-label">Phone Number</label><input type="tel" class="form-control" id="appPhone" placeholder="+1 (000) 000-0000" required/></div>
+            <div class="form-group"><label class="form-label">City of Residence</label><input type="text" class="form-control" id="appCity" placeholder="City, State" required/></div>
+          </div>
+          <div class="form-group"><label class="form-label">Occupation</label><input type="text" class="form-control" id="appOcc" placeholder="Title / Industry" required/></div>
+          <div class="form-group"><label class="form-label">LinkedIn Profile</label><input type="url" class="form-control" id="appLinkedin" placeholder="linkedin.com/in/yourprofile"/></div>
+          <div class="form-group"><label class="form-label">How did you hear about Gold Label Club?</label>
+            <select class="form-control" id="appRef">
+              <option value="" disabled selected>Select one</option>
+              <option>Referred by a member</option>
+              <option>Via Mr. Ben Meister</option>
+              <option>Social media</option>
+              <option>Attended an event</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div id="applyError" style="color:#e09090;font-style:italic;font-size:.85rem;margin-bottom:.8rem;display:none"></div>
+          <div style="text-align:center;margin-top:1.2rem">
+            <button type="submit" class="btn btn-gold btn-lg" id="applyBtn"><i class="fa-solid fa-paper-plane"></i> Submit Application</button>
+            <p style="font-size:.78rem;color:var(--dim);margin-top:.8rem;font-style:italic">Your information is kept strictly confidential.</p>
+          </div>
+        </form>
+
+        <div id="applySuccess" style="display:none;text-align:center;padding:2rem">
+          <i class="fa-solid fa-circle-check" style="font-size:2rem;color:var(--gold);margin-bottom:1rem;display:block"></i>
+          <h3 style="font-size:1rem;margin-bottom:.5rem">Application Received</h3>
+          <p style="color:var(--muted);font-style:italic">Your request has been noted. Should you be approved, you will hear from us directly.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer style="background:var(--s1);border-top:1px solid var(--border);padding:2rem;text-align:center">
+  <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">© 2026 Gold Label Club — <a href="/glc/index.html" style="color:var(--dim)">Home</a></div>
+</footer>
+
+<script src="/js/data.js"></script>
+<script src="/js/auth.js"></script>
+<script src="/js/nav.js"></script>
+<script>
+renderPublicNav('about');
+
+function handleApply(e) {
+  e.preventDefault();
+  const btn = document.getElementById('applyBtn');
+  btn.disabled = true; btn.textContent = 'Submitting…';
+  // Simulate submission — replace with Supabase call
+  setTimeout(() => {
+    document.getElementById('applyForm').style.display = 'none';
+    document.getElementById('applySuccess').style.display = 'block';
+  }, 800);
+}
+
+// Auto-scroll to form if hash
+if(window.location.hash === '#apply') {
+  setTimeout(() => document.getElementById('apply').scrollIntoView({behavior:'smooth'}), 300);
+}
+</script>
+</body>
+</html>

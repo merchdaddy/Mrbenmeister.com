@@ -6,23 +6,137 @@
   <link rel="stylesheet" href="/css/glc.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    .lounge-layout{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start;}
-    .gallery{display:grid;grid-template-columns:2fr 1fr;gap:.5rem;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:2rem;}
-    .gallery-main img{width:100%;height:360px;object-fit:cover;display:block;}
-    .gallery-side{display:flex;flex-direction:column;gap:.5rem;}
-    .gallery-side img{width:100%;flex:1;object-fit:cover;display:block;min-height:0;}
-    .score-big{font-family:var(--fh);font-size:3.5rem;color:var(--gold);line-height:1;}
-    .feature-pill{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--fh);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:.4rem .8rem;border-radius:var(--radius);border:1px solid;}
-    .feature-yes{background:rgba(45,106,79,.15);border-color:var(--green);color:#7ecca0;}
-    .feature-no{background:rgba(122,40,40,.1);border-color:var(--red);color:#e09090;}
-    .best-chip{display:inline-block;font-family:var(--fh);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;background:var(--s3);color:var(--gold-d);border:1px solid var(--border);padding:.35rem .8rem;border-radius:var(--radius);margin:.2rem;}
-    .contact-row{display:flex;align-items:center;gap:.7rem;padding:.7rem 0;border-bottom:1px solid var(--border);}
-    .contact-row:last-child{border-bottom:none;}
-    .members-cta{background:var(--s2);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.5rem;text-align:center;margin-top:1.2rem;}
-    .video-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;background:var(--s3);position:relative;}
-    .video-wrap video{width:100%;display:block;max-height:420px;background:#000;}
-    .video-label{font-family:var(--fh);font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-d);padding:.6rem 1rem;border-top:1px solid var(--border);}
-    @media(max-width:900px){.lounge-layout{grid-template-columns:1fr;}.gallery{grid-template-columns:1fr;}.gallery-side{flex-direction:row;}.gallery-side img{height:100px;flex:1;}}
+    /* ── HEADER ── */
+    .lounge-header {
+      margin-bottom: 1.8rem;
+      padding-bottom: 1.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .lounge-header h1 { margin-bottom: .25rem; font-size: clamp(1.4rem,3vw,2.2rem); }
+    .lounge-header .location { font-size: 1rem; color: var(--muted); font-style: italic; margin-bottom: .5rem; display: flex; align-items: center; gap: .4rem; }
+    .lounge-header .meta-row { display: flex; flex-wrap: wrap; gap: .5rem 1.5rem; margin-top: .6rem; }
+    .lounge-header .meta-item { font-size: .82rem; color: var(--muted); display: flex; align-items: center; gap: .35rem; }
+
+    /* ── COMPACT GALLERY ── */
+    .media-gallery {
+      margin-bottom: 2rem;
+    }
+    .gallery-thumbs {
+      display: flex;
+      gap: .5rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+    .gallery-thumbs::-webkit-scrollbar { display: none; }
+    .gallery-thumb {
+      flex-shrink: 0;
+      width: 140px;
+      height: 100px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 2px solid var(--border);
+      cursor: pointer;
+      position: relative;
+      transition: border-color .2s;
+    }
+    .gallery-thumb:first-child { width: 200px; height: 100px; }
+    .gallery-thumb:hover { border-color: var(--gold-d); }
+    .gallery-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+    .gallery-thumb:hover img { transform: scale(1.05); }
+    .gallery-thumb.video-thumb-wrap { background: var(--s3); }
+    .gallery-thumb .play-icon {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(7,6,5,.5);
+    }
+    .gallery-thumb .play-icon i { font-size: 1.5rem; color: var(--gold); }
+    .gallery-count {
+      font-family: var(--fh);
+      font-size: .52rem;
+      letter-spacing: .2em;
+      text-transform: uppercase;
+      color: var(--dim);
+      margin-top: .5rem;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      position: fixed; inset: 0; z-index: 1000;
+      background: rgba(7,6,5,.96);
+      display: none; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .lightbox.open { display: flex; }
+    .lightbox-inner { position: relative; max-width: 900px; width: 100%; }
+    .lightbox-media { width: 100%; max-height: 80vh; object-fit: contain; display: block; border-radius: var(--radius); }
+    .lightbox video { width: 100%; max-height: 80vh; border-radius: var(--radius); background: #000; }
+    .lightbox-close {
+      position: absolute; top: -2.5rem; right: 0;
+      background: none; border: none; color: var(--muted); font-size: 1.4rem; cursor: pointer; transition: color .2s;
+    }
+    .lightbox-close:hover { color: var(--cream); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(7,6,5,.7); border: 1px solid var(--border); color: var(--muted);
+      width: 40px; height: 40px; border-radius: 50%; font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; transition: all .2s;
+    }
+    .lightbox-nav:hover { border-color: var(--gold-d); color: var(--gold); }
+    .lightbox-prev { left: -52px; }
+    .lightbox-next { right: -52px; }
+    .lightbox-caption {
+      text-align: center; margin-top: .8rem;
+      font-family: var(--fh); font-size: .55rem; letter-spacing: .2em; text-transform: uppercase; color: var(--dim);
+    }
+    .lightbox-dots { display: flex; justify-content: center; gap: .4rem; margin-top: .6rem; }
+    .lightbox-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--dim); cursor: pointer; transition: background .2s; }
+    .lightbox-dots .dot.active { background: var(--gold); }
+
+    /* ── MAIN LAYOUT ── */
+    .lounge-layout { display: grid; grid-template-columns: 1fr 300px; gap: 2rem; align-items: start; }
+
+    /* ── SCORE ── */
+    .score-big { font-family: var(--fh); font-size: 3rem; color: var(--gold); line-height: 1; }
+
+    /* ── RATINGS ── */
+    .rating-bar-row { display: flex; align-items: center; gap: .8rem; margin-bottom: .5rem; }
+    .rating-bar-label { font-size: .82rem; color: var(--muted); width: 150px; flex-shrink: 0; }
+    .rating-bar-track { flex: 1; height: 4px; background: var(--s4); border-radius: 2px; }
+    .rating-bar-fill { height: 100%; background: linear-gradient(to right, var(--gold-d), var(--gold)); border-radius: 2px; }
+    .rating-bar-val { font-family: var(--fh); font-size: .6rem; color: var(--gold); width: 28px; text-align: right; }
+
+    /* ── REVIEW TEXT ── */
+    .review-text p { color: var(--ivory); line-height: 1.9; margin-bottom: 1rem; font-size: .98rem; }
+    .review-text p:last-child { margin-bottom: 0; }
+    .review-link { color: var(--gold); border-bottom: 1px solid var(--gold-d); transition: border-color .2s; }
+    .review-link:hover { border-bottom-color: var(--gold); }
+
+    /* ── FEATURES ── */
+    .feature-pill { display: inline-flex; align-items: center; gap: .4rem; font-family: var(--fh); font-size: .52rem; letter-spacing: .15em; text-transform: uppercase; padding: .4rem .8rem; border-radius: var(--radius); border: 1px solid; }
+    .feature-yes { background: rgba(45,106,79,.15); border-color: var(--green); color: #7ecca0; }
+    .feature-no { background: rgba(122,40,40,.1); border-color: var(--red); color: #e09090; }
+    .best-chip { display: inline-block; font-family: var(--fh); font-size: .52rem; letter-spacing: .12em; text-transform: uppercase; background: var(--s3); color: var(--gold-d); border: 1px solid var(--border); padding: .35rem .8rem; border-radius: var(--radius); margin: .2rem; }
+
+    .contact-row { display: flex; align-items: center; gap: .7rem; padding: .7rem 0; border-bottom: 1px solid var(--border); }
+    .contact-row:last-child { border-bottom: none; }
+
+    /* ── PENDING BADGE ── */
+    .pending-banner { background: var(--s3); border: 1px solid var(--border); border-left: 3px solid var(--gold-d); border-radius: var(--radius); padding: 1.2rem 1.4rem; margin-bottom: 1.5rem; }
+
+    /* ── MEMBERS CTA ── */
+    .members-cta { background: var(--s2); border: 1px solid var(--gold-d); border-radius: var(--radius); padding: 1.5rem; text-align: center; margin-top: 1.2rem; }
+
+    @media (max-width: 900px) {
+      .lounge-layout { grid-template-columns: 1fr; }
+      .lightbox-prev { left: .3rem; }
+      .lightbox-next { right: .3rem; }
+    }
+    @media (max-width: 600px) {
+      .gallery-thumb { width: 110px; height: 82px; }
+      .gallery-thumb:first-child { width: 155px; }
+    }
   </style>
 </head>
 <body>
@@ -35,6 +149,18 @@
     </div>
   </div>
 </main>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="lightboxBgClick(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></button>
+    <div id="lightboxMedia"></div>
+    <div class="lightbox-caption" id="lightboxCaption"></div>
+    <div class="lightbox-dots" id="lightboxDots"></div>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)"><i class="fa-solid fa-chevron-right"></i></button>
+  </div>
+</div>
 
 <footer style="background:var(--s1);border-top:1px solid var(--border);padding:2rem;text-align:center">
   <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">© 2026 Gold Label Club — <a href="/glc/lounges.html" style="color:var(--dim)">Back to Lounges</a></div>
@@ -49,8 +175,57 @@ renderPublicNav('lounges');
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id') || 'l1';
 const l = GLC.getLoungeById(id) || GLC.lounges[0];
-
 document.title = `${l.name} — Gold Label Club`;
+
+// Build media list: photos first, then video
+const mediaItems = [];
+(l.photos||[l.img]).forEach((src, i) => mediaItems.push({ type:'image', src, label:`Photo ${i+1}` }));
+if (l.video) mediaItems.push({ type:'video', src: l.video, label:'Club Visit Video' });
+
+let lightboxIndex = 0;
+
+function openLightbox(idx) {
+  lightboxIndex = idx;
+  renderLightbox();
+  document.getElementById('lightbox').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function lightboxBgClick(e) { if (e.target === e.currentTarget) closeLightbox(); }
+
+function lightboxNav(dir) {
+  lightboxIndex = (lightboxIndex + dir + mediaItems.length) % mediaItems.length;
+  renderLightbox();
+}
+
+function renderLightbox() {
+  const item = mediaItems[lightboxIndex];
+  const mediaEl = document.getElementById('lightboxMedia');
+  if (item.type === 'video') {
+    mediaEl.innerHTML = `<video controls autoplay class="lightbox-media" style="max-height:75vh">
+      <source src="${item.src}" type="video/mp4">
+      <source src="${item.src}" type="video/quicktime">
+    </video>`;
+  } else {
+    mediaEl.innerHTML = `<img src="${item.src}" class="lightbox-media" alt="${l.name}" style="max-height:75vh"/>`;
+  }
+  document.getElementById('lightboxCaption').textContent = `${l.name} — ${item.label}`;
+  document.getElementById('lightboxDots').innerHTML = mediaItems.map((_, i) =>
+    `<div class="dot ${i===lightboxIndex?'active':''}" onclick="lightboxIndex=${i};renderLightbox()"></div>`
+  ).join('');
+}
+
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft')  lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+  if (e.key === 'Escape')     closeLightbox();
+});
 
 const ratingLabels = {
   humidor:'Humidor Quality', atmosphere:'Atmosphere', chairs:'Comfort & Seating',
@@ -59,7 +234,15 @@ const ratingLabels = {
   parking:'Parking', memberFriendliness:'Luxury Feel'
 };
 
-function ratingBarRow(key, label, val) {
+function ratingRow(key, label) {
+  const val = l.ratings[key];
+  if (val === null || val === undefined) {
+    return `<div class="rating-bar-row">
+      <div class="rating-bar-label">${label}</div>
+      <div style="flex:1;font-style:italic;font-size:.78rem;color:var(--dim)">Pending</div>
+      <div class="rating-bar-val" style="color:var(--dim)">—</div>
+    </div>`;
+  }
   if (val === 0) {
     return `<div class="rating-bar-row">
       <div class="rating-bar-label">${label}</div>
@@ -74,74 +257,99 @@ function ratingBarRow(key, label, val) {
   </div>`;
 }
 
+// Gallery thumbnails HTML
+function buildGallery() {
+  if (!mediaItems.length) return '';
+  const thumbs = mediaItems.map((item, i) => {
+    if (item.type === 'video') {
+      return `<div class="gallery-thumb video-thumb-wrap" onclick="openLightbox(${i})">
+        <img src="${l.photos?.[0]||l.img}" alt="Video" style="opacity:.6"/>
+        <div class="play-icon"><i class="fa-solid fa-circle-play"></i></div>
+      </div>`;
+    }
+    return `<div class="gallery-thumb" onclick="openLightbox(${i})">
+      <img src="${item.src}" alt="${l.name} photo ${i+1}"/>
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="media-gallery">
+    <div class="gallery-thumbs">${thumbs}</div>
+    <div class="gallery-count">
+      <i class="fa-solid fa-images" style="color:var(--gold-d)"></i>
+      ${l.photos?.length||1} photo${(l.photos?.length||1)!==1?'s':''}
+      ${l.video ? ' &nbsp;·&nbsp; <i class="fa-solid fa-circle-play" style="color:var(--gold-d)"></i> 1 video' : ''}
+      &nbsp;·&nbsp; Click to enlarge
+    </div>
+  </div>`;
+}
+
 document.getElementById('pageBody').innerHTML = `
-  <a href="/glc/lounges.html" style="font-family:var(--fh);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1.5rem"><i class="fa-solid fa-arrow-left"></i> All Lounges</a>
+  <a href="/glc/lounges.html" style="font-family:var(--fh);font-size:.56rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1.5rem"><i class="fa-solid fa-arrow-left"></i> All Lounges</a>
 
-  <!-- GALLERY -->
-  <div class="gallery">
-    <div class="gallery-main"><img src="${l.photos[0]||l.img}" alt="${l.name}"/></div>
-    <div class="gallery-side">
-      <img src="${l.photos[1]||l.photos[0]||l.img}" alt="${l.name}" style="filter:brightness(.85)"/>
-      <img src="${l.photos[2]||l.photos[0]||l.img}" alt="${l.name}" style="filter:brightness(.7)"/>
-    </div>
-  </div>
-
-  <!-- VIDEO (if available) -->
-  ${l.video ? `
-  <div class="video-wrap">
-    <video controls preload="metadata" poster="${l.photos[0]||l.img}">
-      <source src="${l.video}" type="video/mp4">
-      <source src="${l.video}" type="video/quicktime">
-      Your browser does not support HTML5 video.
-    </video>
-    <div class="video-label"><i class="fa-solid fa-play"></i> &nbsp;${l.name} — Club Visit</div>
-  </div>` : ''}
-
-  <!-- HEADER -->
-  <div style="margin-bottom:1.5rem">
-    <div style="display:flex;gap:.5rem;margin-bottom:.6rem">
+  <!-- 1. HEADER -->
+  <div class="lounge-header">
+    <div style="display:flex;gap:.5rem;margin-bottom:.6rem;flex-wrap:wrap">
       ${l.isFeatured?'<span class="badge badge-gold">Featured</span>':''}
+      ${l.reviewPending?'<span class="badge badge-gray"><i class="fa-solid fa-clock"></i> Review Pending</span>':''}
       <span class="badge badge-gray">${l.priceLevel}</span>
-      <span class="badge badge-gray">${l.country}</span>
+      <span class="badge badge-gray">${l.city}, ${l.state||l.country}</span>
     </div>
-    <h1 style="margin-bottom:.3rem">${l.name}</h1>
-    <div style="color:var(--muted);font-size:.95rem;font-style:italic"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${l.address}</div>
-    <div style="color:var(--dim);font-size:.8rem;margin-top:.2rem">Visited by Gold Label Club: ${l.visitedDate}</div>
+    <h1>${l.name}</h1>
+    <div class="location"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i>${l.city}, ${l.state||l.country}</div>
+    <div class="meta-row">
+      ${l.phone?`<span class="meta-item"><i class="fa-solid fa-phone" style="color:var(--gold-d)"></i><a href="tel:${l.phone}" style="color:var(--muted)">${l.phone}</a></span>`:''}
+      <span class="meta-item"><i class="fa-solid fa-map-pin" style="color:var(--gold-d)"></i>${l.address}</span>
+      ${l.visitedDate?`<span class="meta-item"><i class="fa-solid fa-calendar-check" style="color:var(--gold-d)"></i>Visited: ${l.visitedDate}</span>`:''}
+    </div>
   </div>
+
+  <!-- 2. COMPACT MEDIA GALLERY -->
+  ${buildGallery()}
+
+  <!-- PENDING BANNER -->
+  ${l.reviewPending ? `
+  <div class="pending-banner">
+    <div style="font-family:var(--fh);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem">Review Coming Soon</div>
+    <p style="font-size:.9rem;color:var(--muted);margin:0">Gold Label Club will be visiting this lounge shortly. Full ratings, review, and media will be published after our visit.</p>
+  </div>` : ''}
 
   <div class="lounge-layout">
     <div>
 
-      <!-- OVERALL -->
-      <div style="background:var(--s3);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.4rem;display:flex;align-items:center;gap:1.5rem;margin-bottom:1.5rem">
+      <!-- 3. OVERALL + RATINGS -->
+      ${!l.reviewPending ? `
+      <div style="background:var(--s3);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.3rem;display:flex;align-items:center;gap:1.4rem;margin-bottom:1.5rem;flex-wrap:wrap">
         <div>
           <div class="score-big">${l.ratings.overall}</div>
-          <div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)">Overall Score</div>
+          <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)">Overall Score</div>
         </div>
         <div>
-          <div style="margin-bottom:.5rem">${GLC.renderStars(l.ratings.overall)}</div>
-          <div style="font-size:.88rem;color:var(--muted)">Reviewed across ${Object.keys(ratingLabels).length} categories</div>
-          <div style="font-size:.78rem;color:var(--dim);margin-top:.2rem">Noise level: ${l.noiseLevel}</div>
+          <div style="margin-bottom:.4rem">${GLC.renderStars(l.ratings.overall)}</div>
+          <div style="font-size:.85rem;color:var(--muted)">Reviewed across ${Object.keys(ratingLabels).length} categories</div>
+          <div style="font-size:.78rem;color:var(--dim);margin-top:.2rem">Noise: ${l.noiseLevel}</div>
         </div>
       </div>
 
-      <!-- RATINGS -->
       <div class="card" style="margin-bottom:1.5rem">
         <div class="card-header"><h4>Category Ratings</h4></div>
         <div class="card-body">
-          ${Object.entries(ratingLabels).map(([key,label]) =>
-            ratingBarRow(key, label, l.ratings[key]||0)
-          ).join('')}
+          ${Object.entries(ratingLabels).map(([key,label]) => ratingRow(key,label)).join('')}
+        </div>
+      </div>` : ''}
+
+      <!-- 4. WRITTEN REVIEW -->
+      <div class="card" style="margin-bottom:1.5rem">
+        <div class="card-header">
+          <h4>Gold Label Club Review</h4>
+          ${!l.reviewPending ? `<span style="font-size:.75rem;color:var(--muted);font-style:italic">Official club review</span>` : ''}
+        </div>
+        <div class="card-body review-text">
+          ${l.reviewHtml ? l.reviewHtml : `<p>${l.review}</p>`}
         </div>
       </div>
 
-      <!-- WRITTEN REVIEW -->
-      <div class="card" style="margin-bottom:1.5rem">
-        <div class="card-header"><h4>Gold Label Club Review</h4><span style="font-size:.78rem;color:var(--muted);font-style:italic">By invitation only — member review</span></div>
-        <div class="card-body"><p>${l.review}</p></div>
-      </div>
-
-      <!-- FEATURES -->
+      <!-- 5. FEATURES -->
       <div class="card" style="margin-bottom:1.5rem">
         <div class="card-header"><h4>Features & Amenities</h4></div>
         <div class="card-body">
@@ -151,16 +359,16 @@ document.getElementById('pageBody').innerHTML = `
             <span class="feature-pill ${l.features.privateLounge?'feature-yes':'feature-no'}"><i class="fa-solid fa-lock"></i> Private Room: ${l.features.privateLounge?'Yes':'No'}</span>
             <span class="feature-pill ${l.features.byo?'feature-yes':'feature-no'}"><i class="fa-solid fa-fire"></i> BYO Cigars: ${l.features.byo?'Yes':'No'}</span>
           </div>
-          <div style="font-family:var(--fh);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:.5rem">Best For</div>
+          <div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.5rem">Best For</div>
           <div>${l.bestFor.map(b=>`<span class="best-chip">${b}</span>`).join('')}</div>
         </div>
       </div>
 
-      <!-- MEMBERS UNLOCK -->
-      <div style="background:var(--s2);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.5rem;text-align:center">
-        <i class="fa-solid fa-lock" style="color:var(--gold-d);font-size:1.2rem;margin-bottom:.6rem"></i>
-        <h4 style="font-size:.8rem;letter-spacing:.12em;margin-bottom:.4rem">Member Features Locked</h4>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Members can save favorites, add personal ratings, and read member comments on this lounge.</p>
+      <!-- MEMBERS CTA -->
+      <div class="members-cta">
+        <i class="fa-solid fa-lock" style="color:var(--gold-d);font-size:1.1rem;margin-bottom:.5rem;display:block"></i>
+        <h4 style="font-size:.78rem;letter-spacing:.1em;margin-bottom:.4rem">Member Features</h4>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem">Members can save favorites, add personal ratings, and read member comments.</p>
         <div style="display:flex;gap:.6rem;justify-content:center;flex-wrap:wrap">
           <a href="/portal/login.html" class="btn btn-outline btn-sm">Member Login</a>
           <a href="/glc/about.html#apply" class="btn btn-gold btn-sm">Apply</a>
@@ -172,28 +380,29 @@ document.getElementById('pageBody').innerHTML = `
     <div>
       <div class="card" style="margin-bottom:1rem">
         <div class="card-header"><h4>Contact & Links</h4></div>
-        <div class="card-body" style="padding:.6rem 1.2rem">
-          ${l.phone?`<div class="contact-row"><i class="fa-solid fa-phone" style="color:var(--gold-d);width:18px"></i><a href="tel:${l.phone}" style="color:var(--ivory);font-size:.88rem">${l.phone}</a></div>`:''}
-          ${l.website?`<div class="contact-row"><i class="fa-solid fa-globe" style="color:var(--gold-d);width:18px"></i><a href="${l.website}" target="_blank" style="font-size:.88rem">Website</a></div>`:''}
-          ${l.googleBusiness?`<div class="contact-row"><i class="fa-brands fa-google" style="color:var(--gold-d);width:18px"></i><a href="${l.googleBusiness}" target="_blank" style="font-size:.88rem">Google Maps</a></div>`:''}
+        <div class="card-body" style="padding:.5rem 1.2rem">
+          ${l.phone?`<div class="contact-row"><i class="fa-solid fa-phone" style="color:var(--gold-d);width:18px;font-size:.8rem"></i><a href="tel:${l.phone}" style="color:var(--ivory);font-size:.88rem">${l.phone}</a></div>`:''}
+          ${l.website?`<div class="contact-row"><i class="fa-solid fa-globe" style="color:var(--gold-d);width:18px;font-size:.8rem"></i><a href="${l.website}" target="_blank" style="font-size:.88rem">Website</a></div>`:''}
+          ${l.googleBusiness?`<div class="contact-row"><i class="fa-brands fa-google" style="color:var(--gold-d);width:18px;font-size:.8rem"></i><a href="${l.googleBusiness}" target="_blank" style="font-size:.88rem">Google Maps</a></div>`:''}
         </div>
       </div>
 
+      ${!l.reviewPending ? `
       <div class="card" style="margin-bottom:1rem">
         <div class="card-body">
-          <div style="font-family:var(--fh);font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);margin-bottom:.9rem">Quick Scores</div>
+          <div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.8rem">Top Scores</div>
           ${[['humidor','Humidor'],['atmosphere','Atmosphere'],['cigarSelection','Selection'],['service','Service'],['drinks','Bar']].map(([k,lbl])=>`
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
             <span style="font-size:.82rem;color:var(--muted)">${lbl}</span>
-            <span style="font-family:var(--fh);font-size:.72rem;color:var(--gold)">${l.ratings[k]||'—'}</span>
+            <span style="font-family:var(--fh);font-size:.7rem;color:var(--gold)">${l.ratings[k]??'—'}</span>
           </div>`).join('')}
         </div>
-      </div>
+      </div>` : ''}
 
       <div class="card" style="margin-bottom:1rem">
         <div class="card-body" style="text-align:center">
-          <div class="score-big" style="font-size:2rem">${l.priceLevel}</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">${l.priceLevel==='$$$$'?'Luxury / Premium':l.priceLevel==='$$$'?'Upscale':l.priceLevel==='$$'?'Mid-range':'Budget'}</div>
+          <div style="font-family:var(--fh);font-size:1.8rem;color:var(--gold)">${l.priceLevel}</div>
+          <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">${l.priceLevel==='$$$$'?'Luxury':l.priceLevel==='$$$'?'Upscale':l.priceLevel==='$$'?'Mid-range':'Budget'}</div>
         </div>
       </div>
 

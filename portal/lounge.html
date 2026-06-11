@@ -6,24 +6,58 @@
   <link rel="stylesheet" href="/css/glc.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <style>
-    .lounge-layout{display:grid;grid-template-columns:1fr 300px;gap:2rem;align-items:start;}
-    .gallery{display:grid;grid-template-columns:2fr 1fr;gap:.5rem;border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;}
-    .gallery-main img{width:100%;height:340px;object-fit:cover;display:block;}
-    .gallery-side{display:flex;flex-direction:column;gap:.5rem;}
-    .gallery-side img{width:100%;flex:1;object-fit:cover;display:block;min-height:0;}
-    .score-big{font-family:var(--fh);font-size:3rem;color:var(--gold);line-height:1;}
-    .feature-pill{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--fh);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;padding:.4rem .8rem;border-radius:var(--radius);border:1px solid;}
-    .feature-yes{background:rgba(45,106,79,.15);border-color:var(--green);color:#7ecca0;}
-    .feature-no{background:rgba(122,40,40,.1);border-color:var(--red);color:#e09090;}
-    .best-chip{display:inline-block;font-family:var(--fh);font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;background:var(--s3);color:var(--gold-d);border:1px solid var(--border);padding:.35rem .8rem;border-radius:var(--radius);margin:.2rem;}
-    .contact-row{display:flex;align-items:center;gap:.7rem;padding:.7rem 0;border-bottom:1px solid var(--border);}
-    .contact-row:last-child{border-bottom:none;}
-    .comment-bubble{background:var(--s3);border:1px solid var(--border);border-radius:var(--radius);padding:.9rem 1rem;margin-bottom:.6rem;}
-    .video-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;background:var(--s3);}
-    .video-wrap video{width:100%;display:block;max-height:400px;background:#000;}
-    .video-label{font-family:var(--fh);font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-d);padding:.6rem 1rem;border-top:1px solid var(--border);}
-    .fav-btn.saved{color:var(--gold);border-color:var(--gold-d);}
-    @media(max-width:900px){.lounge-layout{grid-template-columns:1fr;}.gallery{grid-template-columns:1fr;}.gallery-side{flex-direction:row;}.gallery-side img{height:90px;flex:1;}}
+    .lounge-header { margin-bottom:1.8rem; padding-bottom:1.4rem; border-bottom:1px solid var(--border); }
+    .lounge-header h1 { margin-bottom:.25rem; font-size:clamp(1.3rem,2.8vw,2rem); }
+    .lounge-header .location { font-size:.95rem; color:var(--muted); font-style:italic; margin-bottom:.5rem; display:flex; align-items:center; gap:.4rem; }
+    .lounge-header .meta-row { display:flex; flex-wrap:wrap; gap:.5rem 1.4rem; margin-top:.5rem; }
+    .lounge-header .meta-item { font-size:.82rem; color:var(--muted); display:flex; align-items:center; gap:.35rem; }
+
+    .media-gallery { margin-bottom:2rem; }
+    .gallery-thumbs { display:flex; gap:.5rem; overflow-x:auto; scrollbar-width:none; -webkit-overflow-scrolling:touch; }
+    .gallery-thumbs::-webkit-scrollbar { display:none; }
+    .gallery-thumb { flex-shrink:0; width:140px; height:96px; border-radius:var(--radius); overflow:hidden; border:2px solid var(--border); cursor:pointer; position:relative; transition:border-color .2s; }
+    .gallery-thumb:first-child { width:195px; }
+    .gallery-thumb:hover { border-color:var(--gold-d); }
+    .gallery-thumb img { width:100%; height:100%; object-fit:cover; display:block; transition:transform .3s; }
+    .gallery-thumb:hover img { transform:scale(1.05); }
+    .gallery-thumb.vt { background:var(--s3); }
+    .play-icon { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(7,6,5,.5); }
+    .play-icon i { font-size:1.4rem; color:var(--gold); }
+    .gallery-count { font-family:var(--fh); font-size:.52rem; letter-spacing:.2em; text-transform:uppercase; color:var(--dim); margin-top:.5rem; }
+
+    .lightbox { position:fixed; inset:0; z-index:1000; background:rgba(7,6,5,.96); display:none; align-items:center; justify-content:center; padding:1rem; }
+    .lightbox.open { display:flex; }
+    .lightbox-inner { position:relative; max-width:900px; width:100%; }
+    .lightbox-media { width:100%; max-height:80vh; object-fit:contain; display:block; border-radius:var(--radius); }
+    .lightbox video { width:100%; max-height:80vh; border-radius:var(--radius); background:#000; }
+    .lb-close { position:absolute; top:-2.5rem; right:0; background:none; border:none; color:var(--muted); font-size:1.4rem; cursor:pointer; transition:color .2s; }
+    .lb-close:hover { color:var(--cream); }
+    .lb-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(7,6,5,.7); border:1px solid var(--border); color:var(--muted); width:38px; height:38px; border-radius:50%; font-size:.9rem; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all .2s; }
+    .lb-nav:hover { border-color:var(--gold-d); color:var(--gold); }
+    .lb-prev { left:-50px; } .lb-next { right:-50px; }
+    .lb-caption { text-align:center; margin-top:.7rem; font-family:var(--fh); font-size:.52rem; letter-spacing:.2em; text-transform:uppercase; color:var(--dim); }
+    .lb-dots { display:flex; justify-content:center; gap:.4rem; margin-top:.5rem; }
+    .lb-dots .dot { width:6px; height:6px; border-radius:50%; background:var(--dim); cursor:pointer; transition:background .2s; }
+    .lb-dots .dot.active { background:var(--gold); }
+
+    .lounge-layout { display:grid; grid-template-columns:1fr 290px; gap:1.8rem; align-items:start; }
+    .score-big { font-family:var(--fh); font-size:2.8rem; color:var(--gold); line-height:1; }
+    .feature-pill { display:inline-flex; align-items:center; gap:.4rem; font-family:var(--fh); font-size:.52rem; letter-spacing:.15em; text-transform:uppercase; padding:.4rem .8rem; border-radius:var(--radius); border:1px solid; }
+    .feature-yes { background:rgba(45,106,79,.15); border-color:var(--green); color:#7ecca0; }
+    .feature-no  { background:rgba(122,40,40,.1); border-color:var(--red); color:#e09090; }
+    .best-chip { display:inline-block; font-family:var(--fh); font-size:.52rem; letter-spacing:.12em; text-transform:uppercase; background:var(--s3); color:var(--gold-d); border:1px solid var(--border); padding:.35rem .8rem; border-radius:var(--radius); margin:.2rem; }
+    .contact-row { display:flex; align-items:center; gap:.7rem; padding:.65rem 0; border-bottom:1px solid var(--border); }
+    .contact-row:last-child { border-bottom:none; }
+    .review-text p { color:var(--ivory); line-height:1.9; margin-bottom:1rem; font-size:.97rem; }
+    .review-text p:last-child { margin-bottom:0; }
+    .review-link { color:var(--gold); border-bottom:1px solid var(--gold-d); }
+    .review-link:hover { border-bottom-color:var(--gold); }
+    .comment-bubble { background:var(--s3); border:1px solid var(--border); border-radius:var(--radius); padding:.85rem 1rem; margin-bottom:.6rem; }
+    .fav-btn.saved { color:var(--gold); border-color:var(--gold-d); }
+    .pending-banner { background:var(--s3); border:1px solid var(--border); border-left:3px solid var(--gold-d); border-radius:var(--radius); padding:1.2rem 1.4rem; margin-bottom:1.5rem; }
+
+    @media(max-width:900px){ .lounge-layout{grid-template-columns:1fr;} .lb-prev{left:.2rem;} .lb-next{right:.2rem;} }
+    @media(max-width:600px){ .gallery-thumb{width:108px;height:80px;} .gallery-thumb:first-child{width:150px;} }
   </style>
 </head>
 <body>
@@ -37,9 +71,19 @@
       </div>
       <div class="topbar-right" id="topbarActions"></div>
     </div>
-    <div class="page-body" id="pageBody">
-      <div style="text-align:center;padding:5rem;color:var(--muted)">Loading…</div>
-    </div>
+    <div class="page-body" id="pageBody"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="lbBgClick(event)">
+  <div class="lightbox-inner">
+    <button class="lb-close" onclick="closeLb()"><i class="fa-solid fa-xmark"></i></button>
+    <div id="lbMedia"></div>
+    <div class="lb-caption" id="lbCaption"></div>
+    <div class="lb-dots" id="lbDots"></div>
+    <button class="lb-nav lb-prev" onclick="lbNav(-1)"><i class="fa-solid fa-chevron-left"></i></button>
+    <button class="lb-nav lb-next" onclick="lbNav(1)"><i class="fa-solid fa-chevron-right"></i></button>
   </div>
 </div>
 
@@ -53,15 +97,37 @@ renderPortalNav('lounges');
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id') || 'l1';
 const l = GLC.getLoungeById(id) || GLC.lounges[0];
-
-let isSaved = false;
-
 document.title = `${l.name} — Gold Label Club`;
 
+let isSaved = false;
 document.getElementById('topbarActions').innerHTML = `
   <button class="btn btn-ghost btn-sm fav-btn" id="favBtn" onclick="toggleFav()">
-    <i class="fa-${isSaved?'solid':'regular'} fa-bookmark"></i> ${isSaved?'Saved':'Save'}
+    <i class="fa-regular fa-bookmark"></i> Save
   </button>`;
+
+const mediaItems = [];
+(l.photos||[l.img]).forEach((src,i) => mediaItems.push({type:'image',src,label:`Photo ${i+1}`}));
+if (l.video) mediaItems.push({type:'video',src:l.video,label:'Club Visit Video'});
+
+let lbIdx = 0;
+function openLb(i) { lbIdx=i; renderLb(); document.getElementById('lightbox').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeLb() { document.getElementById('lightbox').classList.remove('open'); document.body.style.overflow=''; }
+function lbBgClick(e) { if(e.target===e.currentTarget) closeLb(); }
+function lbNav(d) { lbIdx=(lbIdx+d+mediaItems.length)%mediaItems.length; renderLb(); }
+function renderLb() {
+  const item=mediaItems[lbIdx];
+  document.getElementById('lbMedia').innerHTML = item.type==='video'
+    ? `<video controls autoplay class="lightbox-media" style="max-height:75vh"><source src="${item.src}" type="video/mp4"><source src="${item.src}" type="video/quicktime"></video>`
+    : `<img src="${item.src}" class="lightbox-media" style="max-height:75vh" alt="${l.name}"/>`;
+  document.getElementById('lbCaption').textContent = `${l.name} — ${item.label}`;
+  document.getElementById('lbDots').innerHTML = mediaItems.map((_,i)=>`<div class="dot ${i===lbIdx?'active':''}" onclick="lbIdx=${i};renderLb()"></div>`).join('');
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if(e.key==='ArrowLeft') lbNav(-1);
+  if(e.key==='ArrowRight') lbNav(1);
+  if(e.key==='Escape') closeLb();
+});
 
 const ratingLabels = {
   humidor:'Humidor Quality', atmosphere:'Atmosphere', chairs:'Comfort & Seating',
@@ -70,96 +136,79 @@ const ratingLabels = {
   parking:'Parking', memberFriendliness:'Luxury Feel'
 };
 
-function ratingBarRow(key, label, val) {
-  if (val === 0) {
-    return `<div class="rating-bar-row">
-      <div class="rating-bar-label">${label}</div>
-      <div style="flex:1;font-style:italic;font-size:.78rem;color:var(--dim)">Not applicable</div>
-      <div class="rating-bar-val" style="color:var(--dim)">N/A</div>
-    </div>`;
-  }
-  return `<div class="rating-bar-row">
-    <div class="rating-bar-label">${label}</div>
-    <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${val*10}%"></div></div>
-    <div class="rating-bar-val">${val}</div>
-  </div>`;
+function ratingRow(key,label) {
+  const val=l.ratings[key];
+  if(val===null||val===undefined) return `<div class="rating-bar-row"><div class="rating-bar-label">${label}</div><div style="flex:1;font-style:italic;font-size:.78rem;color:var(--dim)">Pending</div><div class="rating-bar-val" style="color:var(--dim)">—</div></div>`;
+  if(val===0) return `<div class="rating-bar-row"><div class="rating-bar-label">${label}</div><div style="flex:1;font-style:italic;font-size:.78rem;color:var(--dim)">Not applicable</div><div class="rating-bar-val" style="color:var(--dim)">N/A</div></div>`;
+  return `<div class="rating-bar-row"><div class="rating-bar-label">${label}</div><div class="rating-bar-track"><div class="rating-bar-fill" style="width:${val*10}%"></div></div><div class="rating-bar-val">${val}</div></div>`;
 }
 
-// Sample comments
+function buildGallery() {
+  if (!mediaItems.length) return '';
+  const thumbs = mediaItems.map((item,i) => {
+    if (item.type==='video') return `<div class="gallery-thumb vt" onclick="openLb(${i})"><img src="${l.photos?.[0]||l.img}" alt="Video" style="opacity:.55"/><div class="play-icon"><i class="fa-solid fa-circle-play"></i></div></div>`;
+    return `<div class="gallery-thumb" onclick="openLb(${i})"><img src="${item.src}" alt="${l.name}"/></div>`;
+  }).join('');
+  return `<div class="media-gallery"><div class="gallery-thumbs">${thumbs}</div>
+    <div class="gallery-count"><i class="fa-solid fa-images" style="color:var(--gold-d)"></i> ${l.photos?.length||1} photo${(l.photos?.length||1)!==1?'s':''}${l.video?' &nbsp;·&nbsp; <i class="fa-solid fa-circle-play" style="color:var(--gold-d)"></i> 1 video':''} &nbsp;·&nbsp; Click to enlarge</div></div>`;
+}
+
 const comments = [
-  { user:'u2', text:'Excellent atmosphere — the ventilation here is among the best I\'ve encountered in the US. Highly recommend.', date:'June 2, 2026' },
-  { user:'u5', text:'Visited solo on a Tuesday evening. Quiet, attentive service. The leather chairs are genuinely comfortable.', date:'June 4, 2026' },
+  {user:'u2',text:'Exceptional atmosphere — the ventilation here is among the best I\'ve encountered. Highly recommend.',date:'June 2, 2026'},
+  {user:'u5',text:'Visited solo on a Tuesday. Quiet, attentive service. Chairs are genuinely comfortable.',date:'June 4, 2026'},
 ];
 
 document.getElementById('pageBody').innerHTML = `
-  <!-- GALLERY -->
-  <div class="gallery">
-    <div class="gallery-main"><img src="${l.photos?.[0]||l.img}" alt="${l.name}"/></div>
-    <div class="gallery-side">
-      <img src="${l.photos?.[1]||l.photos?.[0]||l.img}" alt="${l.name}" style="filter:brightness(.85)"/>
-      <img src="${l.photos?.[2]||l.photos?.[0]||l.img}" alt="${l.name}" style="filter:brightness(.7)"/>
-    </div>
-  </div>
-
-  ${l.video ? `
-  <div class="video-wrap">
-    <video controls preload="metadata" poster="${l.photos?.[0]||l.img}">
-      <source src="${l.video}" type="video/mp4">
-      <source src="${l.video}" type="video/quicktime">
-    </video>
-    <div class="video-label"><i class="fa-solid fa-play"></i> &nbsp;${l.name} — Club Visit</div>
-  </div>` : ''}
-
-  <!-- HEADER -->
-  <div style="margin-bottom:1.2rem">
-    <div style="display:flex;gap:.5rem;margin-bottom:.5rem">
+  <!-- 1. HEADER -->
+  <div class="lounge-header">
+    <div style="display:flex;gap:.5rem;margin-bottom:.5rem;flex-wrap:wrap">
       ${l.isFeatured?'<span class="badge badge-gold">Featured</span>':''}
+      ${l.reviewPending?'<span class="badge badge-gray"><i class="fa-solid fa-clock"></i> Review Pending</span>':''}
       <span class="badge badge-gray">${l.priceLevel}</span>
-      <span class="badge badge-gray">${l.country}</span>
+      <span class="badge badge-gray">${l.city}, ${l.state||l.country}</span>
     </div>
-    <h1 style="margin-bottom:.3rem">${l.name}</h1>
-    <div style="color:var(--muted);font-size:.92rem;font-style:italic"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${l.address}</div>
-    <div style="color:var(--dim);font-size:.78rem;margin-top:.2rem">Visited: ${l.visitedDate}</div>
+    <h1>${l.name}</h1>
+    <div class="location"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i>${l.city}, ${l.state||l.country}</div>
+    <div class="meta-row">
+      ${l.phone?`<span class="meta-item"><i class="fa-solid fa-phone" style="color:var(--gold-d)"></i><a href="tel:${l.phone}" style="color:var(--muted)">${l.phone}</a></span>`:''}
+      <span class="meta-item"><i class="fa-solid fa-map-pin" style="color:var(--gold-d)"></i>${l.address}</span>
+      ${l.visitedDate?`<span class="meta-item"><i class="fa-solid fa-calendar-check" style="color:var(--gold-d)"></i>${l.visitedDate}</span>`:''}
+    </div>
   </div>
+
+  <!-- 2. COMPACT GALLERY -->
+  ${buildGallery()}
+
+  ${l.reviewPending?`<div class="pending-banner"><div style="font-family:var(--fh);font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem">Review Coming Soon</div><p style="font-size:.9rem;color:var(--muted);margin:0">Full ratings, review, and media will be published after our club visit.</p></div>`:''}
 
   <div class="lounge-layout">
     <div>
-      <!-- OVERALL -->
-      <div style="background:var(--s3);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.3rem;display:flex;align-items:center;gap:1.4rem;margin-bottom:1.5rem">
-        <div>
-          <div class="score-big">${l.ratings.overall}</div>
-          <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--muted)">Overall Score</div>
-        </div>
-        <div>
-          <div style="margin-bottom:.4rem">${GLC.renderStars(l.ratings.overall)}</div>
-          <div style="font-size:.85rem;color:var(--muted)">Noise level: ${l.noiseLevel}</div>
-          <div style="font-size:.78rem;color:var(--dim);margin-top:.2rem">Best for: ${l.bestFor.join(', ')}</div>
-        </div>
+      <!-- 3. RATINGS -->
+      ${!l.reviewPending?`
+      <div style="background:var(--s3);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.2rem;display:flex;align-items:center;gap:1.3rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div><div class="score-big">${l.ratings.overall}</div><div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)">Overall</div></div>
+        <div><div style="margin-bottom:.4rem">${GLC.renderStars(l.ratings.overall)}</div><div style="font-size:.82rem;color:var(--muted)">Noise: ${l.noiseLevel}</div></div>
       </div>
-
-      <!-- RATINGS -->
       <div class="card" style="margin-bottom:1.5rem">
         <div class="card-header"><h4>Category Ratings</h4></div>
-        <div class="card-body">
-          ${Object.entries(ratingLabels).map(([key,label]) => ratingBarRow(key, label, l.ratings[key]||0)).join('')}
-        </div>
-      </div>
+        <div class="card-body">${Object.entries(ratingLabels).map(([k,lbl])=>ratingRow(k,lbl)).join('')}</div>
+      </div>`:''}
 
-      <!-- REVIEW -->
+      <!-- 4. REVIEW -->
       <div class="card" style="margin-bottom:1.5rem">
-        <div class="card-header"><h4>Club Review</h4><span style="font-size:.75rem;color:var(--muted);font-style:italic">Gold Label Club</span></div>
-        <div class="card-body"><p>${l.review}</p></div>
+        <div class="card-header"><h4>Gold Label Club Review</h4>${!l.reviewPending?`<span style="font-size:.75rem;color:var(--muted);font-style:italic">Official</span>`:''}</div>
+        <div class="card-body review-text">${l.reviewHtml?l.reviewHtml:`<p>${l.review}</p>`}</div>
       </div>
 
-      <!-- FEATURES -->
+      <!-- 5. FEATURES -->
       <div class="card" style="margin-bottom:1.5rem">
         <div class="card-header"><h4>Features & Amenities</h4></div>
         <div class="card-body">
-          <div style="display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:1.2rem">
+          <div style="display:flex;flex-wrap:wrap;gap:.55rem;margin-bottom:1.1rem">
             <span class="feature-pill ${l.features.bar?'feature-yes':'feature-no'}"><i class="fa-solid fa-martini-glass-citrus"></i> Bar: ${l.features.bar?'Yes':'No'}</span>
             <span class="feature-pill ${l.features.outdoor?'feature-yes':'feature-no'}"><i class="fa-solid fa-sun"></i> Outdoor: ${l.features.outdoor?'Yes':'No'}</span>
             <span class="feature-pill ${l.features.privateLounge?'feature-yes':'feature-no'}"><i class="fa-solid fa-lock"></i> Private Room: ${l.features.privateLounge?'Yes':'No'}</span>
-            <span class="feature-pill ${l.features.byo?'feature-yes':'feature-no'}"><i class="fa-solid fa-fire"></i> BYO Cigars: ${l.features.byo?'Yes':'No'}</span>
+            <span class="feature-pill ${l.features.byo?'feature-yes':'feature-no'}"><i class="fa-solid fa-fire"></i> BYO: ${l.features.byo?'Yes':'No'}</span>
           </div>
           <div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.5rem">Best For</div>
           <div>${l.bestFor.map(b=>`<span class="best-chip">${b}</span>`).join('')}</div>
@@ -168,25 +217,12 @@ document.getElementById('pageBody').innerHTML = `
 
       <!-- MEMBER COMMENTS -->
       <div class="card">
-        <div class="card-header"><h4>Member Comments</h4><span class="badge badge-gold" style="font-size:.44rem"><i class="fa-solid fa-lock"></i> Members Only</span></div>
+        <div class="card-header"><h4>Member Comments</h4><span class="badge badge-gold" style="font-size:.44rem"><i class="fa-solid fa-lock"></i> Private</span></div>
         <div class="card-body">
-          ${comments.map(c => {
-            const m = GLC.getMemberById(c.user);
-            return `<div class="comment-bubble">
-              <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.4rem">
-                <img src="${m?.avatar}" style="width:26px;height:26px;border-radius:50%;object-fit:cover"/>
-                <span style="font-family:var(--fh);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ivory)">${m?.name||'Member'}</span>
-                <span style="font-size:.72rem;color:var(--dim)">${c.date}</span>
-              </div>
-              <p style="font-size:.9rem;margin:0">${c.text}</p>
-            </div>`;
-          }).join('')}
-          <div style="display:flex;gap:.7rem;margin-top:.8rem;align-items:flex-start">
-            <img src="${user.avatar}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0"/>
-            <div style="flex:1">
-              <textarea class="form-control" placeholder="Add a member comment…" id="commentInput" rows="2"></textarea>
-              <button class="btn btn-outline btn-sm" style="margin-top:.5rem" onclick="showToast('Comment posted!')"><i class="fa-solid fa-paper-plane"></i> Post</button>
-            </div>
+          ${comments.map(c=>{const m=GLC.getMemberById(c.user);return `<div class="comment-bubble"><div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem"><img src="${m?.avatar}" style="width:24px;height:24px;border-radius:50%;object-fit:cover"/><span style="font-family:var(--fh);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ivory)">${m?.name||'Member'}</span><span style="font-size:.72rem;color:var(--dim)">${c.date}</span></div><p style="font-size:.9rem;margin:0">${c.text}</p></div>`;}).join('')}
+          <div style="display:flex;gap:.6rem;margin-top:.8rem;align-items:flex-start">
+            <img src="${user.avatar}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0"/>
+            <div style="flex:1"><textarea class="form-control" placeholder="Add a comment…" id="commentInput" rows="2"></textarea><button class="btn btn-outline btn-sm" style="margin-top:.5rem" onclick="showToast('Comment posted!')"><i class="fa-solid fa-paper-plane"></i> Post</button></div>
           </div>
         </div>
       </div>
@@ -202,40 +238,18 @@ document.getElementById('pageBody').innerHTML = `
           ${l.googleBusiness?`<div class="contact-row"><i class="fa-brands fa-google" style="color:var(--gold-d);width:18px;font-size:.8rem"></i><a href="${l.googleBusiness}" target="_blank" style="font-size:.88rem">Google Maps</a></div>`:''}
         </div>
       </div>
-
-      <div class="card" style="margin-bottom:1rem">
-        <div class="card-body">
-          <div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.8rem">Quick Scores</div>
-          ${[['humidor','Humidor'],['atmosphere','Atmosphere'],['cigarSelection','Selection'],['service','Service'],['drinks','Bar']].map(([k,lbl])=>`
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
-            <span style="font-size:.82rem;color:var(--muted)">${lbl}</span>
-            <span style="font-family:var(--fh);font-size:.7rem;color:var(--gold)">${l.ratings[k]||'N/A'}</span>
-          </div>`).join('')}
-        </div>
-      </div>
-
-      <div class="card" style="margin-bottom:1rem">
-        <div class="card-body" style="text-align:center">
-          <div class="score-big" style="font-size:2rem">${l.priceLevel}</div>
-          <div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">${l.priceLevel==='$$$$'?'Luxury':l.priceLevel==='$$$'?'Upscale':l.priceLevel==='$$'?'Mid-range':'Budget'}</div>
-        </div>
-      </div>
-
-      <button class="btn btn-ghost fav-btn" id="favBtn2" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="toggleFav()">
-        <i class="fa-regular fa-bookmark"></i> Save to Favorites
-      </button>
-      <a href="/portal/map.html" class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:.6rem"><i class="fa-solid fa-earth-americas"></i> View on Map</a>
+      ${!l.reviewPending?`<div class="card" style="margin-bottom:1rem"><div class="card-body"><div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem">Top Scores</div>${[['humidor','Humidor'],['atmosphere','Atmosphere'],['cigarSelection','Selection'],['service','Service'],['drinks','Bar']].map(([k,lbl])=>`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem"><span style="font-size:.82rem;color:var(--muted)">${lbl}</span><span style="font-family:var(--fh);font-size:.7rem;color:var(--gold)">${l.ratings[k]??'—'}</span></div>`).join('')}</div></div>`:''}
+      <div class="card" style="margin-bottom:1rem"><div class="card-body" style="text-align:center"><div style="font-family:var(--fh);font-size:1.8rem;color:var(--gold)">${l.priceLevel}</div><div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">${l.priceLevel==='$$$$'?'Luxury':l.priceLevel==='$$$'?'Upscale':'Mid-range'}</div></div></div>
+      <button class="btn btn-ghost fav-btn" id="favBtn2" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="toggleFav()"><i class="fa-regular fa-bookmark"></i> Save to Favorites</button>
+      <a href="/portal/map.html" class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:.6rem"><i class="fa-solid fa-earth-americas"></i> Map</a>
       <a href="/portal/lounges.html" class="btn btn-ghost" style="width:100%;justify-content:center"><i class="fa-solid fa-arrow-left"></i> All Lounges</a>
     </div>
   </div>`;
 
 function toggleFav() {
-  isSaved = !isSaved;
-  showToast(isSaved ? `${l.name} saved to favorites!` : 'Removed from favorites');
-  document.querySelectorAll('.fav-btn').forEach(btn => {
-    btn.innerHTML = `<i class="fa-${isSaved?'solid':'regular'} fa-bookmark"></i> ${isSaved?'Saved':'Save to Favorites'}`;
-    btn.classList.toggle('saved', isSaved);
-  });
+  isSaved=!isSaved;
+  showToast(isSaved?`${l.name} saved!`:'Removed from favorites');
+  document.querySelectorAll('.fav-btn').forEach(b=>{b.innerHTML=`<i class="fa-${isSaved?'solid':'regular'} fa-bookmark"></i> ${isSaved?'Saved':'Save to Favorites'}`;b.classList.toggle('saved',isSaved);});
 }
 </script>
 </body>

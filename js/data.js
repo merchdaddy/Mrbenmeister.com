@@ -301,6 +301,43 @@ const GLC = {
       visitedDate: 'March 2026'
     },
     {
+      id: 'l9',
+      name: 'The Royale Cigar Lounge',
+      city: 'Tulsa', country: 'USA', state: 'OK',
+      address: '4205 South Sheridan Road, Tulsa, Oklahoma 74145',
+      phone: '(539) 525-0274',
+      website: '',
+      googleBusiness: 'https://maps.google.com/?q=The+Royale+Cigar+Lounge+Tulsa',
+      lat: 36.0896, lng: -95.9268,
+      img: '/images/royale%20cigar%20lounge%20tulsa%20pic%201.jpeg',
+      photos: [
+        '/images/royale%20cigar%20lounge%20tulsa%20pic%201.jpeg',
+        '/images/royale%20cigar%20lounge%20tulsa%20pic%202.jpeg',
+        '/images/royale%20cigar%20lounge%20pic%203.jpeg',
+      ],
+      video: '/videos/Royale%20CIgar%20lounge%20tulsa.mov',
+      review: 'The Royale Cigar Lounge is a genuine discovery in Tulsa — a refined, thoughtfully designed space that punches well above its weight for a mid-size American city. The interior strikes an immediate impression: deep leather seating, warm lighting, and a layout that encourages lingering without crowding. The ventilation system is exceptional, one of the quietest and most effective we\'ve encountered, keeping the air clean without the industrial hum you often find in lesser establishments. The humidor is curated rather than exhaustive — every selection earns its shelf space. The staff here is knowledgeable without being pretentious, willing to make recommendations but equally comfortable letting you browse in peace. No kitchen, which they own confidently, keeping the focus entirely on the smoke. The Royale doesn\'t try to be everything — it tries to be exceptional at what it does. It largely succeeds.',
+      ratings: {
+        overall: 8.6,
+        humidor: 8.5,
+        atmosphere: 9.2,
+        chairs: 9.0,
+        service: 8.5,
+        drinks: 8.2,
+        food: 0,
+        cigarSelection: 7.6,
+        ventilation: 8.8,
+        parking: 9.0,
+        memberFriendliness: 9.0
+      },
+      features: { bar: true, outdoor: false, privateLounge: false, byo: true },
+      noiseLevel: 'Low — Relaxed and refined',
+      priceLevel: '$$$',
+      bestFor: ['Date Night', 'Solo Smoke', 'Luxury Experience', 'Business Meeting'],
+      isFeatured: false,
+      visitedDate: 'June 2026'
+    },
+    {
       id: 'l8',
       name: 'Havana 1957 — Miami Beach',
       city: 'Miami Beach', country: 'USA', state: 'FL',
@@ -350,7 +387,7 @@ const GLC = {
   featuredEventId: 'e1',
 
   suggestedLounges: [
-    { id:'s1', submittedBy:'u3', name:'The Monarch Cigar Lounge', city:'Charlotte, NC', notes:'Incredible selection, very friendly staff. Worth a visit on the next Charlotte trip.', status:'pending', submittedDate:'June 2, 2026' },
+    { id:'s1', submittedBy:'u3', name:'The Monarch Cigar Lounge', city:'Charlotte, NC', notes:'Incredible selection, very friendly staff. Worth a visit on the next Charlotte trip.', status:'approved', submittedDate:'June 2, 2026' },
     { id:'s2', submittedBy:'u8', name:'Smoke & Barrel', city:'Nashville, TN', notes:'Whiskey and cigar pairing nights every Thursday. Great atmosphere.', status:'pending', submittedDate:'June 4, 2026' },
   ]
 };

@@ -19,6 +19,9 @@
     .contact-row{display:flex;align-items:center;gap:.7rem;padding:.7rem 0;border-bottom:1px solid var(--border);}
     .contact-row:last-child{border-bottom:none;}
     .members-cta{background:var(--s2);border:1px solid var(--gold-d);border-radius:var(--radius);padding:1.5rem;text-align:center;margin-top:1.2rem;}
+    .video-wrap{border-radius:var(--radius);overflow:hidden;border:1px solid var(--border);margin-bottom:1.5rem;background:var(--s3);position:relative;}
+    .video-wrap video{width:100%;display:block;max-height:420px;background:#000;}
+    .video-label{font-family:var(--fh);font-size:.55rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold-d);padding:.6rem 1rem;border-top:1px solid var(--border);}
     @media(max-width:900px){.lounge-layout{grid-template-columns:1fr;}.gallery{grid-template-columns:1fr;}.gallery-side{flex-direction:row;}.gallery-side img{height:100px;flex:1;}}
   </style>
 </head>
@@ -56,6 +59,21 @@ const ratingLabels = {
   parking:'Parking', memberFriendliness:'Luxury Feel'
 };
 
+function ratingBarRow(key, label, val) {
+  if (val === 0) {
+    return `<div class="rating-bar-row">
+      <div class="rating-bar-label">${label}</div>
+      <div style="flex:1;font-style:italic;font-size:.78rem;color:var(--dim)">Not applicable</div>
+      <div class="rating-bar-val" style="color:var(--dim)">N/A</div>
+    </div>`;
+  }
+  return `<div class="rating-bar-row">
+    <div class="rating-bar-label">${label}</div>
+    <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${val*10}%"></div></div>
+    <div class="rating-bar-val">${val}</div>
+  </div>`;
+}
+
 document.getElementById('pageBody').innerHTML = `
   <a href="/glc/lounges.html" style="font-family:var(--fh);font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);display:inline-flex;align-items:center;gap:.4rem;margin-bottom:1.5rem"><i class="fa-solid fa-arrow-left"></i> All Lounges</a>
 
@@ -63,10 +81,21 @@ document.getElementById('pageBody').innerHTML = `
   <div class="gallery">
     <div class="gallery-main"><img src="${l.photos[0]||l.img}" alt="${l.name}"/></div>
     <div class="gallery-side">
-      <img src="${l.photos[1]||l.img}" alt="${l.name}" style="filter:brightness(.8)"/>
-      <img src="${l.photos[0]||l.img}" alt="${l.name}" style="filter:brightness(.6)"/>
+      <img src="${l.photos[1]||l.photos[0]||l.img}" alt="${l.name}" style="filter:brightness(.85)"/>
+      <img src="${l.photos[2]||l.photos[0]||l.img}" alt="${l.name}" style="filter:brightness(.7)"/>
     </div>
   </div>
+
+  <!-- VIDEO (if available) -->
+  ${l.video ? `
+  <div class="video-wrap">
+    <video controls preload="metadata" poster="${l.photos[0]||l.img}">
+      <source src="${l.video}" type="video/mp4">
+      <source src="${l.video}" type="video/quicktime">
+      Your browser does not support HTML5 video.
+    </video>
+    <div class="video-label"><i class="fa-solid fa-play"></i> &nbsp;${l.name} — Club Visit</div>
+  </div>` : ''}
 
   <!-- HEADER -->
   <div style="margin-bottom:1.5rem">
@@ -100,12 +129,9 @@ document.getElementById('pageBody').innerHTML = `
       <div class="card" style="margin-bottom:1.5rem">
         <div class="card-header"><h4>Category Ratings</h4></div>
         <div class="card-body">
-          ${Object.entries(ratingLabels).map(([key,label]) => `
-          <div class="rating-bar-row">
-            <div class="rating-bar-label">${label}</div>
-            <div class="rating-bar-track"><div class="rating-bar-fill" style="width:${(l.ratings[key]||0)*10}%"></div></div>
-            <div class="rating-bar-val">${l.ratings[key]||'—'}</div>
-          </div>`).join('')}
+          ${Object.entries(ratingLabels).map(([key,label]) =>
+            ratingBarRow(key, label, l.ratings[key]||0)
+          ).join('')}
         </div>
       </div>
 

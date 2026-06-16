@@ -20,6 +20,12 @@
       --cream: #e8e0d0;
       --red: #b22222;
       --gold: #c8a96e;
+      /* Category colors */
+      --c-restaurant: #e07430;
+      --c-bar:        #7c3aed;
+      --c-activity:   #2a8de8;
+      --c-shopping:   #27a05a;
+      --c-landmark:   #c9a000;
     }
     html { scroll-behavior: smooth; }
     body { background: var(--black); color: var(--off-white); font-family: 'Lora', serif; font-size: 16px; line-height: 1.7; }
@@ -40,12 +46,10 @@
     .nav-links .cigar-link:hover { background: var(--gold); color: var(--black); }
 
     /* MAP HERO */
-    .map-hero {
-      position: relative; height: 70vh; min-height: 480px; margin-top: 64px;
-    }
+    .map-hero { position: relative; height: 70vh; min-height: 480px; margin-top: 64px; }
     #recMap { width: 100%; height: 100%; }
     .map-overlay {
-      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      position: absolute; inset: 0;
       background: linear-gradient(to bottom, rgba(13,13,13,0.55) 0%, transparent 40%, transparent 60%, rgba(13,13,13,0.85) 100%);
       pointer-events: none; z-index: 10;
     }
@@ -60,19 +64,42 @@
       font-family: 'Oswald', sans-serif; font-size: clamp(2.4rem, 5vw, 4rem);
       font-weight: 700; text-transform: uppercase; color: var(--off-white); line-height: 1;
     }
-    .map-hero-text p {
-      font-style: italic; color: var(--light-gray); font-size: 1rem; margin-top: 0.6rem;
-    }
+    .map-hero-text p { font-style: italic; color: var(--light-gray); font-size: 1rem; margin-top: 0.6rem; }
+
+    /* PIN COUNT */
     .map-pin-count {
       position: absolute; top: 1.2rem; right: 1.2rem; z-index: 20;
-      background: rgba(13,13,13,0.85); border: 1px solid #2a2a2a;
+      background: rgba(13,13,13,0.88); border: 1px solid #2a2a2a;
       padding: 0.5rem 0.9rem;
       font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.18em;
       text-transform: uppercase; color: var(--light-gray);
     }
-    .map-pin-count span { color: var(--red); font-weight: 600; }
+    .map-pin-count span { color: var(--off-white); font-weight: 600; }
 
-    /* Leaflet popup override */
+    /* MAP LEGEND */
+    .map-legend {
+      position: absolute; bottom: 3rem; right: 1.2rem; z-index: 20;
+      background: rgba(13,13,13,0.88); border: 1px solid #2a2a2a;
+      padding: 0.8rem 1rem;
+    }
+    .map-legend-title {
+      font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--mid-gray); margin-bottom: 0.55rem;
+    }
+    .legend-row {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--light-gray);
+      margin-bottom: 0.3rem; cursor: pointer; transition: color 0.15s;
+    }
+    .legend-row:last-child { margin-bottom: 0; }
+    .legend-row:hover { color: var(--off-white); }
+    .legend-row.dimmed { opacity: 0.35; }
+    .legend-dot {
+      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    }
+
+    /* Leaflet popup */
     .leaflet-popup-content-wrapper {
       background: #1a1a1a; border: 1px solid #333; border-radius: 0;
       box-shadow: 0 4px 20px rgba(0,0,0,0.6);
@@ -82,7 +109,7 @@
     .map-popup { padding: 1rem 1.1rem; min-width: 180px; }
     .map-popup-cat {
       font-family: 'Oswald', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--red); margin-bottom: 0.3rem;
+      text-transform: uppercase; margin-bottom: 0.3rem;
     }
     .map-popup-name {
       font-family: 'Oswald', sans-serif; font-size: 0.95rem; font-weight: 600;
@@ -95,23 +122,47 @@
       text-decoration: none; border-bottom: 1px solid rgba(200,169,110,0.3);
     }
 
-    /* FILTERS */
+    /* FILTER BAR */
     .filters-bar {
       background: var(--off-black); border-bottom: 1px solid #2a2a2a;
       padding: 1rem 3rem; position: sticky; top: 64px; z-index: 100;
       display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
     }
     .filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .filter-label { font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); white-space: nowrap; }
+    .filter-label {
+      font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--mid-gray); white-space: nowrap;
+    }
     .filter-sep { width: 1px; height: 20px; background: #2a2a2a; }
+
+    /* Base chip */
     .chip {
       font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.12em;
       text-transform: uppercase; padding: 0.3rem 0.75rem;
       background: transparent; border: 1px solid #333;
       color: var(--light-gray); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+      display: inline-flex; align-items: center; gap: 0.4rem;
     }
-    .chip:hover { border-color: var(--off-white); color: var(--off-white); }
-    .chip.active { border-color: var(--red); color: var(--red); }
+    .chip:hover { border-color: #666; color: var(--off-white); }
+
+    /* "All" chip */
+    .chip-all.active { border-color: var(--off-white); color: var(--off-white); }
+
+    /* Category chips — each has its own color when active */
+    .chip-restaurant.active { border-color: var(--c-restaurant); color: var(--c-restaurant); }
+    .chip-bar.active        { border-color: var(--c-bar);        color: var(--c-bar); }
+    .chip-activity.active   { border-color: var(--c-activity);   color: var(--c-activity); }
+    .chip-shopping.active   { border-color: var(--c-shopping);   color: var(--c-shopping); }
+    .chip-landmark.active   { border-color: var(--c-landmark);   color: var(--c-landmark); }
+
+    /* Color swatch dot on each chip */
+    .chip-dot {
+      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
+      opacity: 0.6; transition: opacity 0.2s;
+    }
+    .chip.active .chip-dot, .chip:hover .chip-dot { opacity: 1; }
+
+    /* Search */
     .filter-search {
       margin-left: auto;
       display: flex; align-items: center; gap: 0.5rem;
@@ -124,10 +175,23 @@
     .filter-search input::placeholder { color: var(--mid-gray); }
     .filter-search-icon { color: var(--mid-gray); font-size: 0.8rem; }
 
-    /* MAIN LAYOUT */
+    /* Location selects */
+    .loc-select {
+      font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.32rem 0.6rem;
+      background: transparent; border: 1px solid #333;
+      color: var(--light-gray); cursor: pointer;
+      outline: none; appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 0.5rem center;
+      padding-right: 1.5rem;
+    }
+    .loc-select option { background: #1a1a1a; color: var(--off-white); }
+
+    /* MAIN CONTENT */
     .page-body { max-width: 1200px; margin: 0 auto; padding: 3rem; }
 
-    /* LOCATION SECTIONS */
+    /* Location sections */
     .location-section { margin-bottom: 4rem; }
     .location-header {
       display: flex; align-items: baseline; gap: 1rem;
@@ -145,34 +209,28 @@
       margin-left: auto; font-family: 'Oswald', sans-serif; font-size: 0.65rem;
       letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid-gray);
     }
-
-    /* STATE SUBSECTION */
     .state-section { margin-bottom: 2.5rem; }
     .state-label {
       font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em;
       text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
     }
 
-    /* REC CARDS */
+    /* Cards */
     .recs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.2rem; }
     .rec-card {
       background: var(--off-black); border: 1px solid #2a2a2a;
       text-decoration: none; display: block; transition: border-color 0.25s;
     }
-    .rec-card:hover { border-color: var(--red); }
-    .rec-card-img {
-      width: 100%; height: 155px; object-fit: cover; display: block;
-      background: var(--dark-gray);
-    }
+    .rec-card-img { width: 100%; height: 155px; object-fit: cover; display: block; background: var(--dark-gray); }
     .rec-card-img-placeholder {
       width: 100%; height: 155px; background: var(--dark-gray);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; opacity: 0.3;
+      display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: 0.3;
     }
     .rec-card-body { padding: 1.1rem 1.3rem 1.4rem; }
     .rec-card-cat {
       font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--red); margin-bottom: 0.35rem;
+      text-transform: uppercase; margin-bottom: 0.35rem;
+      display: flex; align-items: center; gap: 0.4rem;
     }
     .rec-card-name {
       font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600;
@@ -183,18 +241,14 @@
     .rec-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
     .rec-tag {
       font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.12em;
-      text-transform: uppercase; padding: 0.2rem 0.5rem;
-      border: 1px solid #333; color: var(--mid-gray);
+      text-transform: uppercase; padding: 0.2rem 0.5rem; border: 1px solid #333; color: var(--mid-gray);
     }
-    .rec-vibe {
-      float: right; font-family: 'Oswald', sans-serif; font-size: 0.75rem;
-      color: var(--gold); letter-spacing: 0.08em;
-    }
+    .rec-vibe { float: right; font-family: 'Oswald', sans-serif; font-size: 0.75rem; color: var(--gold); letter-spacing: 0.08em; }
 
-    /* EMPTY STATE */
+    /* Empty state */
     .empty-state { text-align: center; padding: 4rem; color: var(--mid-gray); font-style: italic; }
 
-    /* FOOTER */
+    /* Footer */
     footer {
       padding: 3rem; background: var(--black); border-top: 1px solid #1e1e1e;
       display: flex; justify-content: space-between; align-items: center;
@@ -208,6 +262,7 @@
       .filters-bar { padding: 0.8rem 1.5rem; }
       .page-body { padding: 2rem 1.5rem; }
       .map-hero-text { left: 1.5rem; bottom: 2rem; }
+      .map-legend { display: none; }
       footer { flex-direction: column; gap: 1rem; text-align: center; }
     }
   </style>
@@ -234,33 +289,47 @@
     <h1>Recommendations</h1>
     <p>Places worth going. Things worth doing.</p>
   </div>
-  <div class="map-pin-count" id="pinCount"><span id="pinNum">0</span> places mapped</div>
+  <div class="map-pin-count"><span id="pinNum">0</span> pins showing</div>
+  <div class="map-legend" id="mapLegend">
+    <div class="map-legend-title">Pin Legend</div>
+    <!-- Rows injected by JS -->
+  </div>
 </div>
 
 <!-- FILTERS -->
 <div class="filters-bar">
-  <div class="filter-group">
+  <div class="filter-group" id="catChips">
     <span class="filter-label">Category</span>
-    <button class="chip active" onclick="setFilter('cat','all',this)">All</button>
-    <button class="chip" onclick="setFilter('cat','restaurant',this)">Restaurants &amp; Cafés</button>
-    <button class="chip" onclick="setFilter('cat','bar',this)">Bars &amp; Nightlife</button>
-    <button class="chip" onclick="setFilter('cat','activity',this)">Activities</button>
-    <button class="chip" onclick="setFilter('cat','shopping',this)">Shopping</button>
-    <button class="chip" onclick="setFilter('cat','landmark',this)">Landmarks</button>
+    <button class="chip chip-all active" data-cat="all" onclick="setCat('all',this)">All</button>
+    <button class="chip chip-restaurant" data-cat="restaurant" onclick="setCat('restaurant',this)">
+      <span class="chip-dot" style="background:var(--c-restaurant)"></span>Restaurants &amp; Cafes
+    </button>
+    <button class="chip chip-bar" data-cat="bar" onclick="setCat('bar',this)">
+      <span class="chip-dot" style="background:var(--c-bar)"></span>Bars &amp; Nightlife
+    </button>
+    <button class="chip chip-activity" data-cat="activity" onclick="setCat('activity',this)">
+      <span class="chip-dot" style="background:var(--c-activity)"></span>Activities
+    </button>
+    <button class="chip chip-shopping" data-cat="shopping" onclick="setCat('shopping',this)">
+      <span class="chip-dot" style="background:var(--c-shopping)"></span>Shopping
+    </button>
+    <button class="chip chip-landmark" data-cat="landmark" onclick="setCat('landmark',this)">
+      <span class="chip-dot" style="background:var(--c-landmark)"></span>Landmarks
+    </button>
   </div>
   <div class="filter-sep"></div>
   <div class="filter-group">
     <span class="filter-label">Location</span>
-    <select class="chip" id="countryFilter" onchange="onLocationChange()" style="padding:.3rem .5rem;background:transparent;color:var(--light-gray);border:1px solid #333;cursor:pointer">
+    <select class="loc-select" id="countryFilter" onchange="onLocationChange()">
       <option value="all">All Countries</option>
     </select>
-    <select class="chip" id="stateFilter" onchange="render()" style="display:none;padding:.3rem .5rem;background:transparent;color:var(--light-gray);border:1px solid #333;cursor:pointer">
+    <select class="loc-select" id="stateFilter" style="display:none" onchange="applyFilters()">
       <option value="all">All States</option>
     </select>
   </div>
   <div class="filter-search">
     <span class="filter-search-icon">⌕</span>
-    <input type="text" id="searchInput" placeholder="Search places…" oninput="render()"/>
+    <input type="text" id="searchInput" placeholder="Search places…" oninput="applyFilters()"/>
   </div>
 </div>
 
@@ -277,25 +346,32 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/js/recommendations-data.js"></script>
 <script>
+// ── COLOR SYSTEM ──────────────────────────────────────────────────────────────
+const CAT_COLORS = {
+  restaurant: '#e07430',
+  bar:        '#7c3aed',
+  activity:   '#2a8de8',
+  shopping:   '#27a05a',
+  landmark:   '#c9a000'
+};
+
+const CAT_META = {};
+REC_CATEGORIES.forEach(c => CAT_META[c.id] = c);
+
 // ── MAP INIT ──────────────────────────────────────────────────────────────────
 const map = L.map('recMap', { zoomControl: false, attributionControl: false }).setView([25, 10], 2);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
-const CAT_META = {};
-REC_CATEGORIES.forEach(c => CAT_META[c.id] = c);
-
 function pinSvg(color) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30">
-    <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="${color}"/>
-    <circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.35)"/>
+    <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="${color}" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+    <circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.3)"/>
   </svg>`;
 }
 
-const CAT_COLORS = { restaurant:'#b22222', bar:'#c8a96e', activity:'#4a9eff', shopping:'#a855f7', landmark:'#22b28c' };
-const markers = {};
-
-const data = BEN_RECS.filter(r => typeof r === 'object' && r.id);
+const data = BEN_RECS.filter(r => r && r.id);
+const markerMap = {}; // id → { marker, rec }
 
 data.forEach(rec => {
   const color = CAT_COLORS[rec.category] || '#aaa';
@@ -305,27 +381,39 @@ data.forEach(rec => {
   });
   const m = L.marker([rec.lat, rec.lng], { icon }).addTo(map);
   const locStr = rec.state ? `${rec.city}, ${rec.state}` : `${rec.city}, ${rec.country}`;
+  const catColor = CAT_COLORS[rec.category] || '#aaa';
   m.bindPopup(`<div class="map-popup">
-    <div class="map-popup-cat">${CAT_META[rec.category]?.label || rec.category}</div>
+    <div class="map-popup-cat" style="color:${catColor}">${CAT_META[rec.category]?.label || rec.category}</div>
     <div class="map-popup-name">${rec.name}</div>
     <div class="map-popup-loc">${locStr}</div>
-    <a href="/recommendations/detail.html?id=${rec.id}" class="map-popup-link">View →</a>
+    <a href="/recommendations/detail.html?id=${rec.id}" class="map-popup-link">View &rarr;</a>
   </div>`, { maxWidth: 220 });
-  markers[rec.id] = m;
+  markerMap[rec.id] = { marker: m, rec, visible: true };
 });
 
-document.getElementById('pinNum').textContent = data.length;
+// ── LEGEND ────────────────────────────────────────────────────────────────────
+const legendEl = document.getElementById('mapLegend');
+REC_CATEGORIES.forEach(cat => {
+  const row = document.createElement('div');
+  row.className = 'legend-row';
+  row.dataset.cat = cat.id;
+  row.innerHTML = `<span class="legend-dot" style="background:${CAT_COLORS[cat.id]}"></span>${cat.label}`;
+  row.addEventListener('click', () => {
+    // Clicking legend row filters by that category
+    const chip = document.querySelector(`#catChips [data-cat="${cat.id}"]`);
+    if (chip) setCat(cat.id, chip);
+  });
+  legendEl.appendChild(row);
+});
 
-// ── FILTERS ───────────────────────────────────────────────────────────────────
+// ── FILTER STATE ──────────────────────────────────────────────────────────────
 let activeCat = 'all';
 
-function setFilter(type, val, el) {
-  if (type === 'cat') {
-    activeCat = val;
-    el.closest('.filter-group').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    el.classList.add('active');
-  }
-  render();
+function setCat(cat, el) {
+  activeCat = cat;
+  document.querySelectorAll('#catChips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
 }
 
 // Populate country dropdown
@@ -348,33 +436,62 @@ function onLocationChange() {
     stateEl.style.display = 'none';
     stateEl.value = 'all';
   }
-  render();
+  applyFilters();
 }
 
-function getFiltered() {
+function matchesFilters(rec) {
   const country = countryEl.value;
   const state = document.getElementById('stateFilter').value;
   const search = (document.getElementById('searchInput').value || '').toLowerCase();
-  return data.filter(r => {
-    if (activeCat !== 'all' && r.category !== activeCat) return false;
-    if (country !== 'all' && r.country !== country) return false;
-    if (state !== 'all' && r.state !== state) return false;
-    if (search && !r.name.toLowerCase().includes(search) && !r.city.toLowerCase().includes(search) && !r.summary.toLowerCase().includes(search)) return false;
-    return true;
+  if (activeCat !== 'all' && rec.category !== activeCat) return false;
+  if (country !== 'all' && rec.country !== country) return false;
+  if (state !== 'all' && rec.state !== state) return false;
+  if (search && !rec.name.toLowerCase().includes(search) && !rec.city.toLowerCase().includes(search) && !rec.summary.toLowerCase().includes(search)) return false;
+  return true;
+}
+
+// ── MAP MARKER VISIBILITY ────────────────────────────────────────────────────
+function updateMarkers() {
+  let visibleCount = 0;
+  Object.values(markerMap).forEach(({ marker, rec }) => {
+    if (matchesFilters(rec)) {
+      if (!map.hasLayer(marker)) map.addLayer(marker);
+      visibleCount++;
+    } else {
+      if (map.hasLayer(marker)) map.removeLayer(marker);
+    }
+  });
+  document.getElementById('pinNum').textContent = visibleCount;
+
+  // Dim legend rows that have no visible pins
+  document.querySelectorAll('.legend-row').forEach(row => {
+    const cat = row.dataset.cat;
+    const hasVisible = Object.values(markerMap).some(({ rec }) => rec.category === cat && matchesFilters(rec));
+    row.classList.toggle('dimmed', !hasVisible);
   });
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────────
+// ── COMBINED APPLY ────────────────────────────────────────────────────────────
+function applyFilters() {
+  updateMarkers();
+  renderCards();
+}
+
+// ── CARD RENDERING ────────────────────────────────────────────────────────────
 function recCard(r) {
   const locStr = r.state ? `${r.city}, ${r.state}` : `${r.city}, ${r.country}`;
   const catMeta = CAT_META[r.category] || { label: r.category, icon: '📍' };
+  const catColor = CAT_COLORS[r.category] || '#aaa';
   const imgHtml = r.img
     ? `<img class="rec-card-img" src="${r.img}" alt="${r.name}"/>`
-    : `<div class="rec-card-img-placeholder">${catMeta.icon}</div>`;
-  return `<a href="/recommendations/detail.html?id=${r.id}" class="rec-card">
+    : `<div class="rec-card-img-placeholder" style="border-top:3px solid ${catColor}">${catMeta.icon}</div>`;
+  return `<a href="/recommendations/detail.html?id=${r.id}" class="rec-card" style="--hover-color:${catColor}" onmouseenter="this.style.borderColor='${catColor}'" onmouseleave="this.style.borderColor=''">
     ${imgHtml}
     <div class="rec-card-body">
-      <div class="rec-card-cat">${catMeta.label} <span class="rec-vibe">${r.vibe}</span></div>
+      <div class="rec-card-cat" style="color:${catColor}">
+        <span style="width:6px;height:6px;border-radius:50%;background:${catColor};display:inline-block;flex-shrink:0"></span>
+        ${catMeta.label} <span class="rec-vibe">${r.vibe}</span>
+      </div>
       <div class="rec-card-name">${r.name}</div>
       <div class="rec-card-loc">📍 ${locStr}</div>
       <div class="rec-card-summary">${r.summary}</div>
@@ -383,8 +500,8 @@ function recCard(r) {
   </a>`;
 }
 
-function render() {
-  const filtered = getFiltered();
+function renderCards() {
+  const filtered = data.filter(matchesFilters);
   const country = countryEl.value;
   const state = document.getElementById('stateFilter').value;
   const el = document.getElementById('recsList');
@@ -394,16 +511,12 @@ function render() {
     return;
   }
 
-  // Group logic
   let html = '';
   if (country !== 'all') {
-    // Single country selected
     if (country === 'United States') {
       if (state !== 'all') {
-        // Single state
         html += renderGroup(filtered, null, `${state}, United States`);
       } else {
-        // Group by state
         const states = [...new Set(filtered.map(r => r.state).filter(Boolean))].sort();
         states.forEach(s => {
           const group = filtered.filter(r => r.state === s);
@@ -414,17 +527,13 @@ function render() {
       html += renderGroup(filtered, null, country);
     }
   } else {
-    // All countries — group by country, US subdivided by state
     const grouped = {};
-    filtered.forEach(r => {
-      const key = r.country; (grouped[key] = grouped[key] || []).push(r);
-    });
-    const sortedCountries = Object.keys(grouped).sort(a => a === 'United States' ? 1 : 0);
+    filtered.forEach(r => { (grouped[r.country] = grouped[r.country] || []).push(r); });
+    const sortedCountries = Object.keys(grouped).sort((a, b) => a === 'United States' ? 1 : b === 'United States' ? -1 : a.localeCompare(b));
     sortedCountries.forEach(c => {
       if (c === 'United States') {
-        // Sub-group by state
         const stateGroups = {};
-        grouped[c].forEach(r => { const k = r.state || 'Unknown'; (stateGroups[k]=stateGroups[k]||[]).push(r); });
+        grouped[c].forEach(r => { const k = r.state || 'Unknown'; (stateGroups[k] = stateGroups[k] || []).push(r); });
         html += `<div class="location-section"><div class="location-header"><span class="location-name">United States</span><span class="location-count">${grouped[c].length} place${grouped[c].length!==1?'s':''}</span></div>`;
         Object.keys(stateGroups).sort().forEach(s => {
           html += `<div class="state-section"><div class="state-label">${s}</div><div class="recs-grid">${stateGroups[s].map(recCard).join('')}</div></div>`;
@@ -435,7 +544,6 @@ function render() {
       }
     });
   }
-
   el.innerHTML = html;
 }
 
@@ -450,7 +558,8 @@ function renderGroup(recs, country, title) {
   </div>`;
 }
 
-render();
+// Initial render
+applyFilters();
 </script>
 </body>
 </html>

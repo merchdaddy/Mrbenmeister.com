@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recommendations — Mr. Ben Meister</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Special+Elite&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0d0d0d;
+      --off-black: #1a1a1a;
+      --dark-gray: #2a2a2a;
+      --mid-gray: #555;
+      --light-gray: #aaa;
+      --off-white: #f0ebe3;
+      --cream: #e8e0d0;
+      --red: #b22222;
+      --gold: #c8a96e;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--off-white); font-family: 'Lora', serif; font-size: 16px; line-height: 1.7; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(13,13,13,0.95); backdrop-filter: blur(6px);
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .nav-logo { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--off-white); text-decoration: none; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { font-family: 'Oswald', sans-serif; font-size: 0.78rem; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--off-white); }
+    .nav-links .cigar-link { color: var(--gold); border: 1px solid var(--gold); padding: 0.4rem 1rem; letter-spacing: 0.15em; }
+    .nav-links .cigar-link:hover { background: var(--gold); color: var(--black); }
+
+    /* MAP HERO */
+    .map-hero {
+      position: relative; height: 70vh; min-height: 480px; margin-top: 64px;
+    }
+    #recMap { width: 100%; height: 100%; }
+    .map-overlay {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to bottom, rgba(13,13,13,0.55) 0%, transparent 40%, transparent 60%, rgba(13,13,13,0.85) 100%);
+      pointer-events: none; z-index: 10;
+    }
+    .map-hero-text {
+      position: absolute; bottom: 3rem; left: 3rem; z-index: 20; pointer-events: none;
+    }
+    .map-hero-text .eyebrow {
+      font-family: 'Special Elite', cursive; font-size: 0.82rem; color: var(--red);
+      letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.6rem;
+    }
+    .map-hero-text h1 {
+      font-family: 'Oswald', sans-serif; font-size: clamp(2.4rem, 5vw, 4rem);
+      font-weight: 700; text-transform: uppercase; color: var(--off-white); line-height: 1;
+    }
+    .map-hero-text p {
+      font-style: italic; color: var(--light-gray); font-size: 1rem; margin-top: 0.6rem;
+    }
+    .map-pin-count {
+      position: absolute; top: 1.2rem; right: 1.2rem; z-index: 20;
+      background: rgba(13,13,13,0.85); border: 1px solid #2a2a2a;
+      padding: 0.5rem 0.9rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--light-gray);
+    }
+    .map-pin-count span { color: var(--red); font-weight: 600; }
+
+    /* Leaflet popup override */
+    .leaflet-popup-content-wrapper {
+      background: #1a1a1a; border: 1px solid #333; border-radius: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
+    }
+    .leaflet-popup-tip { background: #1a1a1a; }
+    .leaflet-popup-content { margin: 0; }
+    .map-popup { padding: 1rem 1.1rem; min-width: 180px; }
+    .map-popup-cat {
+      font-family: 'Oswald', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 0.3rem;
+    }
+    .map-popup-name {
+      font-family: 'Oswald', sans-serif; font-size: 0.95rem; font-weight: 600;
+      color: var(--off-white); margin-bottom: 0.2rem; line-height: 1.2;
+    }
+    .map-popup-loc { font-size: 0.75rem; color: #888; margin-bottom: 0.6rem; }
+    .map-popup-link {
+      display: inline-block; font-family: 'Oswald', sans-serif; font-size: 0.65rem;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
+      text-decoration: none; border-bottom: 1px solid rgba(200,169,110,0.3);
+    }
+
+    /* FILTERS */
+    .filters-bar {
+      background: var(--off-black); border-bottom: 1px solid #2a2a2a;
+      padding: 1rem 3rem; position: sticky; top: 64px; z-index: 100;
+      display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    }
+    .filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .filter-label { font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); white-space: nowrap; }
+    .filter-sep { width: 1px; height: 20px; background: #2a2a2a; }
+    .chip {
+      font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.3rem 0.75rem;
+      background: transparent; border: 1px solid #333;
+      color: var(--light-gray); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+    }
+    .chip:hover { border-color: var(--off-white); color: var(--off-white); }
+    .chip.active { border-color: var(--red); color: var(--red); }
+    .filter-search {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 0.5rem;
+      background: transparent; border: 1px solid #333; padding: 0.3rem 0.7rem;
+    }
+    .filter-search input {
+      background: transparent; border: none; outline: none; color: var(--off-white);
+      font-family: 'Lora', serif; font-size: 0.82rem; width: 160px;
+    }
+    .filter-search input::placeholder { color: var(--mid-gray); }
+    .filter-search-icon { color: var(--mid-gray); font-size: 0.8rem; }
+
+    /* MAIN LAYOUT */
+    .page-body { max-width: 1200px; margin: 0 auto; padding: 3rem; }
+
+    /* LOCATION SECTIONS */
+    .location-section { margin-bottom: 4rem; }
+    .location-header {
+      display: flex; align-items: baseline; gap: 1rem;
+      border-bottom: 1px solid #2a2a2a; padding-bottom: 0.8rem; margin-bottom: 1.8rem;
+    }
+    .location-name {
+      font-family: 'Oswald', sans-serif; font-size: 1.3rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.05em; color: var(--off-white);
+    }
+    .location-sub {
+      font-family: 'Oswald', sans-serif; font-size: 0.7rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--mid-gray);
+    }
+    .location-count {
+      margin-left: auto; font-family: 'Oswald', sans-serif; font-size: 0.65rem;
+      letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid-gray);
+    }
+
+    /* STATE SUBSECTION */
+    .state-section { margin-bottom: 2.5rem; }
+    .state-label {
+      font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
+    }
+
+    /* REC CARDS */
+    .recs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.2rem; }
+    .rec-card {
+      background: var(--off-black); border: 1px solid #2a2a2a;
+      text-decoration: none; display: block; transition: border-color 0.25s;
+    }
+    .rec-card:hover { border-color: var(--red); }
+    .rec-card-img {
+      width: 100%; height: 155px; object-fit: cover; display: block;
+      background: var(--dark-gray);
+    }
+    .rec-card-img-placeholder {
+      width: 100%; height: 155px; background: var(--dark-gray);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; opacity: 0.3;
+    }
+    .rec-card-body { padding: 1.1rem 1.3rem 1.4rem; }
+    .rec-card-cat {
+      font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 0.35rem;
+    }
+    .rec-card-name {
+      font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600;
+      color: var(--off-white); margin-bottom: 0.25rem; line-height: 1.25;
+    }
+    .rec-card-loc { font-size: 0.75rem; color: var(--mid-gray); margin-bottom: 0.55rem; }
+    .rec-card-summary { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 0.7rem; }
+    .rec-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .rec-tag {
+      font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.2rem 0.5rem;
+      border: 1px solid #333; color: var(--mid-gray);
+    }
+    .rec-vibe {
+      float: right; font-family: 'Oswald', sans-serif; font-size: 0.75rem;
+      color: var(--gold); letter-spacing: 0.08em;
+    }
+
+    /* EMPTY STATE */
+    .empty-state { text-align: center; padding: 4rem; color: var(--mid-gray); font-style: italic; }
+
+    /* FOOTER */
+    footer {
+      padding: 3rem; background: var(--black); border-top: 1px solid #1e1e1e;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+    .footer-logo { font-family: 'Oswald', sans-serif; font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); }
+    .footer-copy { font-size: 0.78rem; color: #444; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em; }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { gap: 1.2rem; }
+      .filters-bar { padding: 0.8rem 1.5rem; }
+      .page-body { padding: 2rem 1.5rem; }
+      .map-hero-text { left: 1.5rem; bottom: 2rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/index.html" class="nav-logo">Mr. Ben Meister</a>
+  <ul class="nav-links">
+    <li><a href="/recommendations/index.html" class="active">Recommendations</a></li>
+    <li><a href="/index.html#videos">Videos</a></li>
+    <li><a href="/index.html#ventures">Ventures</a></li>
+    <li><a href="/index.html#connect">Connect</a></li>
+    <li><a href="/glc/index.html" class="cigar-link">Cigar Club</a></li>
+  </ul>
+</nav>
+
+<!-- MAP HERO -->
+<div class="map-hero">
+  <div id="recMap"></div>
+  <div class="map-overlay"></div>
+  <div class="map-hero-text">
+    <p class="eyebrow">Personally Vetted</p>
+    <h1>Recommendations</h1>
+    <p>Places worth going. Things worth doing.</p>
+  </div>
+  <div class="map-pin-count" id="pinCount"><span id="pinNum">0</span> places mapped</div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-bar">
+  <div class="filter-group">
+    <span class="filter-label">Category</span>
+    <button class="chip active" onclick="setFilter('cat','all',this)">All</button>
+    <button class="chip" onclick="setFilter('cat','restaurant',this)">Restaurants &amp; Cafés</button>
+    <button class="chip" onclick="setFilter('cat','bar',this)">Bars &amp; Nightlife</button>
+    <button class="chip" onclick="setFilter('cat','activity',this)">Activities</button>
+    <button class="chip" onclick="setFilter('cat','shopping',this)">Shopping</button>
+    <button class="chip" onclick="setFilter('cat','landmark',this)">Landmarks</button>
+  </div>
+  <div class="filter-sep"></div>
+  <div class="filter-group">
+    <span class="filter-label">Location</span>
+    <select class="chip" id="countryFilter" onchange="onLocationChange()" style="padding:.3rem .5rem;background:transparent;color:var(--light-gray);border:1px solid #333;cursor:pointer">
+      <option value="all">All Countries</option>
+    </select>
+    <select class="chip" id="stateFilter" onchange="render()" style="display:none;padding:.3rem .5rem;background:transparent;color:var(--light-gray);border:1px solid #333;cursor:pointer">
+      <option value="all">All States</option>
+    </select>
+  </div>
+  <div class="filter-search">
+    <span class="filter-search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search places…" oninput="render()"/>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="page-body">
+  <div id="recsList"></div>
+</div>
+
+<footer>
+  <span class="footer-logo">Mr. Ben Meister</span>
+  <span class="footer-copy">© 2026 — All Rights Reserved</span>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/recommendations-data.js"></script>
+<script>
+// ── MAP INIT ──────────────────────────────────────────────────────────────────
+const map = L.map('recMap', { zoomControl: false, attributionControl: false }).setView([25, 10], 2);
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+const CAT_META = {};
+REC_CATEGORIES.forEach(c => CAT_META[c.id] = c);
+
+function pinSvg(color) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30">
+    <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="${color}"/>
+    <circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.35)"/>
+  </svg>`;
+}
+
+const CAT_COLORS = { restaurant:'#b22222', bar:'#c8a96e', activity:'#4a9eff', shopping:'#a855f7', landmark:'#22b28c' };
+const markers = {};
+
+const data = BEN_RECS.filter(r => typeof r === 'object' && r.id);
+
+data.forEach(rec => {
+  const color = CAT_COLORS[rec.category] || '#aaa';
+  const icon = L.divIcon({
+    className: '', html: pinSvg(color),
+    iconSize: [22, 30], iconAnchor: [11, 30], popupAnchor: [0, -32]
+  });
+  const m = L.marker([rec.lat, rec.lng], { icon }).addTo(map);
+  const locStr = rec.state ? `${rec.city}, ${rec.state}` : `${rec.city}, ${rec.country}`;
+  m.bindPopup(`<div class="map-popup">
+    <div class="map-popup-cat">${CAT_META[rec.category]?.label || rec.category}</div>
+    <div class="map-popup-name">${rec.name}</div>
+    <div class="map-popup-loc">${locStr}</div>
+    <a href="/recommendations/detail.html?id=${rec.id}" class="map-popup-link">View →</a>
+  </div>`, { maxWidth: 220 });
+  markers[rec.id] = m;
+});
+
+document.getElementById('pinNum').textContent = data.length;
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+let activeCat = 'all';
+
+function setFilter(type, val, el) {
+  if (type === 'cat') {
+    activeCat = val;
+    el.closest('.filter-group').querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+  }
+  render();
+}
+
+// Populate country dropdown
+const countries = [...new Set(data.map(r => r.country))].sort();
+const countryEl = document.getElementById('countryFilter');
+countries.forEach(c => {
+  const o = document.createElement('option'); o.value = c; o.textContent = c;
+  countryEl.appendChild(o);
+});
+
+function onLocationChange() {
+  const c = countryEl.value;
+  const stateEl = document.getElementById('stateFilter');
+  if (c === 'United States') {
+    const states = [...new Set(data.filter(r => r.country === 'United States' && r.state).map(r => r.state))].sort();
+    stateEl.innerHTML = '<option value="all">All States</option>';
+    states.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; stateEl.appendChild(o); });
+    stateEl.style.display = '';
+  } else {
+    stateEl.style.display = 'none';
+    stateEl.value = 'all';
+  }
+  render();
+}
+
+function getFiltered() {
+  const country = countryEl.value;
+  const state = document.getElementById('stateFilter').value;
+  const search = (document.getElementById('searchInput').value || '').toLowerCase();
+  return data.filter(r => {
+    if (activeCat !== 'all' && r.category !== activeCat) return false;
+    if (country !== 'all' && r.country !== country) return false;
+    if (state !== 'all' && r.state !== state) return false;
+    if (search && !r.name.toLowerCase().includes(search) && !r.city.toLowerCase().includes(search) && !r.summary.toLowerCase().includes(search)) return false;
+    return true;
+  });
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function recCard(r) {
+  const locStr = r.state ? `${r.city}, ${r.state}` : `${r.city}, ${r.country}`;
+  const catMeta = CAT_META[r.category] || { label: r.category, icon: '📍' };
+  const imgHtml = r.img
+    ? `<img class="rec-card-img" src="${r.img}" alt="${r.name}"/>`
+    : `<div class="rec-card-img-placeholder">${catMeta.icon}</div>`;
+  return `<a href="/recommendations/detail.html?id=${r.id}" class="rec-card">
+    ${imgHtml}
+    <div class="rec-card-body">
+      <div class="rec-card-cat">${catMeta.label} <span class="rec-vibe">${r.vibe}</span></div>
+      <div class="rec-card-name">${r.name}</div>
+      <div class="rec-card-loc">📍 ${locStr}</div>
+      <div class="rec-card-summary">${r.summary}</div>
+      <div class="rec-tags">${r.tags.map(t=>`<span class="rec-tag">${t}</span>`).join('')}</div>
+    </div>
+  </a>`;
+}
+
+function render() {
+  const filtered = getFiltered();
+  const country = countryEl.value;
+  const state = document.getElementById('stateFilter').value;
+  const el = document.getElementById('recsList');
+
+  if (!filtered.length) {
+    el.innerHTML = '<div class="empty-state">No recommendations match. Try broadening your filters.</div>';
+    return;
+  }
+
+  // Group logic
+  let html = '';
+  if (country !== 'all') {
+    // Single country selected
+    if (country === 'United States') {
+      if (state !== 'all') {
+        // Single state
+        html += renderGroup(filtered, null, `${state}, United States`);
+      } else {
+        // Group by state
+        const states = [...new Set(filtered.map(r => r.state).filter(Boolean))].sort();
+        states.forEach(s => {
+          const group = filtered.filter(r => r.state === s);
+          if (group.length) html += renderGroup(group, country, s);
+        });
+      }
+    } else {
+      html += renderGroup(filtered, null, country);
+    }
+  } else {
+    // All countries — group by country, US subdivided by state
+    const grouped = {};
+    filtered.forEach(r => {
+      const key = r.country; (grouped[key] = grouped[key] || []).push(r);
+    });
+    const sortedCountries = Object.keys(grouped).sort(a => a === 'United States' ? 1 : 0);
+    sortedCountries.forEach(c => {
+      if (c === 'United States') {
+        // Sub-group by state
+        const stateGroups = {};
+        grouped[c].forEach(r => { const k = r.state || 'Unknown'; (stateGroups[k]=stateGroups[k]||[]).push(r); });
+        html += `<div class="location-section"><div class="location-header"><span class="location-name">United States</span><span class="location-count">${grouped[c].length} place${grouped[c].length!==1?'s':''}</span></div>`;
+        Object.keys(stateGroups).sort().forEach(s => {
+          html += `<div class="state-section"><div class="state-label">${s}</div><div class="recs-grid">${stateGroups[s].map(recCard).join('')}</div></div>`;
+        });
+        html += '</div>';
+      } else {
+        html += renderGroup(grouped[c], null, c);
+      }
+    });
+  }
+
+  el.innerHTML = html;
+}
+
+function renderGroup(recs, country, title) {
+  return `<div class="location-section">
+    <div class="location-header">
+      <span class="location-name">${title}</span>
+      ${country ? `<span class="location-sub">${country}</span>` : ''}
+      <span class="location-count">${recs.length} place${recs.length!==1?'s':''}</span>
+    </div>
+    <div class="recs-grid">${recs.map(recCard).join('')}</div>
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recommendation — Mr. Ben Meister</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;600;700&family=Lora:ital,wght@0,400;0,600;1,400&family=Special+Elite&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0d0d0d; --off-black: #1a1a1a; --dark-gray: #2a2a2a;
+      --mid-gray: #555; --light-gray: #aaa; --off-white: #f0ebe3;
+      --cream: #e8e0d0; --red: #b22222; --gold: #c8a96e;
+    }
+    body { background: var(--black); color: var(--off-white); font-family: 'Lora', serif; font-size: 16px; line-height: 1.7; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 3rem;
+      background: rgba(13,13,13,0.95); backdrop-filter: blur(6px);
+      border-bottom: 1px solid #2a2a2a;
+    }
+    .nav-logo { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--off-white); text-decoration: none; }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a { font-family: 'Oswald', sans-serif; font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); text-decoration: none; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--off-white); }
+    .nav-links .cigar-link { color: var(--gold); border: 1px solid var(--gold); padding: 0.4rem 1rem; }
+    .nav-links .cigar-link:hover { background: var(--gold); color: var(--black); }
+
+    /* HERO STRIP */
+    .detail-hero {
+      margin-top: 64px; padding: 3.5rem 3rem 2.5rem;
+      border-bottom: 1px solid #1e1e1e; position: relative;
+    }
+    .breadcrumb {
+      font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--mid-gray); margin-bottom: 1.2rem;
+    }
+    .breadcrumb a { color: var(--mid-gray); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--off-white); }
+    .breadcrumb span { color: #333; margin: 0 0.4rem; }
+    .detail-cat {
+      font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.22em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 0.6rem;
+    }
+    .detail-name {
+      font-family: 'Oswald', sans-serif; font-size: clamp(2rem, 5vw, 3.8rem);
+      font-weight: 700; text-transform: uppercase; line-height: 1; color: var(--off-white);
+      margin-bottom: 0.6rem;
+    }
+    .detail-loc {
+      font-family: 'Lora', serif; font-style: italic; color: var(--light-gray); font-size: 0.95rem;
+    }
+    .vibe-score {
+      position: absolute; top: 3.5rem; right: 3rem;
+      text-align: center;
+    }
+    .vibe-num {
+      font-family: 'Oswald', sans-serif; font-size: 3rem; font-weight: 700;
+      color: var(--gold); line-height: 1;
+    }
+    .vibe-label {
+      font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--mid-gray); margin-top: 0.3rem;
+    }
+
+    /* GALLERY */
+    .gallery-section { padding: 2rem 3rem; border-bottom: 1px solid #1e1e1e; }
+    .gallery-strip { display: flex; gap: 0.6rem; overflow-x: auto; padding-bottom: 0.5rem; }
+    .gallery-strip::-webkit-scrollbar { height: 3px; }
+    .gallery-strip::-webkit-scrollbar-thumb { background: #333; }
+    .gallery-thumb {
+      flex-shrink: 0; width: 140px; height: 100px; object-fit: cover;
+      cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s;
+    }
+    .gallery-thumb:first-child { width: 200px; }
+    .gallery-thumb:hover { border-color: var(--red); }
+    .gallery-placeholder {
+      flex-shrink: 0; width: 200px; height: 140px; background: var(--dark-gray);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; opacity: 0.3; color: var(--off-white);
+    }
+
+    /* MAIN BODY */
+    .detail-body {
+      max-width: 1100px; margin: 0 auto;
+      display: grid; grid-template-columns: 1fr 320px; gap: 3rem;
+      padding: 3rem;
+    }
+
+    /* LEFT COLUMN */
+    .section-label {
+      font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.28em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 0.8rem;
+    }
+    .why-block {
+      margin-bottom: 2.5rem;
+    }
+    .why-block h2 {
+      font-family: 'Oswald', sans-serif; font-size: 1.3rem; font-weight: 600;
+      text-transform: uppercase; color: var(--off-white); margin-bottom: 1rem;
+    }
+    .why-text {
+      font-size: 1rem; color: #ccc; line-height: 1.75;
+      border-left: 3px solid var(--red); padding-left: 1.5rem;
+      font-style: italic;
+    }
+    .tags-block { margin-bottom: 2.5rem; }
+    .rec-tag {
+      display: inline-block; font-family: 'Oswald', sans-serif; font-size: 0.62rem;
+      letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem;
+      border: 1px solid #333; color: var(--light-gray); margin: 0.2rem 0.2rem 0 0;
+    }
+
+    /* MAP */
+    .map-block { margin-bottom: 2.5rem; }
+    .map-block h2 { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 600; text-transform: uppercase; color: var(--off-white); margin-bottom: 1rem; }
+    #detailMap { width: 100%; height: 280px; border: 1px solid #2a2a2a; }
+
+    /* RIGHT SIDEBAR */
+    .detail-sidebar {}
+    .sidebar-card {
+      background: var(--off-black); border: 1px solid #2a2a2a; padding: 1.4rem;
+      margin-bottom: 1.2rem;
+    }
+    .sidebar-card h3 {
+      font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--red); margin-bottom: 0.8rem;
+    }
+    .sidebar-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 0.4rem 0; border-bottom: 1px solid #222; font-size: 0.82rem;
+    }
+    .sidebar-row:last-child { border-bottom: none; }
+    .sidebar-row-label { color: var(--mid-gray); font-family: 'Oswald', sans-serif; font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; }
+    .sidebar-row-val { color: var(--off-white); text-align: right; max-width: 55%; }
+
+    .back-link {
+      display: inline-block; margin-top: 0.5rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--light-gray); text-decoration: none;
+      border: 1px solid #333; padding: 0.5rem 1rem; transition: all 0.2s;
+    }
+    .back-link:hover { border-color: var(--off-white); color: var(--off-white); }
+
+    /* LIGHTBOX */
+    .lightbox { display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.93); align-items:center; justify-content:center; }
+    .lightbox.open { display:flex; }
+    .lightbox-inner { position:relative; max-width:90vw; max-height:90vh; }
+    .lightbox-img { max-width:90vw; max-height:85vh; object-fit:contain; display:block; }
+    .lightbox-close { position:absolute; top:-2.5rem; right:0; background:none; border:none; color:#fff; font-size:1.6rem; cursor:pointer; opacity:.7; }
+    .lightbox-close:hover { opacity:1; }
+    .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); border:none; color:#fff; font-size:1.5rem; cursor:pointer; padding:.5rem .8rem; }
+    .lightbox-prev { left:-3rem; }
+    .lightbox-next { right:-3rem; }
+
+    /* FOOTER */
+    footer { padding: 3rem; background: var(--black); border-top: 1px solid #1e1e1e; display: flex; justify-content: space-between; align-items: center; }
+    .footer-logo { font-family: 'Oswald', sans-serif; font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); }
+    .footer-copy { font-size: 0.78rem; color: #444; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em; }
+
+    @media (max-width: 900px) {
+      .detail-body { grid-template-columns: 1fr; }
+      .vibe-score { position: static; margin-top: 1rem; text-align: left; }
+      nav { padding: 1rem 1.5rem; }
+      .detail-hero, .gallery-section, .detail-body { padding-left: 1.5rem; padding-right: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/index.html" class="nav-logo">Mr. Ben Meister</a>
+  <ul class="nav-links">
+    <li><a href="/recommendations/index.html">Recommendations</a></li>
+    <li><a href="/index.html#videos">Videos</a></li>
+    <li><a href="/index.html#ventures">Ventures</a></li>
+    <li><a href="/index.html#connect">Connect</a></li>
+    <li><a href="/glc/index.html" class="cigar-link">Cigar Club</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<div class="detail-hero" id="detailHero">
+  <div class="breadcrumb">
+    <a href="/index.html">Home</a><span>/</span>
+    <a href="/recommendations/index.html">Recommendations</a><span>/</span>
+    <span id="breadcrumbName">—</span>
+  </div>
+  <div class="detail-cat" id="detailCat"></div>
+  <h1 class="detail-name" id="detailName">Loading…</h1>
+  <div class="detail-loc" id="detailLoc"></div>
+  <div class="vibe-score" id="vibeScore">
+    <div class="vibe-num" id="vibeNum">—</div>
+    <div class="vibe-label">Vibe Score</div>
+  </div>
+</div>
+
+<!-- GALLERY -->
+<div class="gallery-section" id="gallerySection"></div>
+
+<!-- BODY -->
+<div class="detail-body">
+  <div class="detail-main">
+    <div class="why-block">
+      <p class="section-label">Ben's Take</p>
+      <h2>Why I Recommend It</h2>
+      <div class="why-text" id="whyText"></div>
+    </div>
+    <div class="tags-block">
+      <p class="section-label">Tags</p>
+      <div id="tagsEl"></div>
+    </div>
+    <div class="map-block">
+      <p class="section-label">Location</p>
+      <h2>Find It</h2>
+      <div id="detailMap"></div>
+    </div>
+    <a href="/recommendations/index.html" class="back-link">← All Recommendations</a>
+  </div>
+  <aside class="detail-sidebar">
+    <div class="sidebar-card" id="sidebarCard"></div>
+  </aside>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+  <div class="lightbox-inner">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lbNav(-1,event)">‹</button>
+    <img class="lightbox-img" id="lbImg" src="" alt=""/>
+    <button class="lightbox-nav lightbox-next" onclick="lbNav(1,event)">›</button>
+  </div>
+</div>
+
+<footer>
+  <span class="footer-logo">Mr. Ben Meister</span>
+  <span class="footer-copy">© 2026 — All Rights Reserved</span>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="/js/recommendations-data.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const id = params.get('id');
+const rec = BEN_RECS.find(r => r && r.id === id);
+
+if (!rec) {
+  document.getElementById('detailName').textContent = 'Not Found';
+} else {
+  const CAT_META_MAP = {};
+  REC_CATEGORIES.forEach(c => CAT_META_MAP[c.id] = c);
+  const catMeta = CAT_META_MAP[rec.category] || { label: rec.category, icon: '📍' };
+  const locStr = rec.state ? `${rec.city}, ${rec.state}, United States` : `${rec.city}, ${rec.country}`;
+
+  document.title = `${rec.name} — Mr. Ben Meister`;
+  document.getElementById('breadcrumbName').textContent = rec.name;
+  document.getElementById('detailCat').textContent = `${catMeta.icon}  ${catMeta.label}`;
+  document.getElementById('detailName').textContent = rec.name;
+  document.getElementById('detailLoc').textContent = `📍 ${locStr}`;
+  document.getElementById('vibeNum').textContent = rec.vibe;
+  document.getElementById('whyText').textContent = rec.why;
+  document.getElementById('tagsEl').innerHTML = rec.tags.map(t => `<span class="rec-tag">${t}</span>`).join('');
+
+  // Gallery
+  const photos = rec.photos && rec.photos.length ? rec.photos : (rec.img ? [rec.img] : []);
+  const galEl = document.getElementById('gallerySection');
+  if (photos.length) {
+    galEl.innerHTML = `<div class="gallery-strip">${photos.map((src,i) =>
+      `<img class="gallery-thumb" src="${src}" alt="Photo ${i+1}" onclick="openLightbox(${i})" loading="lazy"/>`
+    ).join('')}</div>`;
+  } else {
+    galEl.innerHTML = `<div class="gallery-strip"><div class="gallery-placeholder">${catMeta.icon}</div></div>`;
+  }
+
+  // Sidebar
+  document.getElementById('sidebarCard').innerHTML = `
+    <h3>Quick Info</h3>
+    <div class="sidebar-row"><span class="sidebar-row-label">Category</span><span class="sidebar-row-val">${catMeta.label}</span></div>
+    <div class="sidebar-row"><span class="sidebar-row-label">Location</span><span class="sidebar-row-val">${locStr}</span></div>
+    <div class="sidebar-row"><span class="sidebar-row-label">Vibe Score</span><span class="sidebar-row-val" style="color:var(--gold);font-weight:600">${rec.vibe} / 10</span></div>
+    ${rec.tags.map(t=>`<div class="sidebar-row"><span class="sidebar-row-label"></span><span class="sidebar-row-val">${t}</span></div>`).join('')}
+  `;
+
+  // Map
+  const detailMap = L.map('detailMap', { zoomControl: true, attributionControl: false }).setView([rec.lat, rec.lng], 14);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(detailMap);
+  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30"><path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="#b22222"/><circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.35)"/></svg>`;
+  const icon = L.divIcon({ className:'', html:pinSvg, iconSize:[22,30], iconAnchor:[11,30] });
+  L.marker([rec.lat, rec.lng], { icon }).addTo(detailMap).bindPopup(`<b style="font-family:'Oswald',sans-serif;color:#f0ebe3">${rec.name}</b>`).openPopup();
+}
+
+// Lightbox
+let lbIndex = 0;
+const photos = rec ? (rec.photos && rec.photos.length ? rec.photos : (rec.img ? [rec.img] : [])) : [];
+
+function openLightbox(i) {
+  lbIndex = i;
+  document.getElementById('lbImg').src = photos[i];
+  document.getElementById('lightbox').classList.add('open');
+}
+function closeLightbox(e) {
+  if (!e || e.target === document.getElementById('lightbox')) {
+    document.getElementById('lightbox').classList.remove('open');
+  }
+}
+function lbNav(dir, e) {
+  if (e) e.stopPropagation();
+  lbIndex = (lbIndex + dir + photos.length) % photos.length;
+  document.getElementById('lbImg').src = photos[lbIndex];
+}
+document.addEventListener('keydown', e => {
+  if (!document.getElementById('lightbox').classList.contains('open')) return;
+  if (e.key === 'ArrowLeft') lbNav(-1);
+  if (e.key === 'ArrowRight') lbNav(1);
+  if (e.key === 'Escape') closeLightbox({target:document.getElementById('lightbox')});
+});
+</script>
+</body>
+</html>

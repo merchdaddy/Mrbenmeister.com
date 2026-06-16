@@ -354,7 +354,7 @@ const GLC = {
       reviewHtml: null,
       reviewPending: true,
       ratings: { overall: null, humidor: null, atmosphere: null, chairs: null, service: null, drinks: null, food: null, cigarSelection: null, ventilation: null, parking: null, memberFriendliness: null },
-      features: { bar: false, outdoor: false, privateLounge: false, byo: true },
+      features: { bar: false, outdoor: true, privateLounge: false, byo: true },
       noiseLevel: 'TBD',
       priceLevel: '$$$',
       bestFor: ['Solo Smoke', 'Casual Stop'],

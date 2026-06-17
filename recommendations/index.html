@@ -11,258 +11,273 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --black: #0d0d0d;
-      --off-black: #1a1a1a;
-      --dark-gray: #2a2a2a;
-      --mid-gray: #555;
-      --light-gray: #aaa;
-      --off-white: #f0ebe3;
-      --cream: #e8e0d0;
-      --red: #b22222;
-      --gold: #c8a96e;
-      /* Category colors */
-      --c-restaurant: #e07430;
-      --c-bar:        #7c3aed;
-      --c-activity:   #2a8de8;
-      --c-shopping:   #27a05a;
-      --c-landmark:   #c9a000;
+      --black: #0d0d0d; --off-black: #1a1a1a; --dark-gray: #2a2a2a;
+      --mid-gray: #555; --light-gray: #aaa; --off-white: #f0ebe3;
+      --cream: #e8e0d0; --red: #b22222; --gold: #c8a96e;
+      --c-food:      #e07430;
+      --c-nightlife: #7c3aed;
+      --c-activity:  #2a8de8;
+      --c-shopping:  #27a05a;
+      --c-landmark:  #c9a000;
+      --c-stay:      #0891b2;
+      --nav-h: 64px;
     }
     html { scroll-behavior: smooth; }
     body { background: var(--black); color: var(--off-white); font-family: 'Lora', serif; font-size: 16px; line-height: 1.7; }
 
-    /* NAV */
+    /* ── NAV ── */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 300;
       display: flex; align-items: center; justify-content: space-between;
       padding: 1.2rem 3rem;
-      background: rgba(13,13,13,0.95); backdrop-filter: blur(6px);
-      border-bottom: 1px solid #2a2a2a;
+      background: rgba(13,13,13,0.96); backdrop-filter: blur(6px);
+      border-bottom: 1px solid #2a2a2a; height: var(--nav-h);
     }
     .nav-logo { font-family: 'Oswald', sans-serif; font-size: 1.1rem; font-weight: 400; letter-spacing: 0.2em; text-transform: uppercase; color: var(--off-white); text-decoration: none; }
     .nav-links { display: flex; gap: 2.5rem; list-style: none; }
-    .nav-links a { font-family: 'Oswald', sans-serif; font-size: 0.78rem; font-weight: 400; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); text-decoration: none; transition: color 0.2s; }
+    .nav-links a { font-family: 'Oswald', sans-serif; font-size: 0.78rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); text-decoration: none; transition: color 0.2s; }
     .nav-links a:hover, .nav-links a.active { color: var(--off-white); }
-    .nav-links .cigar-link { color: var(--gold); border: 1px solid var(--gold); padding: 0.4rem 1rem; letter-spacing: 0.15em; }
+    .nav-links .cigar-link { color: var(--gold); border: 1px solid var(--gold); padding: 0.4rem 1rem; }
     .nav-links .cigar-link:hover { background: var(--gold); color: var(--black); }
 
-    /* MAP HERO */
-    .map-hero { position: relative; height: 70vh; min-height: 480px; margin-top: 64px; }
+    /* ── MAP HERO ── */
+    .map-hero { position: relative; height: 65vh; min-height: 420px; margin-top: var(--nav-h); }
     #recMap { width: 100%; height: 100%; }
     .map-overlay {
-      position: absolute; inset: 0;
-      background: linear-gradient(to bottom, rgba(13,13,13,0.55) 0%, transparent 40%, transparent 60%, rgba(13,13,13,0.85) 100%);
-      pointer-events: none; z-index: 10;
+      position: absolute; inset: 0; pointer-events: none; z-index: 10;
+      background: linear-gradient(to bottom, rgba(13,13,13,0.5) 0%, transparent 40%, transparent 60%, rgba(13,13,13,0.88) 100%);
     }
-    .map-hero-text {
-      position: absolute; bottom: 3rem; left: 3rem; z-index: 20; pointer-events: none;
-    }
-    .map-hero-text .eyebrow {
-      font-family: 'Special Elite', cursive; font-size: 0.82rem; color: var(--red);
-      letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.6rem;
-    }
-    .map-hero-text h1 {
-      font-family: 'Oswald', sans-serif; font-size: clamp(2.4rem, 5vw, 4rem);
-      font-weight: 700; text-transform: uppercase; color: var(--off-white); line-height: 1;
-    }
-    .map-hero-text p { font-style: italic; color: var(--light-gray); font-size: 1rem; margin-top: 0.6rem; }
-
-    /* PIN COUNT */
-    .map-pin-count {
-      position: absolute; top: 1.2rem; right: 1.2rem; z-index: 20;
-      background: rgba(13,13,13,0.88); border: 1px solid #2a2a2a;
-      padding: 0.5rem 0.9rem;
-      font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.18em;
-      text-transform: uppercase; color: var(--light-gray);
-    }
+    .map-hero-text { position: absolute; bottom: 2.5rem; left: 3rem; z-index: 20; pointer-events: none; }
+    .map-hero-text .eyebrow { font-family: 'Special Elite', cursive; font-size: 0.8rem; color: var(--red); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.5rem; }
+    .map-hero-text h1 { font-family: 'Oswald', sans-serif; font-size: clamp(2.2rem, 4.5vw, 3.8rem); font-weight: 700; text-transform: uppercase; color: var(--off-white); line-height: 1; }
+    .map-hero-text p { font-style: italic; color: var(--light-gray); font-size: 0.95rem; margin-top: 0.5rem; }
+    .map-hero-text .loc-breadcrumb { font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 0.6rem; pointer-events: all; }
+    .map-hero-text .loc-breadcrumb a { color: var(--mid-gray); text-decoration: none; transition: color 0.18s; }
+    .map-hero-text .loc-breadcrumb a:hover { color: var(--off-white); }
+    .map-hero-text .loc-breadcrumb .crumb-sep { margin: 0 0.4rem; color: #333; }
+    .map-pin-count { position: absolute; top: 1rem; right: 1rem; z-index: 20; background: rgba(13,13,13,0.88); border: 1px solid #2a2a2a; padding: 0.45rem 0.8rem; font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); }
     .map-pin-count span { color: var(--off-white); font-weight: 600; }
 
-    /* MAP LEGEND */
-    .map-legend {
-      position: absolute; bottom: 3rem; right: 1.2rem; z-index: 20;
-      background: rgba(13,13,13,0.88); border: 1px solid #2a2a2a;
-      padding: 0.8rem 1rem;
-    }
-    .map-legend-title {
-      font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.22em;
-      text-transform: uppercase; color: var(--mid-gray); margin-bottom: 0.55rem;
-    }
-    .legend-row {
-      display: flex; align-items: center; gap: 0.5rem;
-      font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
-      text-transform: uppercase; color: var(--light-gray);
-      margin-bottom: 0.3rem; cursor: pointer; transition: color 0.15s;
-    }
+    /* Map legend */
+    .map-legend { position: absolute; bottom: 2.5rem; right: 1rem; z-index: 20; background: rgba(13,13,13,0.88); border: 1px solid #2a2a2a; padding: 0.7rem 0.9rem; }
+    .map-legend-title { font-family: 'Oswald', sans-serif; font-size: 0.56rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--mid-gray); margin-bottom: 0.5rem; }
+    .legend-row { display: flex; align-items: center; gap: 0.45rem; font-family: 'Oswald', sans-serif; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--light-gray); margin-bottom: 0.28rem; cursor: pointer; transition: color 0.15s; }
     .legend-row:last-child { margin-bottom: 0; }
     .legend-row:hover { color: var(--off-white); }
-    .legend-row.dimmed { opacity: 0.35; }
-    .legend-dot {
-      width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-    }
+    .legend-row.dimmed { opacity: 0.28; }
+    .legend-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
 
     /* Leaflet popup */
-    .leaflet-popup-content-wrapper {
-      background: #1a1a1a; border: 1px solid #333; border-radius: 0;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.6);
-    }
+    .leaflet-popup-content-wrapper { background: #1a1a1a; border: 1px solid #333; border-radius: 0; box-shadow: 0 4px 20px rgba(0,0,0,0.6); }
     .leaflet-popup-tip { background: #1a1a1a; }
     .leaflet-popup-content { margin: 0; }
-    .map-popup { padding: 1rem 1.1rem; min-width: 180px; }
-    .map-popup-cat {
-      font-family: 'Oswald', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em;
-      text-transform: uppercase; margin-bottom: 0.3rem;
-    }
-    .map-popup-name {
-      font-family: 'Oswald', sans-serif; font-size: 0.95rem; font-weight: 600;
-      color: var(--off-white); margin-bottom: 0.2rem; line-height: 1.2;
-    }
-    .map-popup-loc { font-size: 0.75rem; color: #888; margin-bottom: 0.6rem; }
-    .map-popup-link {
-      display: inline-block; font-family: 'Oswald', sans-serif; font-size: 0.65rem;
-      letter-spacing: 0.15em; text-transform: uppercase; color: var(--gold);
-      text-decoration: none; border-bottom: 1px solid rgba(200,169,110,0.3);
-    }
+    .map-popup { padding: 0.9rem 1rem; min-width: 170px; }
+    .map-popup-cat { font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.25rem; }
+    .map-popup-name { font-family: 'Oswald', sans-serif; font-size: 0.9rem; font-weight: 600; color: #f0ebe3; margin-bottom: 0.15rem; }
+    .map-popup-loc { font-size: 0.72rem; color: #888; margin-bottom: 0.5rem; }
+    .map-popup-link { font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: #c8a96e; text-decoration: none; border-bottom: 1px solid rgba(200,169,110,0.3); }
 
-    /* FILTER BAR */
-    .filters-bar {
-      background: var(--off-black); border-bottom: 1px solid #2a2a2a;
-      padding: 1rem 3rem; position: sticky; top: 64px; z-index: 100;
-      display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
+    /* ── TOP BAR ── */
+    .top-bar {
+      position: sticky; top: var(--nav-h); z-index: 200;
+      background: var(--off-black); border-bottom: 1px solid #222;
+      padding: 0.75rem 2rem 0.65rem;
+      display: flex; flex-direction: column; gap: 0.55rem;
     }
-    .filter-group { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
-    .filter-label {
-      font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--mid-gray); white-space: nowrap;
+    .search-wrap {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: rgba(255,255,255,0.04); border: 1px solid #333;
+      padding: 0.5rem 0.85rem; transition: border-color 0.2s;
     }
-    .filter-sep { width: 1px; height: 20px; background: #2a2a2a; }
-
-    /* Base chip */
+    .search-wrap:focus-within { border-color: #555; }
+    .search-icon { color: var(--mid-gray); font-size: 1rem; flex-shrink: 0; }
+    .search-wrap input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--off-white); font-family: 'Lora', serif; font-size: 0.88rem;
+    }
+    .search-wrap input::placeholder { color: var(--mid-gray); }
+    .search-clear { background: none; border: none; color: var(--mid-gray); cursor: pointer; font-size: 0.9rem; padding: 0 0.2rem; transition: color 0.2s; }
+    .search-clear:hover { color: var(--off-white); }
+    .cat-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
     .chip {
-      font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.12em;
-      text-transform: uppercase; padding: 0.3rem 0.75rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.12em;
+      text-transform: uppercase; padding: 0.28rem 0.7rem;
       background: transparent; border: 1px solid #333;
-      color: var(--light-gray); cursor: pointer; transition: all 0.2s; white-space: nowrap;
-      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: var(--light-gray); cursor: pointer; transition: all 0.18s;
+      display: inline-flex; align-items: center; gap: 0.38rem; white-space: nowrap;
     }
     .chip:hover { border-color: #666; color: var(--off-white); }
+    .chip-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; opacity: 0.55; transition: opacity 0.18s; }
+    .chip:hover .chip-dot, .chip.active .chip-dot { opacity: 1; }
+    .chip-all.active  { border-color: var(--off-white); color: var(--off-white); }
+    .chip-food.active      { border-color: var(--c-food);      color: var(--c-food); }
+    .chip-nightlife.active { border-color: var(--c-nightlife); color: var(--c-nightlife); }
+    .chip-activity.active  { border-color: var(--c-activity);  color: var(--c-activity); }
+    .chip-shopping.active  { border-color: var(--c-shopping);  color: var(--c-shopping); }
+    .chip-landmark.active  { border-color: var(--c-landmark);  color: var(--c-landmark); }
+    .chip-stay.active      { border-color: var(--c-stay);      color: var(--c-stay); }
 
-    /* "All" chip */
-    .chip-all.active { border-color: var(--off-white); color: var(--off-white); }
+    /* ── PAGE WRAPPER ── */
+    .page-wrapper { display: flex; align-items: flex-start; }
 
-    /* Category chips — each has its own color when active */
-    .chip-restaurant.active { border-color: var(--c-restaurant); color: var(--c-restaurant); }
-    .chip-bar.active        { border-color: var(--c-bar);        color: var(--c-bar); }
-    .chip-activity.active   { border-color: var(--c-activity);   color: var(--c-activity); }
-    .chip-shopping.active   { border-color: var(--c-shopping);   color: var(--c-shopping); }
-    .chip-landmark.active   { border-color: var(--c-landmark);   color: var(--c-landmark); }
-
-    /* Color swatch dot on each chip */
-    .chip-dot {
-      width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
-      opacity: 0.6; transition: opacity 0.2s;
+    /* ── LOCATION SIDEBAR ── */
+    .loc-sidebar {
+      width: 230px; flex-shrink: 0;
+      position: sticky; top: 0;
+      max-height: 100vh;
+      overflow-y: auto; overflow-x: hidden;
+      border-right: 1px solid #1e1e1e;
+      padding-bottom: 3rem;
+      scrollbar-width: thin; scrollbar-color: #333 transparent;
     }
-    .chip.active .chip-dot, .chip:hover .chip-dot { opacity: 1; }
-
-    /* Search */
-    .filter-search {
-      margin-left: auto;
-      display: flex; align-items: center; gap: 0.5rem;
-      background: transparent; border: 1px solid #333; padding: 0.3rem 0.7rem;
+    .loc-sidebar::-webkit-scrollbar { width: 3px; }
+    .loc-sidebar::-webkit-scrollbar-thumb { background: #333; }
+    .sidebar-hd {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 1.2rem 0.8rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.7rem; letter-spacing: 0.18em;
+      text-transform: uppercase; color: var(--light-gray);
+      border-bottom: 1px solid #1e1e1e; margin-bottom: 0.5rem;
+      position: sticky; top: 0; background: var(--black); z-index: 1;
     }
-    .filter-search input {
-      background: transparent; border: none; outline: none; color: var(--off-white);
-      font-family: 'Lora', serif; font-size: 0.82rem; width: 160px;
+    .clear-loc-btn {
+      font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.15em;
+      text-transform: uppercase; background: none; border: 1px solid #333;
+      color: var(--mid-gray); cursor: pointer; padding: 0.2rem 0.5rem; text-decoration: none;
+      transition: all 0.2s;
     }
-    .filter-search input::placeholder { color: var(--mid-gray); }
-    .filter-search-icon { color: var(--mid-gray); font-size: 0.8rem; }
+    .clear-loc-btn:hover { border-color: var(--off-white); color: var(--off-white); }
 
-    /* Location selects */
-    .loc-select {
+    /* ── TREE ── */
+    .tree-node {}
+
+    /* Continent row — expand/collapse only, no navigation */
+    .tree-cont-row {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0.8rem; cursor: pointer;
+      font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--mid-gray);
+      transition: color 0.15s, background 0.15s;
+      user-select: none; background: none; border: none; width: 100%; text-align: left;
+    }
+    .tree-cont-row:hover { color: var(--light-gray); background: rgba(255,255,255,0.02); }
+
+    /* Location row — navigates */
+    .tree-loc-wrap {
+      display: flex; align-items: center;
+    }
+    .tree-loc-link {
+      flex: 1; display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.32rem 0.5rem 0.32rem 1.5rem;
       font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.1em;
-      text-transform: uppercase; padding: 0.32rem 0.6rem;
-      background: transparent; border: 1px solid #333;
-      color: var(--light-gray); cursor: pointer;
-      outline: none; appearance: none; -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23555'/%3E%3C/svg%3E");
-      background-repeat: no-repeat; background-position: right 0.5rem center;
-      padding-right: 1.5rem;
+      text-transform: uppercase; color: var(--light-gray);
+      text-decoration: none; transition: color 0.15s, background 0.15s;
+      position: relative;
     }
-    .loc-select option { background: #1a1a1a; color: var(--off-white); }
+    .tree-loc-link:hover { color: var(--off-white); background: rgba(255,255,255,0.03); }
+    .tree-loc-link.active { color: var(--off-white); background: rgba(255,255,255,0.05); }
+    .tree-loc-link.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--red); }
 
-    /* MAIN CONTENT */
-    .page-body { max-width: 1200px; margin: 0 auto; padding: 3rem; }
+    /* City row — navigates */
+    .tree-city-link {
+      display: flex; align-items: center; gap: 0.4rem;
+      padding: 0.26rem 0.5rem 0.26rem 2.5rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.63rem; letter-spacing: 0.08em;
+      text-transform: uppercase; color: #555;
+      text-decoration: none; transition: color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .tree-city-link:hover { color: var(--light-gray); background: rgba(255,255,255,0.02); }
+    .tree-city-link.active { color: var(--off-white); }
+    .tree-city-link.active::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 2px; background: var(--red); }
+
+    /* Expand toggle button next to location name */
+    .tree-expand-btn {
+      flex-shrink: 0; background: none; border: none; cursor: pointer;
+      color: var(--mid-gray); font-size: 0.7rem; padding: 0.32rem 0.7rem 0.32rem 0.2rem;
+      line-height: 1; transition: color 0.15s;
+    }
+    .tree-expand-btn:hover { color: var(--off-white); }
+
+    .tree-arrow { font-size: 0.6rem; color: var(--mid-gray); flex-shrink: 0; width: 10px; transition: transform 0.18s; display: inline-block; }
+    .tree-arrow.open { transform: rotate(90deg); }
+    .tree-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .tree-cnt { font-family: 'Oswald', sans-serif; font-size: 0.58rem; color: #444; padding: 0.05rem 0.35rem; flex-shrink: 0; }
+    .tree-children.closed { display: none; }
+
+    /* Mobile sidebar toggle */
+    .sidebar-toggle { display: none; }
+
+    /* ── RECS PANEL ── */
+    .recs-panel { flex: 1; min-width: 0; padding: 1.8rem 2.2rem 3rem; }
+    .panel-meta {
+      display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap;
+      margin-bottom: 1.5rem; min-height: 28px;
+    }
+    .results-count { font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid-gray); }
+
+    /* Active filter pills */
+    .filter-pill {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.22rem 0.5rem 0.22rem 0.65rem;
+      border: 1px solid #444; color: var(--off-white);
+    }
+    .filter-pill button { background: none; border: none; color: var(--mid-gray); cursor: pointer; font-size: 0.75rem; padding: 0; line-height: 1; transition: color 0.15s; }
+    .filter-pill button:hover { color: var(--off-white); }
 
     /* Location sections */
-    .location-section { margin-bottom: 4rem; }
-    .location-header {
-      display: flex; align-items: baseline; gap: 1rem;
-      border-bottom: 1px solid #2a2a2a; padding-bottom: 0.8rem; margin-bottom: 1.8rem;
-    }
-    .location-name {
-      font-family: 'Oswald', sans-serif; font-size: 1.3rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.05em; color: var(--off-white);
-    }
-    .location-sub {
-      font-family: 'Oswald', sans-serif; font-size: 0.7rem; letter-spacing: 0.2em;
-      text-transform: uppercase; color: var(--mid-gray);
-    }
-    .location-count {
-      margin-left: auto; font-family: 'Oswald', sans-serif; font-size: 0.65rem;
-      letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid-gray);
-    }
-    .state-section { margin-bottom: 2.5rem; }
-    .state-label {
-      font-family: 'Oswald', sans-serif; font-size: 0.72rem; letter-spacing: 0.25em;
-      text-transform: uppercase; color: var(--red); margin-bottom: 1rem;
-    }
+    .location-section { margin-bottom: 3.5rem; }
+    .location-header { display: flex; align-items: baseline; gap: 0.8rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 0.7rem; margin-bottom: 1.5rem; }
+    .location-name { font-family: 'Oswald', sans-serif; font-size: 1.2rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--off-white); }
+    .location-name a { color: inherit; text-decoration: none; transition: color 0.18s; }
+    .location-name a:hover { color: var(--gold); }
+    .location-sub { font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); }
+    .location-count { margin-left: auto; font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--mid-gray); }
+    .state-section { margin-bottom: 2.2rem; }
+    .state-label { font-family: 'Oswald', sans-serif; font-size: 0.68rem; letter-spacing: 0.25em; text-transform: uppercase; color: var(--red); margin-bottom: 0.9rem; }
 
     /* Cards */
-    .recs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 1.2rem; }
-    .rec-card {
-      background: var(--off-black); border: 1px solid #2a2a2a;
-      text-decoration: none; display: block; transition: border-color 0.25s;
-    }
-    .rec-card-img { width: 100%; height: 155px; object-fit: cover; display: block; background: var(--dark-gray); }
-    .rec-card-img-placeholder {
-      width: 100%; height: 155px; background: var(--dark-gray);
-      display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: 0.3;
-    }
-    .rec-card-body { padding: 1.1rem 1.3rem 1.4rem; }
-    .rec-card-cat {
-      font-family: 'Oswald', sans-serif; font-size: 0.62rem; letter-spacing: 0.2em;
-      text-transform: uppercase; margin-bottom: 0.35rem;
-      display: flex; align-items: center; gap: 0.4rem;
-    }
-    .rec-card-name {
-      font-family: 'Oswald', sans-serif; font-size: 1rem; font-weight: 600;
-      color: var(--off-white); margin-bottom: 0.25rem; line-height: 1.25;
-    }
-    .rec-card-loc { font-size: 0.75rem; color: var(--mid-gray); margin-bottom: 0.55rem; }
-    .rec-card-summary { font-size: 0.82rem; color: #999; line-height: 1.5; margin-bottom: 0.7rem; }
-    .rec-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+    .recs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px,1fr)); gap: 1.1rem; }
+    .rec-card { background: var(--off-black); border: 1px solid #2a2a2a; text-decoration: none; display: block; transition: border-color 0.22s; }
+    .rec-card-img { width: 100%; height: 148px; object-fit: cover; display: block; background: var(--dark-gray); }
+    .rec-card-img-placeholder { width: 100%; height: 148px; background: var(--dark-gray); display: flex; align-items: center; justify-content: center; font-size: 2rem; opacity: 0.28; }
+    .rec-card-body { padding: 1rem 1.2rem 1.3rem; }
+    .rec-card-cat { font-family: 'Oswald', sans-serif; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.3rem; display: flex; align-items: center; gap: 0.35rem; }
+    .rec-cat-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+    .rec-card-name { font-family: 'Oswald', sans-serif; font-size: 0.98rem; font-weight: 600; color: var(--off-white); margin-bottom: 0.22rem; line-height: 1.22; }
+    .rec-card-loc { font-size: 0.73rem; color: var(--mid-gray); margin-bottom: 0.5rem; }
+    .rec-card-summary { font-size: 0.8rem; color: #999; line-height: 1.5; margin-bottom: 0.65rem; }
+    .rec-tags { display: flex; flex-wrap: wrap; gap: 0.28rem; }
     .rec-tag {
-      font-family: 'Oswald', sans-serif; font-size: 0.58rem; letter-spacing: 0.12em;
-      text-transform: uppercase; padding: 0.2rem 0.5rem; border: 1px solid #333; color: var(--mid-gray);
+      font-family: 'Oswald', sans-serif; font-size: 0.56rem; letter-spacing: 0.1em;
+      text-transform: uppercase; padding: 0.18rem 0.48rem; border: 1px solid #2a2a2a;
+      color: #666; cursor: pointer; transition: all 0.18s;
     }
-    .rec-vibe { float: right; font-family: 'Oswald', sans-serif; font-size: 0.75rem; color: var(--gold); letter-spacing: 0.08em; }
+    .rec-tag:hover { border-color: var(--light-gray); color: var(--light-gray); }
+    .rec-tag.active-tag { border-color: var(--off-white); color: var(--off-white); }
+    .rec-vibe { float: right; font-family: 'Oswald', sans-serif; font-size: 0.73rem; color: var(--gold); letter-spacing: 0.08em; }
 
-    /* Empty state */
+    /* Empty */
     .empty-state { text-align: center; padding: 4rem; color: var(--mid-gray); font-style: italic; }
 
     /* Footer */
-    footer {
-      padding: 3rem; background: var(--black); border-top: 1px solid #1e1e1e;
-      display: flex; justify-content: space-between; align-items: center;
-    }
+    footer { padding: 3rem; background: var(--black); border-top: 1px solid #1e1e1e; display: flex; justify-content: space-between; align-items: center; }
     .footer-logo { font-family: 'Oswald', sans-serif; font-size: 0.9rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mid-gray); }
     .footer-copy { font-size: 0.78rem; color: #444; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em; }
 
-    @media (max-width: 768px) {
+    @media (max-width: 900px) {
       nav { padding: 1rem 1.5rem; }
       .nav-links { gap: 1.2rem; }
-      .filters-bar { padding: 0.8rem 1.5rem; }
-      .page-body { padding: 2rem 1.5rem; }
-      .map-hero-text { left: 1.5rem; bottom: 2rem; }
+      .top-bar { padding: 0.6rem 1.2rem 0.55rem; }
+      .map-hero-text { left: 1.5rem; }
       .map-legend { display: none; }
+      .page-wrapper { flex-direction: column; }
+      .loc-sidebar { width: 100%; border-right: none; border-bottom: 1px solid #1e1e1e; position: relative; top: auto !important; max-height: none; overflow: visible; }
+      .loc-sidebar.mobile-collapsed .tree-node,
+      .loc-sidebar.mobile-collapsed #locTree { display: none; }
+      .sidebar-toggle { display: block; font-family: 'Oswald', sans-serif; font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; background: none; border: 1px solid #333; color: var(--light-gray); cursor: pointer; padding: 0.3rem 0.7rem; }
+      .recs-panel { padding: 1.5rem; }
       footer { flex-direction: column; gap: 1rem; text-align: center; }
     }
   </style>
@@ -272,7 +287,7 @@
 <nav>
   <a href="/index.html" class="nav-logo">Mr. Ben Meister</a>
   <ul class="nav-links">
-    <li><a href="/recommendations/index.html" class="active">Recommendations</a></li>
+    <li><a href="/recommendations/" class="active">Recommendations</a></li>
     <li><a href="/index.html#videos">Videos</a></li>
     <li><a href="/index.html#ventures">Ventures</a></li>
     <li><a href="/index.html#connect">Connect</a></li>
@@ -284,28 +299,29 @@
 <div class="map-hero">
   <div id="recMap"></div>
   <div class="map-overlay"></div>
-  <div class="map-hero-text">
-    <p class="eyebrow">Personally Vetted</p>
-    <h1>Recommendations</h1>
-    <p>Places worth going. Things worth doing.</p>
+  <div class="map-hero-text" id="mapHeroText">
+    <!-- populated by JS -->
   </div>
   <div class="map-pin-count"><span id="pinNum">0</span> pins showing</div>
   <div class="map-legend" id="mapLegend">
     <div class="map-legend-title">Pin Legend</div>
-    <!-- Rows injected by JS -->
   </div>
 </div>
 
-<!-- FILTERS -->
-<div class="filters-bar">
-  <div class="filter-group" id="catChips">
-    <span class="filter-label">Category</span>
+<!-- TOP BAR: Search + Categories -->
+<div class="top-bar" id="topBar">
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input type="text" id="searchInput" placeholder="Search city, country, place, category, or tag…"/>
+    <button class="search-clear" id="searchClear" onclick="clearSearch()" style="display:none" title="Clear search">✕</button>
+  </div>
+  <div class="cat-chips" id="catChips">
     <button class="chip chip-all active" data-cat="all" onclick="setCat('all',this)">All</button>
-    <button class="chip chip-restaurant" data-cat="restaurant" onclick="setCat('restaurant',this)">
-      <span class="chip-dot" style="background:var(--c-restaurant)"></span>Restaurants &amp; Cafes
+    <button class="chip chip-food" data-cat="food" onclick="setCat('food',this)">
+      <span class="chip-dot" style="background:var(--c-food)"></span>Food &amp; Drink
     </button>
-    <button class="chip chip-bar" data-cat="bar" onclick="setCat('bar',this)">
-      <span class="chip-dot" style="background:var(--c-bar)"></span>Bars &amp; Nightlife
+    <button class="chip chip-nightlife" data-cat="nightlife" onclick="setCat('nightlife',this)">
+      <span class="chip-dot" style="background:var(--c-nightlife)"></span>Nightlife
     </button>
     <button class="chip chip-activity" data-cat="activity" onclick="setCat('activity',this)">
       <span class="chip-dot" style="background:var(--c-activity)"></span>Activities
@@ -314,28 +330,34 @@
       <span class="chip-dot" style="background:var(--c-shopping)"></span>Shopping
     </button>
     <button class="chip chip-landmark" data-cat="landmark" onclick="setCat('landmark',this)">
-      <span class="chip-dot" style="background:var(--c-landmark)"></span>Landmarks
+      <span class="chip-dot" style="background:var(--c-landmark)"></span>Landmarks &amp; Culture
     </button>
-  </div>
-  <div class="filter-sep"></div>
-  <div class="filter-group">
-    <span class="filter-label">Location</span>
-    <select class="loc-select" id="countryFilter" onchange="onLocationChange()">
-      <option value="all">All Countries</option>
-    </select>
-    <select class="loc-select" id="stateFilter" style="display:none" onchange="applyFilters()">
-      <option value="all">All States</option>
-    </select>
-  </div>
-  <div class="filter-search">
-    <span class="filter-search-icon">⌕</span>
-    <input type="text" id="searchInput" placeholder="Search places…" oninput="applyFilters()"/>
+    <button class="chip chip-stay" data-cat="stay" onclick="setCat('stay',this)">
+      <span class="chip-dot" style="background:var(--c-stay)"></span>Stay
+    </button>
   </div>
 </div>
 
-<!-- MAIN CONTENT -->
-<div class="page-body">
-  <div id="recsList"></div>
+<!-- PAGE: Sidebar + Cards -->
+<div class="page-wrapper">
+  <aside class="loc-sidebar" id="locSidebar">
+    <div class="sidebar-hd">
+      <span>🌎 Browse Locations</span>
+      <div style="display:flex;gap:.4rem;align-items:center">
+        <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()">▾ Browse</button>
+        <a href="/recommendations/" class="clear-loc-btn" id="clearLocBtn" style="display:none">Clear ✕</a>
+      </div>
+    </div>
+    <div id="locTree"></div>
+  </aside>
+
+  <div class="recs-panel">
+    <div class="panel-meta">
+      <span class="results-count" id="resultsCount"></span>
+      <div id="filterPills"></div>
+    </div>
+    <div id="recsList"></div>
+  </div>
 </div>
 
 <footer>
@@ -346,219 +368,473 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="/js/recommendations-data.js"></script>
 <script>
-// ── COLOR SYSTEM ──────────────────────────────────────────────────────────────
-const CAT_COLORS = {
-  restaurant: '#e07430',
-  bar:        '#7c3aed',
-  activity:   '#2a8de8',
-  shopping:   '#27a05a',
-  landmark:   '#c9a000'
-};
+// ── SLUG HELPERS ──────────────────────────────────────────────────────────────
+function slug(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+}
 
+// ── ROUTING: read current path ────────────────────────────────────────────────
+// Converts /recommendations/texas or /recommendations/texas/austin → pathSlug
+const rawPath = location.pathname
+  .replace(/\/recommendations\/?/, '')
+  .replace(/\/index\.html$/, '')
+  .replace(/\/$/, '');
+// rawPath examples: '' | 'texas' | 'texas/austin' | 'germany' | 'germany/berlin'
+
+// ── LOCATION REGISTRY: built from data ───────────────────────────────────────
+// Slug → { type, value, country?, state?, continent }
+// US states are top-level (slug = state slug, NOT united-states/state)
+const LOC_REGISTRY = {};
+
+BEN_RECS.filter(r => r && r.id).forEach(r => {
+  const cont = CONTINENT_LOOKUP[r.country] || 'Other';
+  if (r.country === 'United States') {
+    if (r.state) {
+      const sl = slug(r.state);
+      if (!LOC_REGISTRY[sl]) LOC_REGISTRY[sl] = { type: 'state', value: r.state, country: 'United States', continent: cont };
+      const csl = sl + '/' + slug(r.city);
+      if (!LOC_REGISTRY[csl]) LOC_REGISTRY[csl] = { type: 'city', value: r.city, state: r.state, country: 'United States', continent: cont };
+    }
+  } else {
+    const sl = slug(r.country);
+    if (!LOC_REGISTRY[sl]) LOC_REGISTRY[sl] = { type: 'country', value: r.country, continent: cont };
+    const csl = sl + '/' + slug(r.city);
+    if (!LOC_REGISTRY[csl]) LOC_REGISTRY[csl] = { type: 'city', value: r.city, country: r.country, continent: cont };
+  }
+});
+
+// Resolve current path to a location object (null = world view)
+const resolved = rawPath ? (LOC_REGISTRY[rawPath] || null) : null;
+
+// ── CONSTANTS ─────────────────────────────────────────────────────────────────
+const CAT_COLORS = {
+  food: '#e07430', nightlife: '#7c3aed', activity: '#2a8de8',
+  shopping: '#27a05a', landmark: '#c9a000', stay: '#0891b2'
+};
 const CAT_META = {};
 REC_CATEGORIES.forEach(c => CAT_META[c.id] = c);
+const data = BEN_RECS.filter(r => r && r.id);
 
-// ── MAP INIT ──────────────────────────────────────────────────────────────────
+// ── URL HELPERS ───────────────────────────────────────────────────────────────
+function locUrl(r) {
+  // Base URL for a record's state/country
+  if (r.country === 'United States' && r.state) return `/recommendations/${slug(r.state)}`;
+  return `/recommendations/${slug(r.country)}`;
+}
+function cityUrl(r) {
+  if (r.country === 'United States' && r.state) return `/recommendations/${slug(r.state)}/${slug(r.city)}`;
+  return `/recommendations/${slug(r.country)}/${slug(r.city)}`;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let activeCat   = 'all';
+let locType     = resolved ? resolved.type : null;
+let locValue    = resolved ? resolved.value : null;
+let activeTag   = null;
+let searchQuery = '';
+
+// Track which tree nodes are expanded
+const expanded = new Set();
+// Auto-expand the continent(s) relevant to current route
+if (resolved) {
+  expanded.add('c:' + resolved.continent);
+  if (resolved.type === 'city') {
+    const parentKey = resolved.state ? 'l:' + slug(resolved.state) : 'l:' + slug(resolved.country);
+    expanded.add(parentKey);
+  }
+} else {
+  // World view: expand all continents that have data
+  data.forEach(r => expanded.add('c:' + (CONTINENT_LOOKUP[r.country] || 'Other')));
+}
+
+// ── MAP ───────────────────────────────────────────────────────────────────────
 const map = L.map('recMap', { zoomControl: false, attributionControl: false }).setView([25, 10], 2);
 L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(map);
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 function pinSvg(color) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30">
-    <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="${color}" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+    <path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="${color}" stroke="rgba(0,0,0,0.2)" stroke-width="1"/>
     <circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.3)"/>
   </svg>`;
 }
 
-const data = BEN_RECS.filter(r => r && r.id);
-const markerMap = {}; // id → { marker, rec }
-
+const markerMap = {};
 data.forEach(rec => {
   const color = CAT_COLORS[rec.category] || '#aaa';
-  const icon = L.divIcon({
-    className: '', html: pinSvg(color),
-    iconSize: [22, 30], iconAnchor: [11, 30], popupAnchor: [0, -32]
-  });
-  const m = L.marker([rec.lat, rec.lng], { icon }).addTo(map);
+  const icon = L.divIcon({ className: '', html: pinSvg(color), iconSize: [22,30], iconAnchor: [11,30], popupAnchor: [0,-32] });
   const locStr = rec.state ? `${rec.city}, ${rec.state}` : `${rec.city}, ${rec.country}`;
-  const catColor = CAT_COLORS[rec.category] || '#aaa';
+  const m = L.marker([rec.lat, rec.lng], { icon }).addTo(map);
   m.bindPopup(`<div class="map-popup">
-    <div class="map-popup-cat" style="color:${catColor}">${CAT_META[rec.category]?.label || rec.category}</div>
+    <div class="map-popup-cat" style="color:${color}">${CAT_META[rec.category]?.label || rec.category}</div>
     <div class="map-popup-name">${rec.name}</div>
     <div class="map-popup-loc">${locStr}</div>
     <a href="/recommendations/detail.html?id=${rec.id}" class="map-popup-link">View &rarr;</a>
   </div>`, { maxWidth: 220 });
-  markerMap[rec.id] = { marker: m, rec, visible: true };
+  markerMap[rec.id] = { marker: m, rec };
 });
 
-// ── LEGEND ────────────────────────────────────────────────────────────────────
+// Map legend
 const legendEl = document.getElementById('mapLegend');
 REC_CATEGORIES.forEach(cat => {
   const row = document.createElement('div');
-  row.className = 'legend-row';
-  row.dataset.cat = cat.id;
+  row.className = 'legend-row'; row.dataset.cat = cat.id;
   row.innerHTML = `<span class="legend-dot" style="background:${CAT_COLORS[cat.id]}"></span>${cat.label}`;
   row.addEventListener('click', () => {
-    // Clicking legend row filters by that category
     const chip = document.querySelector(`#catChips [data-cat="${cat.id}"]`);
     if (chip) setCat(cat.id, chip);
   });
   legendEl.appendChild(row);
 });
 
-// ── FILTER STATE ──────────────────────────────────────────────────────────────
-let activeCat = 'all';
-
-function setCat(cat, el) {
-  activeCat = cat;
-  document.querySelectorAll('#catChips .chip').forEach(c => c.classList.remove('active'));
-  el.classList.add('active');
-  applyFilters();
-}
-
-// Populate country dropdown
-const countries = [...new Set(data.map(r => r.country))].sort();
-const countryEl = document.getElementById('countryFilter');
-countries.forEach(c => {
-  const o = document.createElement('option'); o.value = c; o.textContent = c;
-  countryEl.appendChild(o);
-});
-
-function onLocationChange() {
-  const c = countryEl.value;
-  const stateEl = document.getElementById('stateFilter');
-  if (c === 'United States') {
-    const states = [...new Set(data.filter(r => r.country === 'United States' && r.state).map(r => r.state))].sort();
-    stateEl.innerHTML = '<option value="all">All States</option>';
-    states.forEach(s => { const o = document.createElement('option'); o.value = s; o.textContent = s; stateEl.appendChild(o); });
-    stateEl.style.display = '';
-  } else {
-    stateEl.style.display = 'none';
-    stateEl.value = 'all';
-  }
-  applyFilters();
-}
-
-function matchesFilters(rec) {
-  const country = countryEl.value;
-  const state = document.getElementById('stateFilter').value;
-  const search = (document.getElementById('searchInput').value || '').toLowerCase();
-  if (activeCat !== 'all' && rec.category !== activeCat) return false;
-  if (country !== 'all' && rec.country !== country) return false;
-  if (state !== 'all' && rec.state !== state) return false;
-  if (search && !rec.name.toLowerCase().includes(search) && !rec.city.toLowerCase().includes(search) && !rec.summary.toLowerCase().includes(search)) return false;
-  return true;
-}
-
-// ── MAP MARKER VISIBILITY ────────────────────────────────────────────────────
 function updateMarkers() {
-  let visibleCount = 0;
+  let count = 0;
+  const visibleLatLngs = [];
   Object.values(markerMap).forEach(({ marker, rec }) => {
     if (matchesFilters(rec)) {
       if (!map.hasLayer(marker)) map.addLayer(marker);
-      visibleCount++;
+      count++;
+      visibleLatLngs.push(marker.getLatLng());
     } else {
       if (map.hasLayer(marker)) map.removeLayer(marker);
     }
   });
-  document.getElementById('pinNum').textContent = visibleCount;
-
-  // Dim legend rows that have no visible pins
+  document.getElementById('pinNum').textContent = count;
   document.querySelectorAll('.legend-row').forEach(row => {
-    const cat = row.dataset.cat;
-    const hasVisible = Object.values(markerMap).some(({ rec }) => rec.category === cat && matchesFilters(rec));
-    row.classList.toggle('dimmed', !hasVisible);
+    const has = Object.values(markerMap).some(({ rec }) => rec.category === row.dataset.cat && matchesFilters(rec));
+    row.classList.toggle('dimmed', !has);
   });
+  // Zoom map to fit visible pins when on a location route
+  if (resolved && visibleLatLngs.length) {
+    if (visibleLatLngs.length === 1) {
+      map.setView(visibleLatLngs[0], resolved.type === 'city' ? 13 : 9, { animate: false });
+    } else {
+      map.fitBounds(L.latLngBounds(visibleLatLngs).pad(0.35), { animate: false });
+    }
+  }
 }
 
-// ── COMBINED APPLY ────────────────────────────────────────────────────────────
-function applyFilters() {
-  updateMarkers();
-  renderCards();
+// ── FILTER LOGIC ──────────────────────────────────────────────────────────────
+function matchesLocation(rec) {
+  if (!locType || !locValue) return true;
+  if (locType === 'state')   return rec.state === locValue;
+  if (locType === 'country') return rec.country === locValue;
+  if (locType === 'city')    return rec.city === locValue;
+  return true;
 }
 
-// ── CARD RENDERING ────────────────────────────────────────────────────────────
+function matchesFilters(rec) {
+  if (activeCat !== 'all' && rec.category !== activeCat) return false;
+  if (!matchesLocation(rec)) return false;
+  if (activeTag && !rec.tags.includes(activeTag)) return false;
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const cont  = (CONTINENT_LOOKUP[rec.country] || '').toLowerCase();
+    const catLbl = (CAT_META[rec.category]?.label || '').toLowerCase();
+    const tags  = rec.tags.join(' ').toLowerCase();
+    if (![rec.name, rec.country, rec.state || '', rec.city, cont, catLbl, tags].some(f => f.toLowerCase().includes(q))) return false;
+  }
+  return true;
+}
+
+// For tree counts: ignore location filter so sidebar counts reflect cat+tag+search only
+function matchesNonLocation(rec) {
+  if (activeCat !== 'all' && rec.category !== activeCat) return false;
+  if (activeTag && !rec.tags.includes(activeTag)) return false;
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    const cont  = (CONTINENT_LOOKUP[rec.country] || '').toLowerCase();
+    const catLbl = (CAT_META[rec.category]?.label || '').toLowerCase();
+    const tags  = rec.tags.join(' ').toLowerCase();
+    if (![rec.name, rec.country, rec.state || '', rec.city, cont, catLbl, tags].some(f => f.toLowerCase().includes(q))) return false;
+  }
+  return true;
+}
+
+// ── LOCATION TREE ─────────────────────────────────────────────────────────────
+// Structure: Continent → (Country | US State) → City
+// US states appear AT the country level, never nested under "United States"
+function renderTree() {
+  const pool = data.filter(matchesNonLocation);
+
+  // Build: continent → { total, locs: { locKey → { name, slug, type, total, cities } } }
+  const tree = {};
+  pool.forEach(r => {
+    const cont = CONTINENT_LOOKUP[r.country] || 'Other';
+    if (!tree[cont]) tree[cont] = { total: 0, locs: {} };
+    tree[cont].total++;
+
+    // US states are top-level locations; all others use country
+    let locKey, locName, locSlug, locType;
+    if (r.country === 'United States' && r.state) {
+      locKey = 'st:' + r.state; locName = r.state; locSlug = slug(r.state); locType = 'state';
+    } else {
+      locKey = 'co:' + r.country; locName = r.country; locSlug = slug(r.country); locType = 'country';
+    }
+
+    if (!tree[cont].locs[locKey]) {
+      tree[cont].locs[locKey] = { name: locName, slug: locSlug, type: locType, total: 0, cities: {} };
+    }
+    tree[cont].locs[locKey].total++;
+    const cityName = r.city;
+    const cSlug = locSlug + '/' + slug(cityName);
+    if (!tree[cont].locs[locKey].cities[cityName]) {
+      tree[cont].locs[locKey].cities[cityName] = { count: 0, slug: cSlug };
+    }
+    tree[cont].locs[locKey].cities[cityName].count++;
+  });
+
+  let html = '';
+  if (!Object.keys(tree).length) {
+    html = '<div style="padding:1rem 1.2rem;font-size:.75rem;color:var(--mid-gray);font-style:italic">No locations match.</div>';
+  }
+
+  Object.keys(tree).sort().forEach(cont => {
+    const contExp = expanded.has(`c:${cont}`);
+
+    let locsHtml = '';
+    Object.keys(tree[cont].locs).sort((a, b) => tree[cont].locs[a].name.localeCompare(tree[cont].locs[b].name)).forEach(locKey => {
+      const locD = tree[cont].locs[locKey];
+      const expandKey = `l:${locD.slug}`;
+      const locExp = expanded.has(expandKey);
+      const isActive = locType === locD.type && locValue === locD.name;
+      const hasCities = Object.keys(locD.cities).length > 0;
+
+      let citiesHtml = '';
+      Object.keys(locD.cities).sort().forEach(city => {
+        const cD = locD.cities[city];
+        const cActive = locType === 'city' && locValue === city;
+        citiesHtml += `<a href="/recommendations/${cD.slug}" class="tree-city-link${cActive ? ' active' : ''}">
+          <span class="tree-name">${city}</span>
+          <span class="tree-cnt">${cD.count}</span>
+        </a>`;
+      });
+
+      locsHtml += `<div class="tree-node">
+        <div class="tree-loc-wrap">
+          <a href="/recommendations/${locD.slug}" class="tree-loc-link${isActive ? ' active' : ''}">
+            <span class="tree-name">${locD.name}</span>
+            <span class="tree-cnt">${locD.total}</span>
+          </a>
+          ${hasCities ? `<button class="tree-expand-btn" data-key="${expandKey}">${locExp ? '−' : '+'}</button>` : ''}
+        </div>
+        <div class="tree-children${locExp ? '' : ' closed'}">${citiesHtml}</div>
+      </div>`;
+    });
+
+    html += `<div class="tree-node">
+      <button class="tree-cont-row" data-key="c:${cont}">
+        <span class="tree-arrow${contExp ? ' open' : ''}">›</span>
+        <span class="tree-name">${cont}</span>
+        <span class="tree-cnt">${tree[cont].total}</span>
+      </button>
+      <div class="tree-children${contExp ? '' : ' closed'}">${locsHtml}</div>
+    </div>`;
+  });
+
+  const treeEl = document.getElementById('locTree');
+  treeEl.innerHTML = html;
+
+  // Toggle expand/collapse (continents + location city expand buttons)
+  treeEl.querySelectorAll('[data-key]').forEach(el => {
+    el.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      const key = el.dataset.key;
+      if (expanded.has(key)) expanded.delete(key); else expanded.add(key);
+      renderTree();
+    });
+  });
+
+  // Show/hide clear location button
+  document.getElementById('clearLocBtn').style.display = resolved ? '' : 'none';
+}
+
+// ── MAP HERO TEXT ─────────────────────────────────────────────────────────────
+function renderMapHero() {
+  const el = document.getElementById('mapHeroText');
+  if (!resolved) {
+    el.innerHTML = `
+      <p class="eyebrow">Personally Vetted</p>
+      <h1>Recommendations</h1>
+      <p>Places worth going. Things worth doing.</p>`;
+    return;
+  }
+
+  const locFiltered = data.filter(matchesLocation);
+  const total = locFiltered.length;
+  const cityCount = new Set(locFiltered.map(r => r.city)).size;
+
+  // Build breadcrumb
+  let crumbs = `<a href="/recommendations/">Browse</a><span class="crumb-sep">›</span>${resolved.continent}`;
+  if (resolved.type === 'city') {
+    const parentSlug = resolved.state ? slug(resolved.state) : slug(resolved.country);
+    const parentName = resolved.state || resolved.country;
+    crumbs += `<span class="crumb-sep">›</span><a href="/recommendations/${parentSlug}">${parentName}</a>`;
+  }
+  crumbs += `<span class="crumb-sep">›</span>${resolved.value}`;
+
+  const stats = resolved.type === 'city'
+    ? `${total} recommendation${total !== 1 ? 's' : ''}`
+    : `${total} recommendation${total !== 1 ? 's' : ''} · ${cityCount} cit${cityCount !== 1 ? 'ies' : 'y'}`;
+
+  el.innerHTML = `
+    <div class="loc-breadcrumb">${crumbs}</div>
+    <h1>${resolved.value}</h1>
+    <p>${stats}</p>`;
+}
+
+// ── CARDS ─────────────────────────────────────────────────────────────────────
 function recCard(r) {
   const locStr = r.state ? `${r.city}, ${r.state}` : `${r.city}, ${r.country}`;
-  const catMeta = CAT_META[r.category] || { label: r.category, icon: '📍' };
-  const catColor = CAT_COLORS[r.category] || '#aaa';
-  const imgHtml = r.img
+  const cat = CAT_META[r.category] || { label: r.category, icon: '📍' };
+  const color = CAT_COLORS[r.category] || '#aaa';
+  const img = r.img
     ? `<img class="rec-card-img" src="${r.img}" alt="${r.name}"/>`
-    : `<div class="rec-card-img-placeholder" style="border-top:3px solid ${catColor}">${catMeta.icon}</div>`;
-  return `<a href="/recommendations/detail.html?id=${r.id}" class="rec-card" style="--hover-color:${catColor}" onmouseenter="this.style.borderColor='${catColor}'" onmouseleave="this.style.borderColor=''">
-    ${imgHtml}
+    : `<div class="rec-card-img-placeholder" style="border-top:3px solid ${color}">${cat.icon}</div>`;
+  const tagHtml = r.tags.map(t =>
+    `<span class="rec-tag${activeTag === t ? ' active-tag' : ''}" data-tag="${t}">${t}</span>`
+  ).join('');
+
+  return `<a href="/recommendations/detail.html?id=${r.id}" class="rec-card"
+    onmouseenter="this.style.borderColor='${color}'" onmouseleave="this.style.borderColor=''">
+    ${img}
     <div class="rec-card-body">
-      <div class="rec-card-cat" style="color:${catColor}">
-        <span style="width:6px;height:6px;border-radius:50%;background:${catColor};display:inline-block;flex-shrink:0"></span>
-        ${catMeta.label} <span class="rec-vibe">${r.vibe}</span>
+      <div class="rec-card-cat" style="color:${color}">
+        <span class="rec-cat-dot" style="background:${color}"></span>${cat.label}
+        <span class="rec-vibe">${r.vibe}</span>
       </div>
       <div class="rec-card-name">${r.name}</div>
       <div class="rec-card-loc">📍 ${locStr}</div>
       <div class="rec-card-summary">${r.summary}</div>
-      <div class="rec-tags">${r.tags.map(t=>`<span class="rec-tag">${t}</span>`).join('')}</div>
+      <div class="rec-tags">${tagHtml}</div>
     </div>
   </a>`;
 }
 
 function renderCards() {
   const filtered = data.filter(matchesFilters);
-  const country = countryEl.value;
-  const state = document.getElementById('stateFilter').value;
   const el = document.getElementById('recsList');
+  document.getElementById('resultsCount').textContent = `${filtered.length} place${filtered.length !== 1 ? 's' : ''}`;
 
   if (!filtered.length) {
-    el.innerHTML = '<div class="empty-state">No recommendations match. Try broadening your filters.</div>';
+    el.innerHTML = '<div class="empty-state">No recommendations match. Try clearing a filter.</div>';
     return;
   }
 
   let html = '';
-  if (country !== 'all') {
-    if (country === 'United States') {
-      if (state !== 'all') {
-        html += renderGroup(filtered, null, `${state}, United States`);
-      } else {
-        const states = [...new Set(filtered.map(r => r.state).filter(Boolean))].sort();
-        states.forEach(s => {
-          const group = filtered.filter(r => r.state === s);
-          if (group.length) html += renderGroup(group, country, s);
-        });
-      }
-    } else {
-      html += renderGroup(filtered, null, country);
-    }
-  } else {
+
+  if (!locType) {
+    // World view: group by state (US) or country, with location links
     const grouped = {};
-    filtered.forEach(r => { (grouped[r.country] = grouped[r.country] || []).push(r); });
-    const sortedCountries = Object.keys(grouped).sort((a, b) => a === 'United States' ? 1 : b === 'United States' ? -1 : a.localeCompare(b));
-    sortedCountries.forEach(c => {
-      if (c === 'United States') {
-        const stateGroups = {};
-        grouped[c].forEach(r => { const k = r.state || 'Unknown'; (stateGroups[k] = stateGroups[k] || []).push(r); });
-        html += `<div class="location-section"><div class="location-header"><span class="location-name">United States</span><span class="location-count">${grouped[c].length} place${grouped[c].length!==1?'s':''}</span></div>`;
-        Object.keys(stateGroups).sort().forEach(s => {
-          html += `<div class="state-section"><div class="state-label">${s}</div><div class="recs-grid">${stateGroups[s].map(recCard).join('')}</div></div>`;
-        });
-        html += '</div>';
-      } else {
-        html += renderGroup(grouped[c], null, c);
-      }
+    filtered.forEach(r => {
+      const key = (r.country === 'United States' && r.state) ? r.state : r.country;
+      (grouped[key] = grouped[key] || { recs: [], url: locUrl(r) }).recs.push(r);
     });
+    const sortedKeys = Object.keys(grouped).sort((a, b) => a.localeCompare(b));
+    sortedKeys.forEach(key => {
+      const g = grouped[key];
+      html += `<div class="location-section">
+        <div class="location-header">
+          <span class="location-name"><a href="${g.url}">${key}</a></span>
+          <span class="location-count">${g.recs.length} place${g.recs.length !== 1 ? 's' : ''}</span>
+        </div>
+        <div class="recs-grid">${g.recs.map(recCard).join('')}</div>
+      </div>`;
+    });
+
+  } else if (locType === 'state' || locType === 'country') {
+    // Location page: group by city with city links
+    const grouped = {};
+    filtered.forEach(r => {
+      (grouped[r.city] = grouped[r.city] || { recs: [], url: cityUrl(r) }).recs.push(r);
+    });
+    const cityKeys = Object.keys(grouped).sort();
+    if (cityKeys.length > 1) {
+      cityKeys.forEach(city => {
+        const g = grouped[city];
+        html += `<div class="location-section">
+          <div class="location-header">
+            <span class="location-name"><a href="${g.url}">${city}</a></span>
+            <span class="location-count">${g.recs.length} place${g.recs.length !== 1 ? 's' : ''}</span>
+          </div>
+          <div class="recs-grid">${g.recs.map(recCard).join('')}</div>
+        </div>`;
+      });
+    } else {
+      html += `<div class="recs-grid">${filtered.map(recCard).join('')}</div>`;
+    }
+
+  } else {
+    // City page: flat grid
+    html += `<div class="recs-grid">${filtered.map(recCard).join('')}</div>`;
   }
+
   el.innerHTML = html;
+
+  // Tag click events
+  el.querySelectorAll('.rec-tag').forEach(tag => {
+    tag.addEventListener('click', e => {
+      e.preventDefault(); e.stopPropagation();
+      const t = tag.dataset.tag;
+      activeTag = activeTag === t ? null : t;
+      applyFilters();
+    });
+  });
 }
 
-function renderGroup(recs, country, title) {
-  return `<div class="location-section">
-    <div class="location-header">
-      <span class="location-name">${title}</span>
-      ${country ? `<span class="location-sub">${country}</span>` : ''}
-      <span class="location-count">${recs.length} place${recs.length!==1?'s':''}</span>
-    </div>
-    <div class="recs-grid">${recs.map(recCard).join('')}</div>
-  </div>`;
+// ── FILTER PILLS ──────────────────────────────────────────────────────────────
+function renderPills() {
+  const pills = [];
+  if (activeTag) {
+    pills.push(`<span class="filter-pill">Tag: <strong>${activeTag}</strong><button onclick="clearTag()" title="Remove">✕</button></span>`);
+  }
+  document.getElementById('filterPills').innerHTML = pills.join('');
 }
 
-// Initial render
+// ── APPLY ALL ─────────────────────────────────────────────────────────────────
+function applyFilters() {
+  updateMarkers();
+  renderMapHero();
+  renderTree();
+  renderCards();
+  renderPills();
+  document.getElementById('searchClear').style.display = searchQuery.length ? '' : 'none';
+}
+
+// ── SETTERS ───────────────────────────────────────────────────────────────────
+function setCat(cat, el) {
+  activeCat = cat;
+  document.querySelectorAll('#catChips .chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  applyFilters();
+}
+function clearTag() { activeTag = null; applyFilters(); }
+function clearSearch() { searchQuery = ''; document.getElementById('searchInput').value = ''; applyFilters(); }
+function toggleSidebar() { document.getElementById('locSidebar').classList.toggle('mobile-collapsed'); }
+
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchQuery = e.target.value.trim();
+  applyFilters();
+});
+
+// ── STICKY OFFSETS ────────────────────────────────────────────────────────────
+function updateSticky() {
+  const navH = 64;
+  const topBarH = document.getElementById('topBar').offsetHeight;
+  const total = navH + topBarH;
+  const sidebar = document.getElementById('locSidebar');
+  sidebar.style.top = total + 'px';
+  sidebar.style.maxHeight = `calc(100vh - ${total}px)`;
+}
+
+// ── URL PARAMS (for ?tag= cross-page links) ───────────────────────────────────
+const _params = new URLSearchParams(location.search);
+const _tag = _params.get('tag');
+if (_tag) activeTag = decodeURIComponent(_tag);
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+updateSticky();
+window.addEventListener('resize', updateSticky);
 applyFilters();
 </script>
 </body>

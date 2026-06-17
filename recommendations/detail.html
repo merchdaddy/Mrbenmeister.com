@@ -14,6 +14,8 @@
       --black: #0d0d0d; --off-black: #1a1a1a; --dark-gray: #2a2a2a;
       --mid-gray: #555; --light-gray: #aaa; --off-white: #f0ebe3;
       --cream: #e8e0d0; --red: #b22222; --gold: #c8a96e;
+      --c-food:#e07430; --c-nightlife:#7c3aed; --c-activity:#2a8de8;
+      --c-shopping:#27a05a; --c-landmark:#c9a000; --c-stay:#0891b2;
     }
     body { background: var(--black); color: var(--off-white); font-family: 'Lora', serif; font-size: 16px; line-height: 1.7; }
 
@@ -115,7 +117,9 @@
       display: inline-block; font-family: 'Oswald', sans-serif; font-size: 0.62rem;
       letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem;
       border: 1px solid #333; color: var(--light-gray); margin: 0.2rem 0.2rem 0 0;
+      text-decoration: none; transition: border-color 0.18s, color 0.18s;
     }
+    .rec-tag:hover { border-color: var(--light-gray); color: var(--off-white); }
 
     /* MAP */
     .map-block { margin-bottom: 2.5rem; }
@@ -258,14 +262,29 @@ if (!rec) {
   const catMeta = CAT_META_MAP[rec.category] || { label: rec.category, icon: '📍' };
   const locStr = rec.state ? `${rec.city}, ${rec.state}, United States` : `${rec.city}, ${rec.country}`;
 
+  const CAT_COLORS = { food:'#e07430', nightlife:'#7c3aed', activity:'#2a8de8', shopping:'#27a05a', landmark:'#c9a000', stay:'#0891b2' };
+  const catColor = CAT_COLORS[rec.category] || 'var(--red)';
+  const continent = CONTINENT_LOOKUP[rec.country] || null;
+  const base = '/recommendations/index.html';
+
+  // Location breadcrumb segments
+  const locCrumbs = [];
+  if (continent) locCrumbs.push(`<a href="${base}?loc=continent:${encodeURIComponent(continent)}">${continent}</a>`);
+  locCrumbs.push(`<a href="${base}?loc=country:${encodeURIComponent(rec.country)}">${rec.country}</a>`);
+  if (rec.state) locCrumbs.push(`<a href="${base}?loc=state:${encodeURIComponent(rec.state)}">${rec.state}</a>`);
+  locCrumbs.push(`<a href="${base}?loc=city:${encodeURIComponent(rec.city)}">${rec.city}</a>`);
+  const locBreadcrumb = locCrumbs.join('<span>/</span>');
+
   document.title = `${rec.name} — Mr. Ben Meister`;
   document.getElementById('breadcrumbName').textContent = rec.name;
-  document.getElementById('detailCat').textContent = `${catMeta.icon}  ${catMeta.label}`;
+  document.getElementById('detailCat').innerHTML = `<span style="color:${catColor}">${catMeta.icon}&nbsp; ${catMeta.label}</span>`;
   document.getElementById('detailName').textContent = rec.name;
-  document.getElementById('detailLoc').textContent = `📍 ${locStr}`;
+  document.getElementById('detailLoc').innerHTML = `<span style="opacity:.6;margin-right:.4rem">📍</span>${locBreadcrumb}`;
   document.getElementById('vibeNum').textContent = rec.vibe;
   document.getElementById('whyText').textContent = rec.why;
-  document.getElementById('tagsEl').innerHTML = rec.tags.map(t => `<span class="rec-tag">${t}</span>`).join('');
+  document.getElementById('tagsEl').innerHTML = rec.tags.map(t =>
+    `<a href="${base}?tag=${encodeURIComponent(t)}" class="rec-tag">${t}</a>`
+  ).join('');
 
   // Gallery
   const photos = rec.photos && rec.photos.length ? rec.photos : (rec.img ? [rec.img] : []);
@@ -290,7 +309,7 @@ if (!rec) {
   // Map
   const detailMap = L.map('detailMap', { zoomControl: true, attributionControl: false }).setView([rec.lat, rec.lng], 14);
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(detailMap);
-  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30"><path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="#b22222"/><circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.35)"/></svg>`;
+  const pinSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="30" viewBox="0 0 22 30"><path d="M11 0C4.9 0 0 4.9 0 11c0 7.7 11 19 11 19s11-11.3 11-19C22 4.9 17.1 0 11 0z" fill="${catColor}"/><circle cx="11" cy="11" r="4" fill="rgba(0,0,0,0.35)"/></svg>`;
   const icon = L.divIcon({ className:'', html:pinSvg, iconSize:[22,30], iconAnchor:[11,30] });
   L.marker([rec.lat, rec.lng], { icon }).addTo(detailMap).bindPopup(`<b style="font-family:'Oswald',sans-serif;color:#f0ebe3">${rec.name}</b>`).openPopup();
 }

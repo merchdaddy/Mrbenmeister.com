@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/recommendations/((?!index\\.html|detail\\.html)[^.]*)",
+      "destination": "/recommendations/index.html"
+    }
+  ]
+}

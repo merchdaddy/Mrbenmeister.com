@@ -620,21 +620,21 @@
       <div class="divider"></div>
 
       <div class="ventures-grid">
-        <div class="venture-card">
+        <a href="https://merchdaddyapparel.com" target="_blank" rel="noopener" class="venture-card">
           <div class="venture-number">01</div>
           <p class="venture-name">Merch Daddy Apparel</p>
           <p class="venture-desc">
             Premium streetwear and custom apparel. Built different.
           </p>
-        </div>
-        <div class="venture-card">
+        </a>
+        <a href="https://os.merchdaddyapparel.com" target="_blank" rel="noopener" class="venture-card">
           <div class="venture-number">02</div>
           <p class="venture-name">Merch Daddy OS</p>
           <p class="venture-desc">
             The operating system for merch brands. Tools, systems, and strategy.
           </p>
-        </div>
-        <a href="gold-label-club.html" class="venture-card">
+        </a>
+        <a href="/glc/index.html" target="_blank" rel="noopener" class="venture-card">
           <div class="venture-number">03</div>
           <p class="venture-name">Gold Label Club</p>
           <p class="venture-desc">
@@ -702,7 +702,7 @@
   L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 19 }).addTo(homeMap);
   L.control.zoom({ position: 'bottomright' }).addTo(homeMap);
 
-  const CAT_COLORS = { restaurant:'#b22222', bar:'#c8a96e', activity:'#4a9eff', shopping:'#a855f7', landmark:'#22b28c' };
+  const CAT_COLORS = { food:'#e07430', nightlife:'#7c3aed', activity:'#2a8de8', shopping:'#27a05a', landmark:'#c9a000', stay:'#0891b2' };
 
   function pinSvg(color) {
     return `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="25" viewBox="0 0 22 30">

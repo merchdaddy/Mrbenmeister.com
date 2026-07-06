@@ -228,10 +228,13 @@ document.addEventListener('keydown', e => {
 });
 
 const ratingLabels = {
-  humidor:'Humidor Quality', atmosphere:'Atmosphere', chairs:'Comfort & Seating',
-  service:'Service', drinks:'Bar / Drinks', food:'Food',
-  cigarSelection:'Cigar Selection', ventilation:'Ventilation',
-  parking:'Parking', memberFriendliness:'Luxury Feel'
+  humidor:  'Humidor Quality',
+  chairs:   'Comfort & Seating',
+  service:  'Service',
+  drinks:   'Bar / Drinks',
+  food:     'Food',
+  ventilation: 'Ventilation',
+  parking:  'Parking',
 };
 
 function ratingRow(key, label) {
@@ -391,7 +394,7 @@ document.getElementById('pageBody').innerHTML = `
       <div class="card" style="margin-bottom:1rem">
         <div class="card-body">
           <div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.8rem">Top Scores</div>
-          ${[['humidor','Humidor'],['atmosphere','Atmosphere'],['cigarSelection','Selection'],['service','Service'],['drinks','Bar']].map(([k,lbl])=>`
+          ${[['humidor','Humidor'],['chairs','Seating'],['service','Service'],['drinks','Bar'],['ventilation','Ventilation']].map(([k,lbl])=>`
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem">
             <span style="font-size:.82rem;color:var(--muted)">${lbl}</span>
             <span style="font-family:var(--fh);font-size:.7rem;color:var(--gold)">${l.ratings[k]??'—'}</span>

@@ -130,10 +130,13 @@ document.addEventListener('keydown', e => {
 });
 
 const ratingLabels = {
-  humidor:'Humidor Quality', atmosphere:'Atmosphere', chairs:'Comfort & Seating',
-  service:'Service', drinks:'Bar / Drinks', food:'Food',
-  cigarSelection:'Cigar Selection', ventilation:'Ventilation',
-  parking:'Parking', memberFriendliness:'Luxury Feel'
+  humidor:     'Humidor Quality',
+  chairs:      'Comfort & Seating',
+  service:     'Service',
+  drinks:      'Bar / Drinks',
+  food:        'Food',
+  ventilation: 'Ventilation',
+  parking:     'Parking',
 };
 
 function ratingRow(key,label) {
@@ -238,7 +241,7 @@ document.getElementById('pageBody').innerHTML = `
           ${l.googleBusiness?`<div class="contact-row"><i class="fa-brands fa-google" style="color:var(--gold-d);width:18px;font-size:.8rem"></i><a href="${l.googleBusiness}" target="_blank" style="font-size:.88rem">Google Maps</a></div>`:''}
         </div>
       </div>
-      ${!l.reviewPending?`<div class="card" style="margin-bottom:1rem"><div class="card-body"><div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem">Top Scores</div>${[['humidor','Humidor'],['atmosphere','Atmosphere'],['cigarSelection','Selection'],['service','Service'],['drinks','Bar']].map(([k,lbl])=>`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem"><span style="font-size:.82rem;color:var(--muted)">${lbl}</span><span style="font-family:var(--fh);font-size:.7rem;color:var(--gold)">${l.ratings[k]??'—'}</span></div>`).join('')}</div></div>`:''}
+      ${!l.reviewPending?`<div class="card" style="margin-bottom:1rem"><div class="card-body"><div style="font-family:var(--fh);font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);margin-bottom:.7rem">Top Scores</div>${[['humidor','Humidor'],['chairs','Seating'],['service','Service'],['drinks','Bar'],['ventilation','Ventilation']].map(([k,lbl])=>`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem"><span style="font-size:.82rem;color:var(--muted)">${lbl}</span><span style="font-family:var(--fh);font-size:.7rem;color:var(--gold)">${l.ratings[k]??'—'}</span></div>`).join('')}</div></div>`:''}
       <div class="card" style="margin-bottom:1rem"><div class="card-body" style="text-align:center"><div style="font-family:var(--fh);font-size:1.8rem;color:var(--gold)">${l.priceLevel}</div><div style="font-size:.78rem;color:var(--muted);margin-top:.2rem">${l.priceLevel==='$$$$'?'Luxury':l.priceLevel==='$$$'?'Upscale':'Mid-range'}</div></div></div>
       <button class="btn btn-ghost fav-btn" id="favBtn2" style="width:100%;justify-content:center;margin-bottom:.6rem" onclick="toggleFav()"><i class="fa-regular fa-bookmark"></i> Save to Favorites</button>
       <a href="/portal/map.html" class="btn btn-ghost" style="width:100%;justify-content:center;margin-bottom:.6rem"><i class="fa-solid fa-earth-americas"></i> Map</a>

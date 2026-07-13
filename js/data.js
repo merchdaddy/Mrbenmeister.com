@@ -376,6 +376,29 @@ const GLC = {
       isFeatured: false,
       visitedDate: 'Coming Soon'
     },
+    {
+      id: 'l19',
+      name: 'The Outlaw Cigar Co.',
+      city: 'Overland Park', country: 'USA', state: 'KS',
+      address: '13700 Metcalf Ave, Overland Park, KS 66223',
+      phone: '(913) 814-9000',
+      website: 'https://www.outlawcigar.com',
+      googleBusiness: 'https://maps.google.com/?q=The+Outlaw+Cigar+Co+Overland+Park+KS',
+      lat: 38.8717, lng: -94.6722,
+      img: '/images/outlaw cigar co overland park.jpeg',
+      photos: ['/images/outlaw cigar co overland park.jpeg', '/images/overland cigar co 2.webp', '/images/overland cigar co 3.webp'],
+      video: '/images/outlaw cigar co overland park.MOV',
+      review: 'Full review coming soon — Gold Label Club will be visiting The Outlaw Cigar Co. in Overland Park.',
+      reviewHtml: null,
+      reviewPending: true,
+      ratings: { overall: null, humidor: null, chairs: null, service: null, drinks: null, food: null, ventilation: null, parking: null },
+      features: { bar: null, outdoor: null, privateLounge: null, byo: null },
+      noiseLevel: 'TBD',
+      priceLevel: '$$',
+      bestFor: [],
+      isFeatured: false,
+      visitedDate: 'Coming Soon'
+    },
   ],
 
   announcements: [

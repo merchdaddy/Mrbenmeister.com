@@ -148,26 +148,58 @@
   <div style="font-family:var(--fh);font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)">© 2026 Gold Label Club — <a href="/glc/index.html" style="color:var(--dim)">Home</a></div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-config.js"></script>
 <script src="/js/data.js"></script>
-<script src="/js/auth.js"></script>
 <script src="/js/nav.js"></script>
 <script>
 renderPublicNav('about');
 
-function handleApply(e) {
+const { createClient } = supabase;
+const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function handleApply(e) {
   e.preventDefault();
-  const btn = document.getElementById('applyBtn');
-  btn.disabled = true; btn.textContent = 'Submitting…';
-  // Simulate submission — replace with Supabase call
-  setTimeout(() => {
-    document.getElementById('applyForm').style.display = 'none';
-    document.getElementById('applySuccess').style.display = 'block';
-  }, 800);
+  const btn     = document.getElementById('applyBtn');
+  const errEl   = document.getElementById('applyError');
+  btn.disabled  = true;
+  btn.textContent = 'Submitting…';
+  errEl.style.display = 'none';
+
+  const payload = {
+    first_name:   document.getElementById('appFirst').value.trim(),
+    last_name:    document.getElementById('appLast').value.trim(),
+    email:        document.getElementById('appEmail').value.trim(),
+    phone:        document.getElementById('appPhone').value.trim(),
+    city:         document.getElementById('appCity').value.trim(),
+    occupation:   document.getElementById('appOcc').value.trim(),
+    linkedin:     document.getElementById('appLinkedin').value.trim() || null,
+    referral:     document.getElementById('appRef').value || null,
+    status:       'pending',
+    submitted_at: new Date().toISOString()
+  };
+
+  console.log('[GLC Apply] Submitting application:', { email: payload.email, status: payload.status });
+
+  const { data, error } = await _sb.from('applications').insert([payload]).select();
+
+  if (error) {
+    console.error('[GLC Apply] Insert failed:', error.message, error.code, error.details);
+    errEl.textContent = 'Submission failed: ' + error.message + '. Please try again or contact us directly.';
+    errEl.style.display = 'block';
+    btn.disabled    = false;
+    btn.textContent = 'Submit Application';
+    return;
+  }
+
+  console.log('[GLC Apply] Insert succeeded. Record ID:', data?.[0]?.id, 'Status:', data?.[0]?.status);
+  document.getElementById('applyForm').style.display  = 'none';
+  document.getElementById('applySuccess').style.display = 'block';
 }
 
 // Auto-scroll to form if hash
-if(window.location.hash === '#apply') {
-  setTimeout(() => document.getElementById('apply').scrollIntoView({behavior:'smooth'}), 300);
+if (window.location.hash === '#apply') {
+  setTimeout(() => document.getElementById('apply').scrollIntoView({ behavior: 'smooth' }), 300);
 }
 </script>
 </body>

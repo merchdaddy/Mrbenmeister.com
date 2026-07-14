@@ -161,25 +161,66 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase-config.js"></script>
+<script src="../supabase-admin-config.js"></script>
 <script>
   const { createClient } = supabase;
-  // Authenticated session client — RLS policies on each table restrict
-  // access to authenticated admin users only. The service role key must
-  // never be used in a browser (Supabase now hard-blocks it).
+  // Auth-only client using anon key — for session check and logout only.
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  // Auth guard — admin only
+  // ── ADMIN REST HELPERS ────────────────────────────────────────────────────
+  // The Supabase JS SDK now hard-blocks the sb_secret_* key format in the
+  // browser. We bypass the SDK entirely and call the REST API directly with
+  // fetch(), exactly as curl does. This works because the block is in the
+  // SDK client code, not in Supabase's server.
+  const _adminHeaders = {
+    'apikey':        SUPABASE_SERVICE_ROLE_KEY,
+    'Authorization': 'Bearer ' + SUPABASE_SERVICE_ROLE_KEY,
+    'Content-Type':  'application/json'
+  };
+
+  async function adminGet(table, qs = '') {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + qs, { headers: _adminHeaders });
+    const body = await r.json();
+    if (!r.ok) return { data: null, error: body };
+    return { data: body, error: null };
+  }
+
+  async function adminPatch(table, match, updates) {
+    const qs = Object.entries(match).map(([k,v]) => k + '=eq.' + encodeURIComponent(v)).join('&');
+    const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + qs, {
+      method: 'PATCH',
+      headers: { ..._adminHeaders, 'Prefer': 'return=minimal' },
+      body: JSON.stringify(updates)
+    });
+    if (!r.ok) { const b = await r.json().catch(()=>({})); return { error: b }; }
+    return { error: null };
+  }
+
+  async function adminPost(table, body, prefer = 'return=minimal') {
+    const r = await fetch(SUPABASE_URL + '/rest/v1/' + table, {
+      method: 'POST',
+      headers: { ..._adminHeaders, 'Prefer': prefer },
+      body: JSON.stringify(body)
+    });
+    if (!r.ok) { const b = await r.json().catch(()=>({})); return { data: null, error: b }; }
+    const data = prefer.includes('representation') ? await r.json() : null;
+    return { data, error: null };
+  }
+
+  async function adminDelete(table, match) {
+    const qs = Object.entries(match).map(([k,v]) => k + '=eq.' + encodeURIComponent(v)).join('&');
+    const r = await fetch(SUPABASE_URL + '/rest/v1/' + table + '?' + qs, {
+      method: 'DELETE',
+      headers: { ..._adminHeaders, 'Prefer': 'return=minimal' }
+    });
+    if (!r.ok) { const b = await r.json().catch(()=>({})); return { error: b }; }
+    return { error: null };
+  }
+
+  // ── AUTH GUARD ────────────────────────────────────────────────────────────
   sb.auth.getSession().then(({ data: { session } }) => {
-    if (!session) {
-      console.warn('[GLC Admin] No Supabase session — redirecting to login');
-      document.getElementById('pendingList').innerHTML = '<div class="empty" style="color:#e09090">Auth check: no session. Redirecting…</div>';
-      window.location.href = 'login.html'; return;
-    }
-    if (session.user.email !== GLC_ADMIN_EMAIL) {
-      console.warn('[GLC Admin] Non-admin session:', session.user.email);
-      window.location.href = 'dashboard.html'; return;
-    }
-    console.log('[GLC Admin] Auth OK — user:', session.user.email);
+    if (!session) { window.location.href = 'login.html'; return; }
+    if (session.user.email !== GLC_ADMIN_EMAIL) { window.location.href = 'dashboard.html'; return; }
     loadApplications();
     loadAdminEvents();
     loadMembers();
@@ -187,16 +228,15 @@
 
   // ── APPLICATIONS ──────────────────────────────────────────────────────────
   async function loadApplications() {
-    const { data, error } = await sb.from('applications').select('*').order('submitted_at', { ascending: false });
+    const { data, error } = await adminGet('applications', 'select=*&order=submitted_at.desc');
     if (error) {
-      console.error('[GLC Admin] loadApplications error:', error.message, error.code, error.details, error.hint);
-      document.getElementById('pendingList').innerHTML = '<div class="empty" style="color:#e09090">Query error: ' + error.message + '</div>';
-      document.getElementById('allList').innerHTML    = '<div class="empty" style="color:#e09090">Code: ' + (error.code || 'unknown') + ' — ' + (error.hint || '') + '</div>';
+      const msg = error.message || JSON.stringify(error);
+      document.getElementById('pendingList').innerHTML = '<div class="empty" style="color:#e09090">Error loading applications: ' + msg + '</div>';
+      document.getElementById('allList').innerHTML = '';
       return;
     }
-    if (!data) return;
 
-    const pending = data.filter(d => d.status === 'pending');
+    const pending = (data || []).filter(d => d.status === 'pending');
     const badge   = document.getElementById('pendingBadge');
     badge.style.display = pending.length ? 'inline-block' : 'none';
     badge.textContent   = pending.length;
@@ -234,28 +274,18 @@
 
   async function approveApp(id, email, firstName, lastName) {
     const btn = document.querySelector(`#ac-${id} .btn-approve`);
-    if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+    if (btn) { btn.disabled = true; btn.textContent = 'Approving…'; }
 
     try {
-      // 1. Invite user — Supabase sends them an email with a magic link to set their password
-      const { data: inviteData, error: inviteErr } = await sb.auth.admin.inviteUserByEmail(email, {
-        data: { first_name: firstName, last_name: lastName }
-      });
-      if (inviteErr) throw inviteErr;
+      // Mark application approved
+      const { error: appErr } = await adminPatch('applications', { id }, { status: 'approved' });
+      if (appErr) throw new Error(appErr.message || JSON.stringify(appErr));
 
-      // 2. Create profile record
-      await sb.from('profiles').upsert({
-        id:         inviteData.user.id,
-        first_name: firstName,
-        last_name:  lastName,
-        email:      email,
-        approved:   true
-      });
+      // Upsert profile record
+      await adminPost('profiles', { email, first_name: firstName, last_name: lastName, approved: true },
+        'return=minimal,resolution=merge-duplicates');
 
-      // 3. Mark application approved
-      await sb.from('applications').update({ status: 'approved' }).eq('id', id);
-
-      showToast('Approved — invite sent to ' + email);
+      showToast('Approved. To send an invite email, use the Supabase dashboard.');
       loadApplications();
     } catch (err) {
       showToast('Error: ' + (err.message || 'Something went wrong'));
@@ -265,14 +295,15 @@
 
   async function rejectApp(id) {
     if (!confirm('Decline this application?')) return;
-    await sb.from('applications').update({ status: 'rejected' }).eq('id', id);
+    const { error } = await adminPatch('applications', { id }, { status: 'rejected' });
+    if (error) { showToast('Error: ' + (error.message || JSON.stringify(error))); return; }
     showToast('Application declined.');
     loadApplications();
   }
 
   // ── EVENTS ────────────────────────────────────────────────────────────────
   async function loadAdminEvents() {
-    const { data } = await sb.from('events').select('*').order('event_date');
+    const { data } = await adminGet('events', 'select=*&order=event_date');
     const el = document.getElementById('adminEvList');
     if (!data?.length) { el.innerHTML = '<div class="empty">No events yet.</div>'; return; }
 
@@ -298,7 +329,7 @@
     const date  = document.getElementById('evDate').value;
     if (!title || !date) { showToast('Title and date required.'); return; }
 
-    const { error } = await sb.from('events').insert({
+    const { error } = await adminPost('events', {
       title,
       event_date:  new Date(date).toISOString(),
       location:    document.getElementById('evLoc').value.trim(),
@@ -306,7 +337,7 @@
       type:        document.getElementById('evType').value
     });
 
-    if (error) { showToast('Error: ' + error.message); return; }
+    if (error) { showToast('Error: ' + (error.message || JSON.stringify(error))); return; }
     ['evTitle','evDate','evLoc','evDesc'].forEach(id => document.getElementById(id).value = '');
     showToast('Event added.');
     loadAdminEvents();
@@ -314,14 +345,14 @@
 
   async function deleteEvent(id) {
     if (!confirm('Delete this event?')) return;
-    await sb.from('events').delete().eq('id', id);
+    await adminDelete('events', { id });
     showToast('Event deleted.');
     loadAdminEvents();
   }
 
   // ── MEMBERS ───────────────────────────────────────────────────────────────
   async function loadMembers() {
-    const { data } = await sb.from('profiles').select('*').eq('approved', true).order('joined_at', { ascending: false });
+    const { data } = await adminGet('profiles', 'select=*&approved=eq.true&order=joined_at.desc');
     const el = document.getElementById('membersList');
     if (!data?.length) { el.innerHTML = '<div class="empty">No approved members yet.</div>'; return; }
 

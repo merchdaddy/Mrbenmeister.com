@@ -161,15 +161,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../supabase-config.js"></script>
-<script src="../supabase-admin-config.js"></script>
 <script>
   const { createClient } = supabase;
-  // Public client for reads
+  // Authenticated session client — RLS policies on each table restrict
+  // access to authenticated admin users only. The service role key must
+  // never be used in a browser (Supabase now hard-blocks it).
   const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  // Admin client for inviting users (uses service role key)
-  const sbAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
-    auth: { autoRefreshToken: false, persistSession: false }
-  });
 
   // Auth guard — admin only
   sb.auth.getSession().then(({ data: { session } }) => {
@@ -190,7 +187,7 @@
 
   // ── APPLICATIONS ──────────────────────────────────────────────────────────
   async function loadApplications() {
-    const { data, error } = await sbAdmin.from('applications').select('*').order('submitted_at', { ascending: false });
+    const { data, error } = await sb.from('applications').select('*').order('submitted_at', { ascending: false });
     if (error) {
       console.error('[GLC Admin] loadApplications error:', error.message, error.code, error.details, error.hint);
       document.getElementById('pendingList').innerHTML = '<div class="empty" style="color:#e09090">Query error: ' + error.message + '</div>';
@@ -241,13 +238,13 @@
 
     try {
       // 1. Invite user — Supabase sends them an email with a magic link to set their password
-      const { data: inviteData, error: inviteErr } = await sbAdmin.auth.admin.inviteUserByEmail(email, {
+      const { data: inviteData, error: inviteErr } = await sb.auth.admin.inviteUserByEmail(email, {
         data: { first_name: firstName, last_name: lastName }
       });
       if (inviteErr) throw inviteErr;
 
       // 2. Create profile record
-      await sbAdmin.from('profiles').upsert({
+      await sb.from('profiles').upsert({
         id:         inviteData.user.id,
         first_name: firstName,
         last_name:  lastName,
@@ -256,7 +253,7 @@
       });
 
       // 3. Mark application approved
-      await sbAdmin.from('applications').update({ status: 'approved' }).eq('id', id);
+      await sb.from('applications').update({ status: 'approved' }).eq('id', id);
 
       showToast('Approved — invite sent to ' + email);
       loadApplications();
@@ -268,14 +265,14 @@
 
   async function rejectApp(id) {
     if (!confirm('Decline this application?')) return;
-    await sbAdmin.from('applications').update({ status: 'rejected' }).eq('id', id);
+    await sb.from('applications').update({ status: 'rejected' }).eq('id', id);
     showToast('Application declined.');
     loadApplications();
   }
 
   // ── EVENTS ────────────────────────────────────────────────────────────────
   async function loadAdminEvents() {
-    const { data } = await sbAdmin.from('events').select('*').order('event_date');
+    const { data } = await sb.from('events').select('*').order('event_date');
     const el = document.getElementById('adminEvList');
     if (!data?.length) { el.innerHTML = '<div class="empty">No events yet.</div>'; return; }
 
@@ -301,7 +298,7 @@
     const date  = document.getElementById('evDate').value;
     if (!title || !date) { showToast('Title and date required.'); return; }
 
-    const { error } = await sbAdmin.from('events').insert({
+    const { error } = await sb.from('events').insert({
       title,
       event_date:  new Date(date).toISOString(),
       location:    document.getElementById('evLoc').value.trim(),
@@ -317,14 +314,14 @@
 
   async function deleteEvent(id) {
     if (!confirm('Delete this event?')) return;
-    await sbAdmin.from('events').delete().eq('id', id);
+    await sb.from('events').delete().eq('id', id);
     showToast('Event deleted.');
     loadAdminEvents();
   }
 
   // ── MEMBERS ───────────────────────────────────────────────────────────────
   async function loadMembers() {
-    const { data } = await sbAdmin.from('profiles').select('*').eq('approved', true).order('joined_at', { ascending: false });
+    const { data } = await sb.from('profiles').select('*').eq('approved', true).order('joined_at', { ascending: false });
     const el = document.getElementById('membersList');
     if (!data?.length) { el.innerHTML = '<div class="empty">No approved members yet.</div>'; return; }
 

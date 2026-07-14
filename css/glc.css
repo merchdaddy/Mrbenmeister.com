@@ -359,26 +359,33 @@ select.form-control option{background:#1a1714;}
   .grid-4{grid-template-columns:repeat(2,1fr);}
 }
 @media(max-width:768px){
+  body{overflow-x:hidden;}
   :root{--sidebar-w:0px;}
   .sidebar{transform:translateX(-240px);width:240px;}
   .sidebar.open{transform:translateX(0);}
   .main-content{margin-left:0;}
   .hamburger{display:block;}
   .topbar-search{display:none;}
+  .pub-nav{padding:0 1rem;}
   .pub-nav-links{display:none;}
+  .pub-nav-login{display:none;}
+  .pub-nav-apply{display:none;}
   .pub-hamburger{display:block;}
+  .pub-nav-actions{gap:.3rem;}
   .grid-2{grid-template-columns:1fr;}
   .grid-3{grid-template-columns:1fr;}
   .grid-4{grid-template-columns:repeat(2,1fr);}
-  .page-body{padding:1.2rem;}
-  .pub-section{padding:3.5rem 1.2rem;}
+  .page-body{padding:1rem;}
+  .pub-section{padding:3rem 1rem;}
   .msg-layout{grid-template-columns:1fr;}
   .conv-list{display:none;}
   .msg-layout.show-list .conv-list{display:block;}
   .msg-layout.show-list .chat-area{display:none;}
   .profile-header{flex-direction:column;text-align:center;}
+  .topbar{padding:0 1rem;}
 }
 @media(max-width:480px){
   .grid-4{grid-template-columns:1fr 1fr;}
   .pub-hero h1{font-size:2rem;}
+  .pub-section{padding:2.5rem 1rem;}
 }

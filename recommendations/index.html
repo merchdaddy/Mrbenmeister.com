@@ -23,6 +23,7 @@
       --nav-h: 64px;
     }
     html { scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
     body { background: var(--black); color: var(--off-white); font-family: 'Lora', serif; font-size: 16px; line-height: 1.7; }
 
     /* ── NAV ── */
@@ -39,6 +40,13 @@
     .nav-links a:hover, .nav-links a.active { color: var(--off-white); }
     .nav-links .cigar-link { color: var(--gold); border: 1px solid var(--gold); padding: 0.4rem 1rem; }
     .nav-links .cigar-link:hover { background: var(--gold); color: var(--black); }
+    .nav-hamburger { display: none; background: none; border: none; color: var(--off-white); font-size: 1.5rem; cursor: pointer; padding: 0.25rem 0.4rem; line-height: 1; }
+    .nav-mobile { display: none; position: fixed; top: var(--nav-h); left: 0; right: 0; background: rgba(13,13,13,0.99); border-bottom: 1px solid #2a2a2a; backdrop-filter: blur(8px); z-index: 299; flex-direction: column; }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile-link { font-family: 'Oswald', sans-serif; font-size: 0.82rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); text-decoration: none; padding: 1rem 1.5rem; border-bottom: 1px solid #1a1a1a; transition: color 0.2s, background 0.2s; }
+    .nav-mobile-link:last-child { border-bottom: none; }
+    .nav-mobile-link:hover { color: var(--off-white); background: rgba(255,255,255,0.04); }
+    .nav-mobile-link.gold { color: var(--gold); }
 
     /* ── MAP HERO ── */
     .map-hero { position: relative; height: 65vh; min-height: 420px; margin-top: var(--nav-h); }
@@ -267,8 +275,9 @@
     .footer-copy { font-size: 0.78rem; color: #444; font-family: 'Oswald', sans-serif; letter-spacing: 0.1em; }
 
     @media (max-width: 900px) {
-      nav { padding: 1rem 1.5rem; }
-      .nav-links { gap: 1.2rem; }
+      nav { padding: 0.9rem 1.2rem; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: block; }
       .top-bar { padding: 0.6rem 1.2rem 0.55rem; }
       .map-hero-text { left: 1.5rem; }
       .map-legend { display: none; }
@@ -293,7 +302,15 @@
     <li><a href="/index.html#connect">Connect</a></li>
     <li><a href="/glc/index.html" class="cigar-link">Cigar Club</a></li>
   </ul>
+  <button class="nav-hamburger" id="navHamburger" aria-label="Menu">☰</button>
 </nav>
+<div class="nav-mobile" id="navMobile">
+  <a href="/recommendations/" class="nav-mobile-link">Recommendations</a>
+  <a href="/index.html#videos" class="nav-mobile-link">Videos</a>
+  <a href="/index.html#ventures" class="nav-mobile-link">Ventures</a>
+  <a href="/index.html#connect" class="nav-mobile-link">Connect</a>
+  <a href="/glc/index.html" class="nav-mobile-link gold">Cigar Club</a>
+</div>
 
 <!-- MAP HERO -->
 <div class="map-hero">
@@ -836,6 +853,14 @@ if (_tag) activeTag = decodeURIComponent(_tag);
 updateSticky();
 window.addEventListener('resize', updateSticky);
 applyFilters();
+
+// Hamburger
+const burger = document.getElementById('navHamburger');
+const mobileNav = document.getElementById('navMobile');
+burger?.addEventListener('click', () => mobileNav?.classList.toggle('open'));
+document.addEventListener('click', e => {
+  if (!e.target.closest('nav') && !e.target.closest('.nav-mobile')) mobileNav?.classList.remove('open');
+});
 </script>
 </body>
 </html>

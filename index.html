@@ -23,7 +23,7 @@
       --gold: #c8a96e;
     }
 
-    html { scroll-behavior: smooth; }
+    html { scroll-behavior: smooth; overflow-x: hidden; }
 
     body {
       background: var(--black);
@@ -31,6 +31,7 @@
       font-family: 'Lora', serif;
       font-size: 17px;
       line-height: 1.7;
+      overflow-x: hidden;
     }
 
     /* ── NAV ── */
@@ -87,6 +88,44 @@
       background: var(--gold);
       color: var(--black);
     }
+
+    /* ── MOBILE NAV ── */
+    .nav-hamburger {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--off-white);
+      font-size: 1.5rem;
+      cursor: pointer;
+      padding: 0.25rem 0.4rem;
+      line-height: 1;
+    }
+    .nav-mobile {
+      display: none;
+      position: fixed;
+      top: 57px;
+      left: 0; right: 0;
+      background: rgba(13,13,13,0.99);
+      border-bottom: 1px solid #2a2a2a;
+      backdrop-filter: blur(8px);
+      z-index: 99;
+      flex-direction: column;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile-link {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--light-gray);
+      text-decoration: none;
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid #1a1a1a;
+      transition: color 0.2s, background 0.2s;
+    }
+    .nav-mobile-link:last-child { border-bottom: none; }
+    .nav-mobile-link:hover { color: var(--off-white); background: rgba(255,255,255,0.04); }
+    .nav-mobile-link.gold { color: var(--gold); }
 
     /* ── HERO MAP ── */
     .hero {
@@ -536,14 +575,18 @@
 
     /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
-      nav { padding: 1rem 1.5rem; }
-      .nav-links { gap: 1.2rem; }
-      section { padding: 4rem 1.5rem; }
-      .hero { padding: 0 1.5rem 4rem; }
+      nav { padding: 0.9rem 1.2rem; }
+      .nav-links { display: none; }
+      .nav-hamburger { display: block; }
+      section { padding: 4rem 1.2rem; }
+      .hero-content { left: 1.2rem; bottom: 2rem; }
       .about-grid { grid-template-columns: 1fr; gap: 3rem; }
       .video-grid { grid-template-columns: 1fr; }
       .ventures-grid { grid-template-columns: 1fr; }
-      footer { flex-direction: column; gap: 1rem; text-align: center; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.2rem; }
+    }
+    @media (max-width: 480px) {
+      .hero-title { font-size: clamp(2.4rem, 11vw, 3rem); }
     }
   </style>
 </head>
@@ -559,7 +602,15 @@
       <li><a href="#connect">Connect</a></li>
       <li><a href="glc/index.html" class="live-events-link">Cigar Club</a></li>
     </ul>
+    <button class="nav-hamburger" id="navHamburger" aria-label="Menu">☰</button>
   </nav>
+  <div class="nav-mobile" id="navMobile">
+    <a href="recommendations/index.html" class="nav-mobile-link">Recommendations</a>
+    <a href="#videos" class="nav-mobile-link" onclick="document.getElementById('navMobile').classList.remove('open')">Videos</a>
+    <a href="#ventures" class="nav-mobile-link" onclick="document.getElementById('navMobile').classList.remove('open')">Ventures</a>
+    <a href="#connect" class="nav-mobile-link" onclick="document.getElementById('navMobile').classList.remove('open')">Connect</a>
+    <a href="glc/index.html" class="nav-mobile-link gold">Cigar Club</a>
+  </div>
 
   <!-- HERO MAP -->
   <section class="hero">
@@ -730,6 +781,16 @@
   });
 
   document.getElementById('heroPinNum').textContent = recs.length;
+
+  // Hamburger toggle
+  const burger = document.getElementById('navHamburger');
+  const mobileNav = document.getElementById('navMobile');
+  burger?.addEventListener('click', () => mobileNav?.classList.toggle('open'));
+  document.addEventListener('click', e => {
+    if (!e.target.closest('nav') && !e.target.closest('.nav-mobile')) {
+      mobileNav?.classList.remove('open');
+    }
+  });
 </script>
 </body>
 </html>

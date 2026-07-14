@@ -59,46 +59,100 @@
   </div>
 </div>
 
-<script src="/js/data.js"></script>
-<script src="/js/auth.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../supabase-config.js"></script>
 <script>
-// Already logged in?
-if (GLC_AUTH.isLoggedIn()) {
-  window.location.href = GLC_AUTH.isAdmin() ? '/portal/admin.html' : '/portal/dashboard.html';
-}
+(function () {
+  'use strict';
 
-function showPanel(show, hide) {
-  document.getElementById(show).classList.remove('hidden');
-  document.getElementById(hide).classList.add('hidden');
-}
+  const { createClient } = supabase;
+  const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.getElementById('loginForm').addEventListener('submit', async e => {
-  e.preventDefault();
-  const btn = document.getElementById('loginBtn');
-  btn.disabled = true; btn.textContent = 'Signing in…';
-  document.getElementById('loginError').textContent = '';
-
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass  = document.getElementById('loginPass').value;
-
-  const { user, error } = await GLC_AUTH.login(email, pass);
-  if (error || !user) {
-    document.getElementById('loginError').textContent = 'Invalid email or password.';
-    btn.disabled = false; btn.textContent = 'Enter the Club';
-  } else {
-    // Dismiss the mobile keyboard before navigating so the next page
-    // doesn't inherit a compressed viewport and reflow on keyboard close.
-    document.activeElement?.blur();
-    // replace() removes login from the back stack, preventing a back-button
-    // redirect loop back to the login page.
-    window.location.replace(GLC_AUTH.isAdmin() ? '/portal/admin.html' : '/portal/dashboard.html');
+  // Which portal page should this email land on?
+  function destFor(email) {
+    return email === GLC_ADMIN_EMAIL ? '/portal/admin.html' : '/portal/dashboard.html';
   }
-});
 
-document.getElementById('resetForm').addEventListener('submit', e => {
-  e.preventDefault();
-  document.getElementById('resetSuccess').style.display = 'block';
-});
+  // Build the sessionStorage user record that GLC_AUTH-based portal pages
+  // (dashboard, calendar, events, etc.) expect. This bridges the two auth
+  // systems without requiring every page to load Supabase directly.
+  function buildBridgeUser(sbUser) {
+    const m    = sbUser.user_metadata || {};
+    const name = [(m.first_name || ''), (m.last_name || '')].join(' ').trim() || sbUser.email;
+    return {
+      id:          sbUser.id,
+      email:       sbUser.email,
+      role:        sbUser.email === GLC_ADMIN_EMAIL ? 'admin' : 'member',
+      firstName:   m.first_name || sbUser.email.split('@')[0],
+      name,
+      avatar:      'https://ui-avatars.com/api/?name=' + encodeURIComponent(name) + '&background=1a1714&color=c9a84c&bold=true',
+      memberSince: 'January 2024'
+    };
+  }
+
+  // Hide the login panel until the async Supabase check resolves so the
+  // user never sees a flash of the form before an immediate redirect.
+  const panel = document.getElementById('loginPanel');
+  panel.style.visibility = 'hidden';
+
+  _sb.auth.getSession().then(function ({ data: { session } }) {
+    if (!session) {
+      // No Supabase session — show the form normally.
+      panel.style.visibility = '';
+      return;
+    }
+
+    // A Supabase session exists. Only redirect if the matching
+    // sessionStorage record also exists. If it is absent it means the
+    // user explicitly signed out via a GLC_AUTH portal page, which only
+    // clears sessionStorage. In that case, sign them out of Supabase too
+    // so the two systems stay in sync, then show the form.
+    if (!sessionStorage.getItem('glc_session')) {
+      _sb.auth.signOut().then(function () {
+        panel.style.visibility = '';
+      });
+      return;
+    }
+
+    // Both sessions agree the user is logged in — redirect exactly once.
+    window.location.replace(destFor(session.user.email));
+  });
+
+  // Make showPanel available to the inline onclick handlers in the HTML.
+  window.showPanel = function (show, hide) {
+    document.getElementById(show).classList.remove('hidden');
+    document.getElementById(hide).classList.add('hidden');
+  };
+
+  document.getElementById('loginForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+    document.getElementById('loginError').textContent = '';
+
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass  = document.getElementById('loginPass').value;
+
+    const { data, error } = await _sb.auth.signInWithPassword({ email, password: pass });
+    if (error || !data?.session) {
+      document.getElementById('loginError').textContent = 'Invalid email or password.';
+      btn.disabled = false; btn.textContent = 'Enter the Club';
+      return;
+    }
+
+    // Write the sessionStorage bridge so GLC_AUTH-based portal pages can
+    // read the current user without needing Supabase loaded on every page.
+    sessionStorage.setItem('glc_session', JSON.stringify(buildBridgeUser(data.session.user)));
+
+    document.activeElement?.blur();
+    window.location.replace(destFor(data.session.user.email));
+  });
+
+  document.getElementById('resetForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    document.getElementById('resetSuccess').style.display = 'block';
+  });
+}());
 </script>
 </body>
 </html>

@@ -336,7 +336,7 @@
     document.getElementById('viewTitle').textContent = { applications:'Applications', events:'Events', members:'Members' }[v];
   }
 
-  function logout() { sb.auth.signOut().then(() => window.location.href = 'login.html'); }
+  function logout() { sessionStorage.removeItem('glc_session'); sb.auth.signOut().then(() => window.location.replace('/portal/login.html')); }
 
   let toastT;
   function showToast(msg) {

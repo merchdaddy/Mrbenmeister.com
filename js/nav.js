@@ -130,7 +130,14 @@ function renderPortalNav(activePage) {
     </div>`;
 
   const sidebar = document.getElementById('sidebar');
-  if (sidebar) sidebar.innerHTML = html;
+  if (sidebar) {
+    sidebar.innerHTML = html;
+    // Reveal the layout now that the sidebar is populated. This must happen
+    // synchronously here — CSS keeps .app-layout visibility:hidden from the
+    // first paint, so the empty sidebar never flashes before this runs.
+    const layout = document.querySelector('.app-layout');
+    if (layout) layout.style.visibility = 'visible';
+  }
 
   // Hamburger
   const burger = document.getElementById('hamburger');

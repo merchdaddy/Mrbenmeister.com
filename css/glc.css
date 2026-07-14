@@ -92,7 +92,7 @@ p{color:var(--ivory);line-height:1.85;}
 /* ════════════════════════════════════════════════
    PORTAL SIDEBAR NAV
    ════════════════════════════════════════════════ */
-.app-layout{display:flex;min-height:100vh;}
+.app-layout{display:flex;min-height:100vh;visibility:hidden;}
 .sidebar{width:var(--sidebar-w);background:var(--s1);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;scrollbar-width:none;transition:transform .3s;}
 .sidebar::-webkit-scrollbar{display:none;}
 .sb-brand{padding:1.5rem 1.4rem 1.2rem;border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;gap:.4rem;}

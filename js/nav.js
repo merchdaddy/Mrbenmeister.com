@@ -25,11 +25,13 @@ function renderPublicNav(activePage) {
       <div class="pub-nav-actions">
         <a href="/portal/login.html" class="pub-nav-login">Member Login</a>
         <a href="/glc/about.html#apply" class="pub-nav-apply">Apply</a>
-        <button class="pub-hamburger" onclick="toggleMobileMenu()" aria-label="Menu">
+        <button class="pub-hamburger" id="pubHamburger" aria-label="Menu">
           <i class="fa-solid fa-bars"></i>
         </button>
       </div>
     </nav>
+
+    <div class="pub-nav-backdrop" id="pubNavBackdrop"></div>
 
     <div class="pub-mobile-menu" id="pubMobileMenu">
       ${links.map(l=>`<a href="${l.href}" class="pub-mobile-link ${activePage===l.id?'active':''}">${l.label}</a>`).join('')}
@@ -40,15 +42,39 @@ function renderPublicNav(activePage) {
   const container = document.getElementById('pubNav');
   if (container) container.innerHTML = html;
 
-  // Close menu on outside click
+  // Wire up hamburger, backdrop, and outside-click after injection
+  const burger   = document.getElementById('pubHamburger');
+  const menu     = document.getElementById('pubMobileMenu');
+  const backdrop = document.getElementById('pubNavBackdrop');
+
+  burger?.addEventListener('click', e => { e.stopPropagation(); toggleMobileMenu(); });
+  backdrop?.addEventListener('click', closeMobileMenu);
+  menu?.querySelectorAll('.pub-mobile-link').forEach(a => a.addEventListener('click', closeMobileMenu));
+
   document.addEventListener('click', e => {
-    const menu = document.getElementById('pubMobileMenu');
-    if (menu && !e.target.closest('.pub-nav')) menu.classList.remove('open');
+    if (menu?.classList.contains('open') && !e.target.closest('.pub-nav')) closeMobileMenu();
   });
 }
 
+function openMobileMenu() {
+  const menu     = document.getElementById('pubMobileMenu');
+  const backdrop = document.getElementById('pubNavBackdrop');
+  menu?.classList.add('open');
+  backdrop?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMobileMenu() {
+  const menu     = document.getElementById('pubMobileMenu');
+  const backdrop = document.getElementById('pubNavBackdrop');
+  menu?.classList.remove('open');
+  backdrop?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
 function toggleMobileMenu() {
-  document.getElementById('pubMobileMenu')?.classList.toggle('open');
+  const menu = document.getElementById('pubMobileMenu');
+  menu?.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
 }
 
 /* ── PORTAL SIDEBAR ────────────────────────────── */
@@ -117,14 +143,6 @@ function renderPortalNav(activePage) {
     });
   }
 
-  // Fade the portal page in after nav + content have rendered.
-  // Double rAF ensures the browser has committed the initial invisible frame
-  // so the CSS opacity transition actually plays instead of snapping.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => {
-      document.querySelector('.app-layout')?.classList.add('page-ready');
-    });
-  });
 }
 
 /* ── SHARED HELPERS ────────────────────────────── */

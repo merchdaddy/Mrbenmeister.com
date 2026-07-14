@@ -5,14 +5,6 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&display=swap');
 
-/* ── PAGE ENTRY FADE ─────────────────────────── */
-/* Portal pages render content via JS in two passes (nav then body).
-   Starting invisible and fading in after the JS render eliminates the
-   visible "blank → content pop" jump, especially noticeable on mobile
-   right after a login redirect. */
-.app-layout { opacity: 0; transition: opacity 0.18s ease; }
-.app-layout.page-ready { opacity: 1; }
-
 /* ── VARIABLES ───────────────────────────────── */
 :root {
   --bg:       #070605;
@@ -65,7 +57,7 @@ p{color:var(--ivory);line-height:1.85;}
    PUBLIC NAV
    ════════════════════════════════════════════════ */
 .pub-nav{
-  position:fixed;top:0;left:0;right:0;z-index:200;
+  position:fixed;top:0;left:0;right:0;z-index:10000;
   height:var(--pub-nav-h);
   background:rgba(7,6,5,.97);
   border-bottom:1px solid var(--border);
@@ -90,7 +82,9 @@ p{color:var(--ivory);line-height:1.85;}
 
 /* Mobile public nav */
 .pub-hamburger{display:none;background:none;border:none;color:var(--gold);font-size:1.2rem;}
-.pub-mobile-menu{display:none;position:fixed;top:var(--pub-nav-h);left:0;right:0;background:rgba(7,6,5,.99);border-bottom:1px solid var(--border);padding:1rem;z-index:199;flex-direction:column;gap:.3rem;}
+.pub-nav-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9998;}
+.pub-nav-backdrop.open{display:block;}
+.pub-mobile-menu{display:none;position:fixed;top:var(--pub-nav-h);left:0;right:0;background:rgba(7,6,5,.99);border-bottom:1px solid var(--border);padding:1rem;z-index:9999;flex-direction:column;gap:.3rem;}
 .pub-mobile-menu.open{display:flex;}
 .pub-mobile-link{font-family:var(--fh);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);padding:.8rem 1rem;border-radius:var(--radius);}
 .pub-mobile-link:hover,.pub-mobile-link.active{color:var(--gold);background:var(--gold-glow);}

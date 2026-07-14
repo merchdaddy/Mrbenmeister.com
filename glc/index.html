@@ -61,6 +61,10 @@
     #heroMap {
       width: 100%;
       height: 520px;
+      /* Contain Leaflet's internal z-indices (zoom controls at 1000) so they
+         don't escape above the fixed pub-nav and pub-mobile-menu */
+      position: relative;
+      z-index: 0;
     }
 
     .map-filter-bar {

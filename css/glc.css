@@ -5,6 +5,14 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Cinzel:wght@400;600;700&display=swap');
 
+/* ── PAGE ENTRY FADE ─────────────────────────── */
+/* Portal pages render content via JS in two passes (nav then body).
+   Starting invisible and fading in after the JS render eliminates the
+   visible "blank → content pop" jump, especially noticeable on mobile
+   right after a login redirect. */
+.app-layout { opacity: 0; transition: opacity 0.18s ease; }
+.app-layout.page-ready { opacity: 1; }
+
 /* ── VARIABLES ───────────────────────────────── */
 :root {
   --bg:       #070605;

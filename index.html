@@ -38,7 +38,7 @@
     nav {
       position: fixed;
       top: 0; left: 0; right: 0;
-      z-index: 100;
+      z-index: 10000;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -100,6 +100,15 @@
       padding: 0.25rem 0.4rem;
       line-height: 1;
     }
+    /* Backdrop — covers page (including map) when menu is open */
+    .nav-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.55);
+      z-index: 9998;
+    }
+    .nav-backdrop.open { display: block; }
     .nav-mobile {
       display: none;
       position: fixed;
@@ -107,8 +116,7 @@
       left: 0; right: 0;
       background: rgba(13,13,13,0.99);
       border-bottom: 1px solid #2a2a2a;
-      backdrop-filter: blur(8px);
-      z-index: 99;
+      z-index: 9999;
       flex-direction: column;
     }
     .nav-mobile.open { display: flex; }
@@ -137,6 +145,10 @@
     #homeMap {
       width: 100%;
       height: 100%;
+      /* Contain Leaflet's internal z-indices (zoom controls at 1000, panes at 200-800)
+         so they don't escape to the root stacking context above our nav */
+      position: relative;
+      z-index: 0;
     }
 
     .hero-overlay {
@@ -604,11 +616,12 @@
     </ul>
     <button class="nav-hamburger" id="navHamburger" aria-label="Menu">☰</button>
   </nav>
+  <div class="nav-backdrop" id="navBackdrop"></div>
   <div class="nav-mobile" id="navMobile">
     <a href="recommendations/index.html" class="nav-mobile-link">Recommendations</a>
-    <a href="#videos" class="nav-mobile-link" onclick="document.getElementById('navMobile').classList.remove('open')">Videos</a>
-    <a href="#ventures" class="nav-mobile-link" onclick="document.getElementById('navMobile').classList.remove('open')">Ventures</a>
-    <a href="#connect" class="nav-mobile-link" onclick="document.getElementById('navMobile').classList.remove('open')">Connect</a>
+    <a href="#videos" class="nav-mobile-link">Videos</a>
+    <a href="#ventures" class="nav-mobile-link">Ventures</a>
+    <a href="#connect" class="nav-mobile-link">Connect</a>
     <a href="glc/index.html" class="nav-mobile-link gold">Cigar Club</a>
   </div>
 
@@ -782,13 +795,54 @@
 
   document.getElementById('heroPinNum').textContent = recs.length;
 
-  // Hamburger toggle
-  const burger = document.getElementById('navHamburger');
+  // ── Mobile menu: open/close with scroll lock + map disable ──────────────
+  const burger    = document.getElementById('navHamburger');
   const mobileNav = document.getElementById('navMobile');
-  burger?.addEventListener('click', () => mobileNav?.classList.toggle('open'));
+  const backdrop  = document.getElementById('navBackdrop');
+
+  function openMobileMenu() {
+    mobileNav.classList.add('open');
+    backdrop.classList.add('open');
+    document.body.style.overflow = 'hidden';
+    // Disable all Leaflet map interactions so map can't be dragged behind menu
+    homeMap.dragging.disable();
+    homeMap.scrollWheelZoom.disable();
+    homeMap.touchZoom.disable();
+    homeMap.doubleClickZoom.disable();
+    homeMap.boxZoom.disable();
+    homeMap.keyboard.disable();
+  }
+
+  function closeMobileMenu() {
+    mobileNav.classList.remove('open');
+    backdrop.classList.remove('open');
+    document.body.style.overflow = '';
+    // Restore map interactions
+    homeMap.dragging.enable();
+    homeMap.scrollWheelZoom.enable();
+    homeMap.touchZoom.enable();
+    homeMap.doubleClickZoom.enable();
+    homeMap.boxZoom.enable();
+    homeMap.keyboard.enable();
+  }
+
+  burger?.addEventListener('click', e => {
+    e.stopPropagation();
+    mobileNav.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+  });
+
+  // Close on backdrop tap or nav-mobile link tap
+  backdrop?.addEventListener('click', closeMobileMenu);
+  mobileNav?.querySelectorAll('.nav-mobile-link').forEach(a =>
+    a.addEventListener('click', closeMobileMenu)
+  );
+
+  // Close on outside click (desktop safety net)
   document.addEventListener('click', e => {
-    if (!e.target.closest('nav') && !e.target.closest('.nav-mobile')) {
-      mobileNav?.classList.remove('open');
+    if (mobileNav.classList.contains('open') &&
+        !e.target.closest('nav') &&
+        !e.target.closest('.nav-mobile')) {
+      closeMobileMenu();
     }
   });
 </script>

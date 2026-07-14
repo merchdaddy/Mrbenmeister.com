@@ -22,7 +22,7 @@
 
     /* NAV */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 10000;
       display: flex; align-items: center; justify-content: space-between;
       padding: 1.2rem 3rem;
       background: rgba(13,13,13,0.95); backdrop-filter: blur(6px);
@@ -35,7 +35,9 @@
     .nav-links .cigar-link { color: var(--gold); border: 1px solid var(--gold); padding: 0.4rem 1rem; }
     .nav-links .cigar-link:hover { background: var(--gold); color: var(--black); }
     .nav-hamburger { display: none; background: none; border: none; color: var(--off-white); font-size: 1.5rem; cursor: pointer; padding: 0.25rem 0.4rem; line-height: 1; }
-    .nav-mobile { display: none; position: fixed; top: 64px; left: 0; right: 0; background: rgba(13,13,13,0.99); border-bottom: 1px solid #2a2a2a; backdrop-filter: blur(8px); z-index: 199; flex-direction: column; }
+    .nav-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 9998; }
+    .nav-backdrop.open { display: block; }
+    .nav-mobile { display: none; position: fixed; top: 64px; left: 0; right: 0; background: rgba(13,13,13,0.99); border-bottom: 1px solid #2a2a2a; z-index: 9999; flex-direction: column; }
     .nav-mobile.open { display: flex; }
     .nav-mobile-link { font-family: 'Oswald', sans-serif; font-size: 0.82rem; letter-spacing: 0.18em; text-transform: uppercase; color: var(--light-gray); text-decoration: none; padding: 1rem 1.5rem; border-bottom: 1px solid #1a1a1a; transition: color 0.2s, background 0.2s; }
     .nav-mobile-link:last-child { border-bottom: none; }
@@ -199,6 +201,7 @@
   </ul>
   <button class="nav-hamburger" id="navHamburger" aria-label="Menu">☰</button>
 </nav>
+<div class="nav-backdrop" id="navBackdrop"></div>
 <div class="nav-mobile" id="navMobile">
   <a href="/recommendations/index.html" class="nav-mobile-link">Recommendations</a>
   <a href="/index.html#videos" class="nav-mobile-link">Videos</a>
@@ -359,11 +362,28 @@ document.addEventListener('keydown', e => {
 });
 
 // Hamburger
-const burger = document.getElementById('navHamburger');
+const burger    = document.getElementById('navHamburger');
 const mobileNav = document.getElementById('navMobile');
-burger?.addEventListener('click', () => mobileNav?.classList.toggle('open'));
+const backdrop  = document.getElementById('navBackdrop');
+
+function openMobileMenu() {
+  mobileNav.classList.add('open');
+  backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMobileMenu() {
+  mobileNav.classList.remove('open');
+  backdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+burger?.addEventListener('click', e => {
+  e.stopPropagation();
+  mobileNav.classList.contains('open') ? closeMobileMenu() : openMobileMenu();
+});
+backdrop?.addEventListener('click', closeMobileMenu);
+mobileNav?.querySelectorAll('.nav-mobile-link').forEach(a => a.addEventListener('click', closeMobileMenu));
 document.addEventListener('click', e => {
-  if (!e.target.closest('nav') && !e.target.closest('.nav-mobile')) mobileNav?.classList.remove('open');
+  if (mobileNav.classList.contains('open') && !e.target.closest('nav') && !e.target.closest('.nav-mobile')) closeMobileMenu();
 });
 </script>
 </body>

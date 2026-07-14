@@ -116,6 +116,15 @@ function renderPortalNav(activePage) {
       }
     });
   }
+
+  // Fade the portal page in after nav + content have rendered.
+  // Double rAF ensures the browser has committed the initial invisible frame
+  // so the CSS opacity transition actually plays instead of snapping.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.querySelector('.app-layout')?.classList.add('page-ready');
+    });
+  });
 }
 
 /* ── SHARED HELPERS ────────────────────────────── */

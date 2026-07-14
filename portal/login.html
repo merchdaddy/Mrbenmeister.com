@@ -86,7 +86,20 @@ document.getElementById('loginForm').addEventListener('submit', async e => {
     document.getElementById('loginError').textContent = 'Invalid email or password.';
     btn.disabled = false; btn.textContent = 'Enter the Club';
   } else {
-    window.location.href = GLC_AUTH.isAdmin() ? '/portal/admin.html' : '/portal/dashboard.html';
+    // Blur all inputs so the mobile soft keyboard closes before navigation.
+    // Without this, the keyboard stays open during the redirect, the next page
+    // loads with a compressed viewport, and the keyboard dismissal causes a
+    // jarring layout jump that looks like a glitch or refresh loop.
+    document.activeElement?.blur();
+    document.getElementById('loginEmail')?.blur();
+    document.getElementById('loginPass')?.blur();
+    btn.textContent = 'Welcome back…';
+
+    // Small delay lets the keyboard fully dismiss and viewport settle before
+    // the navigation fires. Use replace() so login is not in the back stack.
+    setTimeout(() => {
+      window.location.replace(GLC_AUTH.isAdmin() ? '/portal/admin.html' : '/portal/dashboard.html');
+    }, 120);
   }
 });
 

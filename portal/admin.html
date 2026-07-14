@@ -173,8 +173,16 @@
 
   // Auth guard — admin only
   sb.auth.getSession().then(({ data: { session } }) => {
-    if (!session) { window.location.href = 'login.html'; return; }
-    if (session.user.email !== GLC_ADMIN_EMAIL) { window.location.href = 'dashboard.html'; return; }
+    if (!session) {
+      console.warn('[GLC Admin] No Supabase session — redirecting to login');
+      document.getElementById('pendingList').innerHTML = '<div class="empty" style="color:#e09090">Auth check: no session. Redirecting…</div>';
+      window.location.href = 'login.html'; return;
+    }
+    if (session.user.email !== GLC_ADMIN_EMAIL) {
+      console.warn('[GLC Admin] Non-admin session:', session.user.email);
+      window.location.href = 'dashboard.html'; return;
+    }
+    console.log('[GLC Admin] Auth OK — user:', session.user.email);
     loadApplications();
     loadAdminEvents();
     loadMembers();
@@ -182,7 +190,13 @@
 
   // ── APPLICATIONS ──────────────────────────────────────────────────────────
   async function loadApplications() {
-    const { data } = await sbAdmin.from('applications').select('*').order('submitted_at', { ascending: false });
+    const { data, error } = await sbAdmin.from('applications').select('*').order('submitted_at', { ascending: false });
+    if (error) {
+      console.error('[GLC Admin] loadApplications error:', error.message, error.code, error.details, error.hint);
+      document.getElementById('pendingList').innerHTML = '<div class="empty" style="color:#e09090">Query error: ' + error.message + '</div>';
+      document.getElementById('allList').innerHTML    = '<div class="empty" style="color:#e09090">Code: ' + (error.code || 'unknown') + ' — ' + (error.hint || '') + '</div>';
+      return;
+    }
     if (!data) return;
 
     const pending = data.filter(d => d.status === 'pending');

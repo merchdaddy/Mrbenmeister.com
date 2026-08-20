@@ -19,8 +19,10 @@
     .toggle input:checked+.toggle-slider::before{transform:translateX(18px);background:var(--gold);}
     .stat-row{display:flex;justify-content:space-around;padding:1rem 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin:.8rem 0;}
     .stat-item{text-align:center;}
-    .stat-item .n{font-family:var(--fh);font-size:1.4rem;color:var(--cream);}
-    .stat-item .l{font-family:var(--fh);font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);}
+    .stat-num{font-family:var(--fh);font-size:1.4rem;color:var(--cream);}
+    .stat-lbl{font-family:var(--fh);font-size:.48rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dim);}
+    .rv-row{padding:.9rem 0;border-bottom:1px solid var(--border);display:flex;gap:.8rem;align-items:flex-start;}
+    .rv-row:last-child{border-bottom:none;}
     @media(max-width:900px){.profile-layout{grid-template-columns:1fr;}}
   </style>
 </head>
@@ -34,151 +36,232 @@
         <span class="topbar-title">My Profile</span>
       </div>
       <div class="topbar-right">
-        <button class="btn btn-gold btn-sm" onclick="saveProfile()"><i class="fa-solid fa-check"></i> Save Changes</button>
+        <button class="btn btn-gold btn-sm" id="saveBtn" onclick="saveProfile()"><i class="fa-solid fa-check"></i> Save Changes</button>
       </div>
     </div>
-    <div class="page-body" id="pageBody"></div>
+    <div class="page-body" id="pageBody">
+      <div style="text-align:center;padding:4rem;color:var(--muted)"><i class="fa-solid fa-spinner fa-spin"></i></div>
+    </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/supabase-config.js"></script>
 <script src="/js/data.js"></script>
 <script src="/js/auth.js"></script>
 <script src="/js/nav.js"></script>
 <script>
-const user = GLC_AUTH.guard();
-if (!user) throw '';
+const glcUser = GLC_AUTH.guard();
+if (!glcUser) throw '';
 renderPortalNav('profile');
 
-const memberData = GLC.getMemberById(user.id) || GLC.members[0];
+const { createClient } = supabase;
+const _sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-document.getElementById('pageBody').innerHTML = `
-  <!-- PROFILE HEADER -->
-  <div class="profile-header">
-    <div class="profile-av-wrap">
-      <img src="${user.avatar}" class="profile-av" alt="${user.name}"/>
-      <div class="profile-av-edit" title="Change photo"><i class="fa-solid fa-camera"></i></div>
-    </div>
-    <div class="profile-info">
-      <h2>${user.name}</h2>
-      <div class="role">${user.role === 'admin' ? 'Club Admin' : 'Gold Label Member'}</div>
-      <div class="city"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${user.city}</div>
-      <div style="margin-top:.5rem"><span class="badge badge-gold">Member since ${user.memberSince}</span></div>
-    </div>
-    <div style="margin-left:auto">
-      <div class="stat-row" style="border:none;flex-direction:column;gap:.8rem;padding:0">
-        ${[
-          [GLC.events.filter(e=>e.rsvps.going.includes(user.id)).length,'Events Attended'],
-          [GLC.lounges.length,'Lounges Reviewed'],
-          [GLC.members.length-1,'Connections'],
-        ].map(([n,l])=>`<div class="stat-item"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('')}
+let _sbSession = null, _profile = {}, _reviews = [];
+
+(async function init() {
+  const { data: { session } } = await _sb.auth.getSession();
+  _sbSession = session;
+
+  // Load profile from DB
+  if (session) {
+    const { data: prof } = await _sb
+      .from('profiles')
+      .select('*')
+      .eq('email', session.user.email)
+      .maybeSingle();
+    _profile = prof || {};
+
+    // Load this member's reviews
+    const { data: revs } = await _sb
+      .from('member_reviews')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false });
+    _reviews = revs || [];
+  }
+
+  renderPage();
+}());
+
+function renderPage() {
+  const name      = glcUser.name || glcUser.firstName || glcUser.email;
+  const firstName = glcUser.firstName || name.split(' ')[0];
+  const lastName  = name.split(' ').slice(1).join(' ');
+  const city      = _profile.city      || glcUser.city || '';
+  const bio       = _profile.bio       || '';
+  const favCigar  = _profile.favorite_cigar  || '';
+  const favLounge = _profile.favorite_lounge || '';
+  const dispName  = _profile.display_name    || name;
+
+  const eventsAttended = GLC.events.filter(e => e.rsvps.going.includes('u1')).length;
+
+  document.getElementById('pageBody').innerHTML = `
+    <div class="profile-header">
+      <div class="profile-av-wrap">
+        <img src="${glcUser.avatar}" class="profile-av" alt="${name}"/>
       </div>
-    </div>
-  </div>
-
-  <div class="profile-layout">
-    <div style="display:flex;flex-direction:column;gap:1.5rem">
-
-      <!-- EDIT PROFILE -->
-      <div class="card">
-        <div class="card-header"><h4>Profile Information</h4></div>
-        <div class="card-body">
-          <div class="grid-2" style="gap:1rem">
-            <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" id="pfFirst" value="${user.firstName}"/></div>
-            <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" id="pfLast" value="${user.name.split(' ').slice(1).join(' ')}"/></div>
-          </div>
-          <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control" id="pfEmail" value="${user.email}"/></div>
-          <div class="form-group"><label class="form-label">City</label><input type="text" class="form-control" id="pfCity" value="${user.city}"/></div>
-          <div class="form-group"><label class="form-label">Short Bio</label><textarea class="form-control" id="pfBio" placeholder="Tell the club a little about yourself…" rows="3"></textarea></div>
-          <div class="form-group"><label class="form-label">Favorite Cigars</label><input type="text" class="form-control" id="pfCigars" placeholder="e.g. Padron 1964, Opus X, Cohiba Behike"/></div>
+      <div class="profile-info">
+        <h2>${name}</h2>
+        <div class="role">${glcUser.role === 'admin' ? 'Club Admin' : 'Gold Label Member'}</div>
+        ${city ? `<div class="city"><i class="fa-solid fa-location-dot" style="color:var(--gold-d)"></i> ${city}</div>` : ''}
+        <div style="margin-top:.5rem"><span class="badge badge-gold">Member since ${glcUser.memberSince}</span></div>
+      </div>
+      <div style="margin-left:auto">
+        <div class="stat-row" style="border:none;flex-direction:column;gap:.8rem;padding:0">
+          <div class="stat-item"><div class="stat-num">${_reviews.length}</div><div class="stat-lbl">Reviews Written</div></div>
+          <div class="stat-item"><div class="stat-num">${eventsAttended}</div><div class="stat-lbl">Events Attended</div></div>
         </div>
       </div>
+    </div>
 
-      <!-- SOCIAL / CONTACT -->
-      <div class="card">
-        <div class="card-header"><h4>Social & Contact</h4><span style="font-size:.78rem;color:var(--muted);font-style:italic">Shared only with connected members</span></div>
-        <div class="card-body">
-          <div class="form-group"><label class="form-label">Instagram Handle</label>
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <span style="color:var(--muted);font-size:1rem"><i class="fa-brands fa-instagram"></i></span>
-              <input type="text" class="form-control" id="pfIg" placeholder="@yourhandle"/>
+    <div class="profile-layout">
+      <div style="display:flex;flex-direction:column;gap:1.5rem">
+
+        <!-- EDIT PROFILE -->
+        <div class="card">
+          <div class="card-header"><h4>Profile Information</h4></div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:1rem">
+              <div class="form-group"><label class="form-label">First Name</label><input type="text" class="form-control" id="pfFirst" value="${esc(firstName)}"/></div>
+              <div class="form-group"><label class="form-label">Last Name</label><input type="text" class="form-control" id="pfLast" value="${esc(lastName)}"/></div>
             </div>
+            <div class="form-group"><label class="form-label">Display Name <span style="color:var(--dim)">(shown on reviews)</span></label><input type="text" class="form-control" id="pfDisplay" value="${esc(dispName)}"/></div>
+            <div class="form-group"><label class="form-label">Email</label><input type="email" class="form-control" value="${esc(glcUser.email)}" disabled style="opacity:.5"/></div>
+            <div class="form-group"><label class="form-label">City</label><input type="text" class="form-control" id="pfCity" value="${esc(city)}" placeholder="City, State"/></div>
+            <div class="form-group"><label class="form-label">Short Bio</label><textarea class="form-control" id="pfBio" rows="3" placeholder="Tell the club a little about yourself…">${esc(bio)}</textarea></div>
+            <div class="form-group"><label class="form-label">Favorite Cigar</label><input type="text" class="form-control" id="pfCigar" value="${esc(favCigar)}" placeholder="e.g. Padron 1964, Opus X…"/></div>
+            <div class="form-group"><label class="form-label">Favorite Lounge</label><input type="text" class="form-control" id="pfLounge" value="${esc(favLounge)}" placeholder="e.g. The Royale Cigar Lounge"/></div>
           </div>
-          <div class="form-group"><label class="form-label">LinkedIn Profile</label>
-            <div style="display:flex;align-items:center;gap:.5rem">
-              <span style="color:var(--muted);font-size:1rem"><i class="fa-brands fa-linkedin"></i></span>
-              <input type="url" class="form-control" id="pfLinkedin" placeholder="linkedin.com/in/yourprofile"/>
+        </div>
+
+        <!-- MY REVIEWS -->
+        <div class="card">
+          <div class="card-header">
+            <h4>My Reviews</h4>
+            <span style="font-size:.78rem;color:var(--muted)">${_reviews.length} review${_reviews.length!==1?'s':''}</span>
+          </div>
+          <div class="card-body" style="padding-top:.5rem">
+            ${_reviews.length ? _reviews.map(r => {
+              const lounge = GLC.getLoungeById(r.lounge_id);
+              const date = r.visit_date
+                ? 'Visited ' + new Date(r.visit_date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', year:'numeric' })
+                : new Date(r.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+              return `<div class="rv-row">
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;margin-bottom:.2rem">
+                    <a href="/glc/lounge.html?id=${r.lounge_id}" style="font-size:.9rem;color:var(--cream);font-weight:600">${esc(lounge?.name || r.lounge_id)}</a>
+                    ${r.rating_overall ? `<span>${GLC.renderStars(r.rating_overall)}</span>` : ''}
+                  </div>
+                  <div style="font-size:.76rem;color:var(--dim);margin-bottom:.4rem">${date}</div>
+                  ${r.review_text ? `<p style="font-size:.85rem;color:var(--muted);margin:0;line-height:1.6">${esc(r.review_text.slice(0,160))}${r.review_text.length>160?'…':''}</p>` : ''}
+                </div>
+                <a href="/glc/lounge.html?id=${r.lounge_id}" class="btn btn-ghost btn-sm" style="flex-shrink:0;margin-left:.5rem"><i class="fa-solid fa-arrow-right"></i></a>
+              </div>`;
+            }).join('') : `<div style="text-align:center;padding:2rem;color:var(--dim)">
+              <i class="fa-regular fa-comment-dots" style="font-size:1.5rem;margin-bottom:.6rem;display:block;color:var(--border)"></i>
+              <div style="font-size:.88rem">No reviews written yet.</div>
+              <a href="/glc/lounges.html" class="btn btn-outline btn-sm" style="margin-top:1rem">Browse Lounges</a>
+            </div>`}
+          </div>
+        </div>
+
+        <!-- CHANGE PASSWORD -->
+        <div class="card">
+          <div class="card-header"><h4>Change Password</h4></div>
+          <div class="card-body">
+            <div class="grid-2" style="gap:1rem">
+              <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" id="pfNewPass" placeholder="••••••••"/></div>
+              <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-control" id="pfConfirmPass" placeholder="••••••••"/></div>
             </div>
+            <button class="btn btn-outline btn-sm" onclick="changePassword()">Update Password</button>
           </div>
-          <div class="form-group"><label class="form-label">Phone (optional)</label><input type="tel" class="form-control" id="pfPhone" placeholder="Visible only to connected members"/></div>
         </div>
+
       </div>
 
-      <!-- CHANGE PASSWORD -->
-      <div class="card">
-        <div class="card-header"><h4>Change Password</h4></div>
-        <div class="card-body">
-          <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" placeholder="••••••••"/></div>
-          <div class="grid-2" style="gap:1rem">
-            <div class="form-group"><label class="form-label">New Password</label><input type="password" class="form-control" placeholder="••••••••"/></div>
-            <div class="form-group"><label class="form-label">Confirm Password</label><input type="password" class="form-control" placeholder="••••••••"/></div>
+      <!-- SIDEBAR -->
+      <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+        <div class="card">
+          <div class="card-header"><h4>Privacy Controls</h4><i class="fa-solid fa-shield-halved" style="color:var(--gold-d);font-size:.8rem"></i></div>
+          <div class="card-body" style="padding:.8rem 1.2rem">
+            ${[
+              ['Show my profile to members','Visible in member directory.',true],
+              ['Show my reviews publicly','Reviews visible to all visitors.',true],
+              ['Allow direct messages','Members can message you.',true],
+            ].map(([label,sub,checked])=>`
+            <div class="privacy-toggle">
+              <div><div class="privacy-label">${label}</div><div class="privacy-sub">${sub}</div></div>
+              <label class="toggle"><input type="checkbox" ${checked?'checked':''} onchange="showToast('Privacy setting updated.')"/><span class="toggle-slider"></span></label>
+            </div>`).join('')}
           </div>
-          <button class="btn btn-outline btn-sm" onclick="showToast('Password updated successfully.')">Update Password</button>
         </div>
-      </div>
 
-    </div>
-
-    <!-- SIDEBAR -->
-    <div style="display:flex;flex-direction:column;gap:1.2rem">
-
-      <!-- PRIVACY CONTROLS -->
-      <div class="card">
-        <div class="card-header"><h4>Privacy Controls</h4><i class="fa-solid fa-shield-halved" style="color:var(--gold-d);font-size:.8rem"></i></div>
-        <div class="card-body" style="padding:.8rem 1.2rem">
-          ${[
-            ['Show my profile to members','Your name and city are visible in the member directory.',true],
-            ['Show my event activity','Members can see which events you\'ve RSVP\'d to.',true],
-            ['Show my contact info','Instagram and phone visible to connected members.',false],
-            ['Allow direct messages','Members can send you direct messages.',true],
-            ['Show me as going to events','Your RSVP is visible on event pages.',true],
-          ].map(([label,sub,checked])=>`
-          <div class="privacy-toggle">
-            <div>
-              <div class="privacy-label">${label}</div>
-              <div class="privacy-sub">${sub}</div>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" ${checked?'checked':''} onchange="showToast('Privacy setting updated.')"/>
-              <span class="toggle-slider"></span>
-            </label>
-          </div>`).join('')}
+        <div class="card">
+          <div class="card-body" style="text-align:center">
+            <div class="eyebrow" style="margin-bottom:.5rem">Gold Label Member</div>
+            <div style="font-family:var(--fh);font-size:1rem;color:var(--cream);margin-bottom:.2rem">${glcUser.memberSince}</div>
+            <div style="font-size:.78rem;color:var(--muted)">Founding Circle</div>
+            <div style="margin-top:.8rem"><span class="badge badge-gold">Active Member</span></div>
+          </div>
         </div>
-      </div>
 
-      <!-- MEMBER SINCE -->
-      <div class="card">
-        <div class="card-body" style="text-align:center">
-          <div class="eyebrow" style="margin-bottom:.5rem">Gold Label Member</div>
-          <div style="font-family:var(--fh);font-size:1rem;color:var(--cream);margin-bottom:.2rem">${user.memberSince}</div>
-          <div style="font-size:.78rem;color:var(--muted)">Founding Circle</div>
-          <div style="margin-top:.8rem"><span class="badge badge-gold">Active Member</span></div>
+        <div class="card" style="border-color:rgba(122,40,40,.3)">
+          <div class="card-header" style="border-color:rgba(122,40,40,.3)"><h4 style="color:#e09090;font-size:.6rem;letter-spacing:.22em">Account</h4></div>
+          <div class="card-body" style="padding:.8rem 1.2rem">
+            <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-bottom:.5rem;color:#e09090;border-color:rgba(122,40,40,.3)" onclick="GLC_AUTH.logout()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
+          </div>
         </div>
+
       </div>
+    </div>`;
+}
 
-      <!-- DANGER ZONE -->
-      <div class="card" style="border-color:rgba(122,40,40,.3)">
-        <div class="card-header" style="border-color:rgba(122,40,40,.3)"><h4 style="color:#e09090;font-size:.6rem;letter-spacing:.22em">Account</h4></div>
-        <div class="card-body" style="padding:.8rem 1.2rem">
-          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;margin-bottom:.5rem;color:#e09090;border-color:rgba(122,40,40,.3)" onclick="GLC_AUTH.logout()"><i class="fa-solid fa-right-from-bracket"></i> Sign Out</button>
-          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center;color:var(--dim);font-size:.5rem" onclick="showToast('Contact admin to deactivate your account.')">Deactivate Account</button>
-        </div>
-      </div>
+async function saveProfile() {
+  const btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving…';
 
-    </div>
-  </div>`;
+  const updates = {
+    display_name:    document.getElementById('pfDisplay')?.value.trim() || null,
+    city:            document.getElementById('pfCity')?.value.trim()    || null,
+    bio:             document.getElementById('pfBio')?.value.trim()     || null,
+    favorite_cigar:  document.getElementById('pfCigar')?.value.trim()  || null,
+    favorite_lounge: document.getElementById('pfLounge')?.value.trim() || null,
+  };
 
-function saveProfile() {
-  showToast('Profile saved successfully!');
+  if (_sbSession) {
+    const { error } = await _sb.from('profiles').update(updates).eq('email', _sbSession.user.email);
+    if (error) { showToast('Error saving: ' + error.message); }
+    else       { _profile = { ..._profile, ...updates }; showToast('Profile saved.'); }
+  } else {
+    showToast('Profile saved locally.');
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-check"></i> Save Changes';
+}
+
+async function changePassword() {
+  const np = document.getElementById('pfNewPass').value;
+  const cp = document.getElementById('pfConfirmPass').value;
+  if (!np) { showToast('Enter a new password.'); return; }
+  if (np !== cp) { showToast('Passwords do not match.'); return; }
+  if (!_sbSession) { showToast('Not connected to auth.'); return; }
+  const { error } = await _sb.auth.updateUser({ password: np });
+  if (error) { showToast('Error: ' + error.message); }
+  else {
+    document.getElementById('pfNewPass').value = '';
+    document.getElementById('pfConfirmPass').value = '';
+    showToast('Password updated successfully.');
+  }
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
 </body>

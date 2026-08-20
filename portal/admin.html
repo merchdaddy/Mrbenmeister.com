@@ -107,6 +107,7 @@
     </div>
     <div class="nav-item" onclick="switchView('events',this)">Events</div>
     <div class="nav-item" onclick="switchView('members',this)">Members</div>
+    <div class="nav-item" onclick="switchView('reviews',this)">Reviews <span class="n-badge" id="pendingReviewBadge" style="display:none">0</span></div>
     <div class="sb-foot">
       <button class="btn-logout" onclick="logout()">Sign Out</button>
     </div>
@@ -153,6 +154,20 @@
     <div class="view" id="membersView">
       <div class="sec-label">Approved Members</div>
       <div id="membersList"><div class="empty">No members yet.</div></div>
+    </div>
+
+    <!-- REVIEWS -->
+    <div class="view" id="reviewsView">
+      <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <div class="sec-label" style="margin:0;border:none;padding:0">Member Reviews</div>
+        <div style="display:flex;gap:.5rem;margin-left:auto">
+          <button class="btn-app" style="font-size:.5rem;padding:.35rem .8rem;background:var(--panel);border:1px solid var(--border);color:var(--muted)" onclick="filterReviews('all')" id="rvf-all">All</button>
+          <button class="btn-app" style="font-size:.5rem;padding:.35rem .8rem;background:rgba(201,168,76,.12);border:1px solid var(--gold-d);color:var(--gold)" onclick="filterReviews('published')" id="rvf-published">Published</button>
+          <button class="btn-app" style="font-size:.5rem;padding:.35rem .8rem;background:var(--panel);border:1px solid var(--border);color:var(--muted)" onclick="filterReviews('pending')" id="rvf-pending">Pending</button>
+          <button class="btn-app" style="font-size:.5rem;padding:.35rem .8rem;background:var(--panel);border:1px solid var(--border);color:var(--muted)" onclick="filterReviews('rejected')" id="rvf-rejected">Rejected</button>
+        </div>
+      </div>
+      <div id="reviewsAdminList"><div class="empty">Loading reviews…</div></div>
     </div>
   </main>
 </div>
@@ -375,7 +390,101 @@
     document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
     document.getElementById(v + 'View').classList.add('active');
     el.classList.add('active');
-    document.getElementById('viewTitle').textContent = { applications:'Applications', events:'Events', members:'Members' }[v];
+    document.getElementById('viewTitle').textContent = { applications:'Applications', events:'Events', members:'Members', reviews:'Reviews' }[v] || v;
+    if (v === 'reviews') loadReviews();
+  }
+
+  // ── REVIEWS ───────────────────────────────────────────────────────────────
+  let _allReviews = [], _rvFilter = 'all';
+
+  async function loadReviews() {
+    const el = document.getElementById('reviewsAdminList');
+    el.innerHTML = '<div class="empty">Loading reviews…</div>';
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/member_reviews?select=*&order=created_at.desc`, {
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + (sb._session?.access_token || SUPABASE_ANON_KEY),
+          'Content-Type': 'application/json'
+        }
+      });
+      _allReviews = await res.json();
+      const pending = _allReviews.filter(r => r.status === 'pending').length;
+      const badge = document.getElementById('pendingReviewBadge');
+      badge.textContent = pending;
+      badge.style.display = pending ? '' : 'none';
+      renderReviews();
+    } catch(e) {
+      el.innerHTML = `<div class="empty">Error loading reviews: ${esc(e.message)}</div>`;
+    }
+  }
+
+  function filterReviews(status) {
+    _rvFilter = status;
+    ['all','published','pending','rejected'].forEach(s => {
+      const btn = document.getElementById('rvf-' + s);
+      if (!btn) return;
+      const active = s === status;
+      btn.style.background = active ? 'rgba(201,168,76,.12)' : 'var(--panel)';
+      btn.style.borderColor = active ? 'var(--gold-d)' : 'var(--border)';
+      btn.style.color = active ? 'var(--gold)' : 'var(--muted)';
+    });
+    renderReviews();
+  }
+
+  function renderReviews() {
+    const list = _rvFilter === 'all' ? _allReviews : _allReviews.filter(r => r.status === _rvFilter);
+    const el = document.getElementById('reviewsAdminList');
+    if (!list.length) { el.innerHTML = '<div class="empty">No reviews found.</div>'; return; }
+
+    el.innerHTML = list.map(r => {
+      const lounge = GLC?.getLoungeById?.(r.lounge_id);
+      const loungeName = lounge?.name || r.lounge_id;
+      const date = new Date(r.created_at).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+      const statusColor = r.status === 'published' ? 'var(--green)' : r.status === 'pending' ? 'var(--gold-d)' : 'var(--red)';
+      return `<div class="app-card" style="grid-template-columns:1fr auto;gap:1rem;margin-bottom:.7rem">
+        <div>
+          <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:.35rem;flex-wrap:wrap">
+            <span class="app-name">${esc(r.reviewer_name || 'Anonymous')}</span>
+            <span style="font-size:.72rem;color:${statusColor};text-transform:uppercase;letter-spacing:.12em">${r.status}</span>
+            <span style="font-size:.72rem;color:var(--muted)">${date}</span>
+          </div>
+          <div class="app-f"><strong>Lounge:</strong> ${esc(loungeName)}</div>
+          ${r.rating_overall ? `<div class="app-f"><strong>Overall:</strong> ${r.rating_overall}/10</div>` : ''}
+          ${r.review_text ? `<div style="font-size:.82rem;color:var(--muted);margin-top:.4rem;line-height:1.6;max-width:600px">${esc(r.review_text.slice(0,300))}${r.review_text.length>300?'…':''}</div>` : ''}
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.4rem;flex-shrink:0">
+          ${r.status !== 'published' ? `<button class="btn-app btn-approve" onclick="moderateReview('${r.id}','published')">Publish</button>` : ''}
+          ${r.status !== 'rejected'  ? `<button class="btn-app btn-reject"  onclick="moderateReview('${r.id}','rejected')">Reject</button>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  async function moderateReview(id, status) {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/member_reviews?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': 'Bearer ' + (sb._session?.access_token || SUPABASE_ANON_KEY),
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ status })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      const r = _allReviews.find(x => x.id === id);
+      if (r) r.status = status;
+      const pending = _allReviews.filter(r => r.status === 'pending').length;
+      const badge = document.getElementById('pendingReviewBadge');
+      badge.textContent = pending;
+      badge.style.display = pending ? '' : 'none';
+      renderReviews();
+      showToast(`Review ${status}.`);
+    } catch(e) {
+      showToast('Error: ' + e.message);
+    }
   }
 
   function logout() { sessionStorage.removeItem('glc_session'); sb.auth.signOut().then(() => window.location.replace('/portal/login.html')); }
